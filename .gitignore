@@ -1,1 +1,4 @@
+# .NET
 .vs
+**/bin
+**/obj
