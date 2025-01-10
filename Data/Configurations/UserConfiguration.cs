@@ -15,9 +15,9 @@ namespace Data.Configurations
         {
             builder.ToTable("Users");
             builder.HasKey(x => x.Id);
-            builder.Property(x => x.FirstName).HasMaxLength(20);
+            builder.Property(x => x.FirstName).HasMaxLength(50);
             builder.Property(x => x.LastName).HasMaxLength(50);
-            builder.Property(x => x.PhoneNumber).IsRequired(false);
+            builder.Property(x => x.UserName).HasMaxLength(16);
 
             builder.HasOne(x => x.Gender)
                 .WithMany(x => x.Users)
