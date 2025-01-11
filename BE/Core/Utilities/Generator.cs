@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Core.Utilities
 {
-    public class Hasher
+    public class Generator
     {
         public static string HashPassword(string password)
         {
@@ -17,6 +17,17 @@ namespace Core.Utilities
             foreach (byte b in bytes)
             {
                 sb.Append(b.ToString("x2"));
+            }
+            return sb.ToString();
+        }
+
+        public static string GenerateRandomToken(string src, int len)
+        {
+            Random random = new ();
+            StringBuilder sb = new ();
+            for (int i = 0; i < len; i++)
+            {
+                sb.Append(src[random.Next(src.Length)]);
             }
             return sb.ToString();
         }

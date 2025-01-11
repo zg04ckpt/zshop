@@ -21,7 +21,7 @@ namespace Core.Mappers
                 Email = data.Email,
                 PhoneNumber = data.PhoneNumber,
                 UserName = data.UserName,
-                Password = Hasher.HashPassword(data.Password),
+                Password = Generator.HashPassword(data.Password),
                 IsEmailComfirmed = false,
                 IsActivated = true,
                 AccessFailedCount = 0,

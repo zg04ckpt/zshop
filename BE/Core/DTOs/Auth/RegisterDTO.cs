@@ -18,7 +18,7 @@ namespace Core.DTOs.Auth
         public string LastName { get; set; }
 
         [Required(ErrorMessage = "Vui lòng điền tên tài khoản.")]
-        [RegularExpression("^[a-zA-Z0-9]{4,10}$", ErrorMessage = "Tên người dùng chỉ được chứa chữ cái (không dấu), chữ số và dài 4-10 kí tự.")]
+        [RegularExpression("^[a-zA-Z0-9]{4,16}$", ErrorMessage = "Tên người dùng chỉ được chứa chữ cái (không dấu), chữ số và dài 4-16 kí tự.")]
         public string UserName { get; set; }
 
         [Required(ErrorMessage = "Vui lòng điền email.")]

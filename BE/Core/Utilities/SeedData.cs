@@ -41,7 +41,7 @@ namespace Core.Utilities
                     Email = Environment.GetEnvironmentVariable("AdminEmail")!,
                     UserName = Environment.GetEnvironmentVariable("AdminUserName")!,
                     GenderId = (await genderRepository.Get(e => e.Value.ToLower() == "UnSet"))!.Id,
-                    Password = Hasher.HashPassword(Environment.GetEnvironmentVariable("AdminPassword")!),
+                    Password = Generator.HashPassword(Environment.GetEnvironmentVariable("AdminPassword")!),
                     PhoneNumber = "0000000000",
                     IsEmailComfirmed = true,
                     IsActivated = true,

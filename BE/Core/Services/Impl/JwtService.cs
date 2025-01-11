@@ -16,13 +16,15 @@ namespace Core.Services.Impl
     public class JwtService : IJwtService
     {
         private readonly IConfiguration config;
+        private readonly IRedisService redisService;
 
-        public JwtService(IConfiguration config)
+        public JwtService(IConfiguration config, IRedisService redisService)
         {
             this.config = config;
+            this.redisService = redisService;
         }
 
-        public JwtTokenDTO IssueToken(User user, List<string> userRoleNames)
+        public JwtTokenDTO IssueToken(User user, List<string> userRoleNames, bool isLogin)
         {
             // Prepare claims
             List<Claim> claims = new()
@@ -48,7 +50,22 @@ namespace Core.Services.Impl
                 expires: expireAt
             );
             string accessToken = new JwtSecurityTokenHandler().WriteToken(token);
+            
+            // Create new refresh token, if this is login => save refresh token to redis
             string refreshToken = GenerateRefreshToken();
+            if (isLogin)
+            {
+                redisService.Set(
+                    "valid_refresh_token",
+                    user.Id.ToString(), 
+                    refreshToken, 
+                    TimeSpan.FromMinutes(int.Parse(config.GetSection("JwtConfig")["RefreshTokenTTL"])));
+            }
+            else
+            {
+                // If this is refresh access token => update new refresh token
+                redisService.UpdateAndKeepTTL("valid_refresh_token", user.Id.ToString(), refreshToken);
+            }    
 
             return new JwtTokenDTO
             {
@@ -68,14 +85,64 @@ namespace Core.Services.Impl
             return Convert.ToBase64String(bytes);
         }
 
-        public Task<JwtTokenDTO> RefreshToken(string accessToken, string refreshToken)
+        public ClaimsPrincipal? ValidateAccessToken(string accessToken)
         {
-            throw new NotImplementedException();
+            // Prepare params to validate expired accesstoken 
+            byte[] bytes = Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("SecretKey")!);
+            SymmetricSecurityKey key = new(bytes);
+            TokenValidationParameters param = new()
+            {
+                ValidateIssuer = true,
+                ValidIssuer = config.GetSection("JwtConfig")["Issuer"],
+
+                ValidateAudience = true,
+                ValidAudience = config.GetSection("JwtConfig")["Audience"],
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = key,
+
+                ValidateLifetime = false
+            };
+
+            // Validate
+            try
+            {
+                ClaimsPrincipal claim = new JwtSecurityTokenHandler().ValidateToken(accessToken, param, out SecurityToken validatedToken);
+                JwtSecurityToken? token = validatedToken as JwtSecurityToken;
+                if (token is null || token.Header.Alg.ToLower() != SecurityAlgorithms.HmacSha256.ToLower())
+                    return null;
+                return claim;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
-        public Task RevokeToken(string accessToken, string refreshToken)
+        public async Task RevokeToken(string accessToken)
         {
-            throw new NotImplementedException();
+            // save access token to backlist
+            await redisService.Set(
+                "revoked_access_token",
+                accessToken, "-", 
+                TimeSpan.FromMinutes(int.Parse(config.GetSection("JwtConfig")["AccessTokenTTL"])));
+
+            // remove refresh token to free memory
+            ClaimsPrincipal claim = ValidateAccessToken(accessToken)!;
+            await redisService.Delete("valid_refresh_token", claim.FindFirstValue(ClaimTypes.NameIdentifier));
+        }
+
+        public async Task<bool> ValidateRefreshToken(string userId, string refreshToken)
+        {
+            string? token = await redisService.Get("valid_refresh_token", userId);
+            if (token is null ||  !token.Equals(refreshToken))
+                return false;
+            return true;
+        }
+
+        public async Task<bool> IsRevokedToken(string accessToken)
+        {
+            return await redisService.IsExists("revoked_access_token", accessToken);
         }
     }
 }

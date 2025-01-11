@@ -26,7 +26,17 @@ namespace API.Middlewares
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 await context.Response.WriteAsync(JsonConvert.SerializeObject(new ApiErrorResult(ex)));
-            }    
+            }   
+            else if(ex is UnauthorizedException)
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsync(JsonConvert.SerializeObject(new ApiErrorResult(ex)));
+            }
+            else if (ex is InternalServerErrorException)
+            {
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                await context.Response.WriteAsync(JsonConvert.SerializeObject(new ApiErrorResult(ex)));
+            }
             else
             {
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;

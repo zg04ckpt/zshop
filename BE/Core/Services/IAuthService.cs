@@ -11,10 +11,11 @@ namespace Core.Services
 {
     public interface IAuthService
     {
-        Task<ApiResult> Register(RegisterDTO data);
+        Task<ApiResult<RegisterResponseDTO>> Register(RegisterDTO data);
         Task<ApiResult<LoginResponseDTO>> LogIn(LoginDTO data);
-        Task<ApiResult> LogOut(ClaimsPrincipal claims);
-        Task<ApiResult> ConfirmEmail(string userId, string token);
-        Task<ApiResult<JwtTokenDTO>> RefreshAccessToken(string accessToken, string refreshToken);
+        Task<ApiResult> LogOut(string accessToken);
+        Task<ApiResult> ResendConfirmEmailCode(string userId);
+        Task<ApiResult> ValidateEmailByCode(ConfirmEmailDTO data);
+        Task<ApiResult<JwtTokenDTO>> RefreshToken(TokenDTO data);
     }
 }
