@@ -1,4 +1,5 @@
 using API.Middlewares;
+using Core.Configurations;
 using Core.Repositories;
 using Core.Repositories.Impl;
 using Core.Services;
@@ -14,6 +15,11 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
+
+// Add config mapping
+builder.Services.Configure<JwtConfig>(config.GetSection("JwtConfig"));
+builder.Services.Configure<AuthConfig>(config.GetSection("AuthConfig"));
+builder.Services.Configure<MailConfig>(config.GetSection("MailConfig"));
 
 // Add sqlserver service to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>

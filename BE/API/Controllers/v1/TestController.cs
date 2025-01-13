@@ -9,7 +9,7 @@ namespace API.Controllers.v1
     public class TestController : ControllerBase
     {
         [HttpGet]
-        [Authorize("OnlyAdmin")]
+        [Authorize]
         public ActionResult Get()
         {
             return Ok("thành công");

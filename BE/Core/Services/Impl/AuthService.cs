@@ -1,4 +1,5 @@
-﻿using Core.DTOs.Auth;
+﻿using Core.Configurations;
+using Core.DTOs.Auth;
 using Core.DTOs.Common;
 using Core.Exceptions;
 using Core.Mappers;
@@ -6,6 +7,8 @@ using Core.Repositories;
 using Core.Utilities;
 using Data.Entities.System;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,21 +26,22 @@ namespace Core.Services.Impl
         private readonly IJwtService jwtService;
         private readonly IGenderRepository genderRepository;
         private readonly IStorageService storageService;
-        private readonly IConfiguration configuration;
         private readonly IRedisService redisService;
         private readonly IMailService mailService;
         private readonly UserMapper userMapper;
+        private readonly AuthConfig authConfig;
 
-        public AuthService(IUserRepository userRepository, IGenderRepository genderRepository, IJwtService jwtService, IConfiguration configuration, IStorageService storageService, IRedisService redisService, IMailService mailService)
+        public AuthService(IUserRepository userRepository, IGenderRepository genderRepository, 
+            IJwtService jwtService, IOptions<AuthConfig> config, IStorageService storageService, IRedisService redisService, IMailService mailService)
         {
             this.userRepository = userRepository;
             this.userMapper = new UserMapper();
             this.genderRepository = genderRepository;
             this.jwtService = jwtService;
-            this.configuration = configuration;
             this.storageService = storageService;
             this.redisService = redisService;
             this.mailService = mailService;
+            this.authConfig = config.Value;
         }
 
         public async Task<ApiResult<LoginResponseDTO>> LogIn(LoginDTO data)
@@ -46,13 +50,39 @@ namespace Core.Services.Impl
             User user = await userRepository.Get(e => e.Email.Equals(data.Email))
                 ?? throw new BadRequestException("Email không tồn tại");
 
+            // Check email confirm
+            if(!user.IsEmailComfirmed) throw new BadRequestException("Vui lòng xác thực email trước khi đăng nhập");
+
+            // Check if this user is locked from logging in (redis) 
+            var remainingLockTime = await redisService.GetTTL(type: KeySet.RedisType.LOGIN_LOCKED, key: user.Id.ToString());
+            if(remainingLockTime > 0)
+            {
+                throw new LockedException($"Chức năng đăng nhập của bạn đang bị khóa, đăng nhập lại sau {remainingLockTime} giây nữa.");
+            }
+
             // Limit incorrect password times
-            var maxFailCount = int.Parse(configuration.GetSection("AuthConfig")["MaxFailedAttempts"]);
-            if (user.AccessFailedCount > maxFailCount)
-                throw new BadRequestException($"Sai mật khẩu quá {maxFailCount} lần liên tiếp, vui kiểm tra email của bạn để mở khóa!");
-            if (!Generator.HashPassword(data.Password).Equals(user.Password))
+            // 16d2581c155ca7741af54d3f48bebc0d0ef79d895354c254c40ee649657c19e3
+            var maxFailCount = authConfig.MaxFailedAttempts;
+            if (Generator.HashPassword(data.Password) != user.Password)
             {
                 user.AccessFailedCount++;
+                if (user.AccessFailedCount > maxFailCount)
+                {
+                    // reset AccessFailedCount
+                    user.AccessFailedCount = 0;
+                    userRepository.Update(user);
+                    await userRepository.Save();
+
+                    // lock login feature(by redis)
+                    int ttl = authConfig.LoginLockFlagTTL;
+                    await redisService.Set(
+                        type: KeySet.RedisType.LOGIN_LOCKED,
+                        key: user.Id.ToString(),
+                        value: "true",
+                        ttl: TimeSpan.FromMinutes(ttl));
+
+                    throw new LockedException($"Sai mật khẩu quá {maxFailCount} lần liên tiếp, khóa đăng nhập trong vòng {ttl} phút!");
+                }
                 userRepository.Update(user);
                 await userRepository.Save();
                 throw new BadRequestException($"Mật khẩu không chính xác, còn {maxFailCount - user.AccessFailedCount} lần thử!");
@@ -82,6 +112,27 @@ namespace Core.Services.Impl
         {
             await jwtService.RevokeToken(accessToken);
             return new ApiSuccessResult("Đăng xuất thành công");
+        }
+
+        public async Task<ApiResult> RefreshPassword(ResetPasswordDTO data)
+        {
+            User user = await userRepository.Get(e => e.Email == data.Email)
+                ?? throw new BadRequestException("Người dùng không tồn tại");
+
+            // Get code in redis to check valid
+            string? code = await redisService.Get(type: KeySet.RedisType.RESET_PASS, key: user.Id.ToString());
+            if (string.IsNullOrEmpty(code) || code != data.Code) 
+                throw new BadRequestException("Mã xác thực không hợp lệ.");
+
+            // reset pass
+            user.Password = Generator.HashPassword(data.Password);
+            userRepository.Update(user);
+            await userRepository.Save();
+
+            // free up redis memory space
+            await redisService.Delete(type: KeySet.RedisType.RESET_PASS, key: user.Id.ToString());
+
+            return new ApiSuccessResult("Thay đổi mật khẩu thành công");
         }
 
         public async Task<ApiResult<JwtTokenDTO>> RefreshToken(TokenDTO data)
@@ -135,16 +186,37 @@ namespace Core.Services.Impl
         {
             User user = await userRepository.Get(Guid.Parse(userId))
                 ?? throw new BadRequestException("Người dùng không tồn tại");
+
+            // Need to check if user email is confirmed
+            if(user.IsEmailComfirmed)
+                throw new BadRequestException("Email đã được xác thực.");
+
             if (!await AuthenticateUserEmail(user))
                 throw new InternalServerErrorException("Gửi thất bại, vui lòng thử lại.");
 
             return new ApiSuccessResult("Gửi thành công");
         }
 
+        public async Task<ApiResult> SendResetPassAuthCode(string email)
+        {
+            User user = await userRepository.Get(e => e.Email == email)
+                ?? throw new BadRequestException("Người dùng không tồn tại");
+
+            // Generate 6 digit chars, save to redis and send to user email
+            string code = Generator.GenerateRandomToken("0123456789", 6);
+            int ttl = authConfig.ResetPassAuthCodeTTL;
+            if (!await redisService.Set(KeySet.RedisType.RESET_PASS, user.Id.ToString(), code, TimeSpan.FromMinutes(ttl)))
+                throw new InternalServerErrorException("Đã có lỗi xảy ra, vui lòng thử lại.");
+            if (!await mailService.SendAuthenticationCodeViaEmail(email, code, ttl, "refresh_password.html"))
+                throw new InternalServerErrorException("Gửi mã thất bại, vui lòng thử lại.");
+
+            return new ApiSuccessResult("Đã gửi mã xác thực.");
+        }
+
         public async Task<ApiResult> ValidateEmailByCode(ConfirmEmailDTO data)
         {
             // validate code from redis
-            string? validCode = await redisService.Get("authentication_email_code", data.UserId);
+            string? validCode = await redisService.Get(KeySet.RedisType.CONFIRM_EMAIL, data.UserId);
             if (validCode is null || validCode != data.Code)
                 throw new BadRequestException("Mã xác thực không chính xác!");
 
@@ -164,17 +236,17 @@ namespace Core.Services.Impl
         private async Task<bool> AuthenticateUserEmail(User user)
         {
             string authenticationCode = Generator.GenerateRandomToken(src: "0123456789", len: 6);
-            int ttl = int.Parse(configuration.GetSection("AuthConfig")["AuthenticationCodeTTL"]);
+            int ttl = authConfig.ConfirmEmailAuthCodeTTL;
             // Use redis to save authentication code
             bool saveStatus = await redisService.Set(
-                "authentication_email_code", 
+                KeySet.RedisType.CONFIRM_EMAIL, 
                 user.Id.ToString(), 
                 authenticationCode, 
                 TimeSpan.FromMinutes(ttl));
             if (!saveStatus) return false;
 
             // send mail
-            return await mailService.SendAuthenticationCodeViaEmail(user.Email, authenticationCode, ttl);
+            return await mailService.SendAuthenticationCodeViaEmail(user.Email, authenticationCode, ttl, "confirm_email.html");
         }
     }
 }

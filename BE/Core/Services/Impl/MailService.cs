@@ -1,6 +1,8 @@
-﻿using Core.Utilities;
+﻿using Core.Configurations;
+using Core.Utilities;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using MimeKit;
 using System;
 using System.Collections.Generic;
@@ -12,26 +14,18 @@ namespace Core.Services.Impl
 {
     public class MailService : IMailService
     {
-        private readonly IConfiguration config;
+        private readonly MailConfig mailConfig;
         private readonly IStorageService storageService;
-        private string host;
-        private int port;
-        private string systemEmailAddress;
-        private string systemEmailPassword;
 
-        public MailService(IConfiguration config, IStorageService storageService)
+        public MailService(IOptions<MailConfig> config, IStorageService storageService)
         {
-            this.config = config;
-            this.host = config.GetSection("MailConfig")["Host"];
-            this.port = int.Parse(config.GetSection("MailConfig")["Port"]);
-            this.systemEmailAddress = Environment.GetEnvironmentVariable("SystemEmailAddress")!;
-            this.systemEmailPassword = Environment.GetEnvironmentVariable("SystemEmailPassword")!;
+            this.mailConfig = config.Value;
             this.storageService = storageService;
         }
 
-        public async Task<bool> SendAuthenticationCodeViaEmail(string email, string code, int ttl_minutes)
+        public async Task<bool> SendAuthenticationCodeViaEmail(string email, string code, int ttl_minutes, string templateFileName)
         {
-            string template = await storageService.GetHtmlTemplate("confirm_email.html");
+            string template = await storageService.GetHtmlTemplate(templateFileName);
             template = template.Replace("[auth-code]", code);
             template = template.Replace("[ttl_minutes]", ttl_minutes.ToString());
             return await SendMail(email, "Nhập mã xác thực", template);
@@ -44,7 +38,7 @@ namespace Core.Services.Impl
                 // Create a mail contain
                 MimeMessage mail = new();
                 mail.Subject = subject;
-                mail.From.Add(new MailboxAddress("ZShop", systemEmailAddress));
+                mail.From.Add(new MailboxAddress("ZShop", EnvHelper.GetSystemEmail()));
                 mail.To.Add(MailboxAddress.Parse(receiver));
                 mail.Body = new TextPart(MimeKit.Text.TextFormat.Html)
                 {
@@ -53,8 +47,8 @@ namespace Core.Services.Impl
 
                 // Connect to mail server and send mail
                 using var smtpClient = new SmtpClient();
-                smtpClient.Connect(host, port, MailKit.Security.SecureSocketOptions.StartTls);
-                smtpClient.Authenticate(systemEmailAddress, systemEmailPassword);
+                smtpClient.Connect(mailConfig.Host, mailConfig.Port, MailKit.Security.SecureSocketOptions.StartTls);
+                smtpClient.Authenticate(EnvHelper.GetSystemEmail(), EnvHelper.GetSystemEmailPassword());
                 await smtpClient.SendAsync(mail);
                 smtpClient.Disconnect(true);
 

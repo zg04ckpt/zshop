@@ -36,12 +36,12 @@ namespace Core.Utilities
                 User admin = new()
                 {
                     Id = Guid.NewGuid(),
-                    FirstName = Environment.GetEnvironmentVariable("FirstName")!,
-                    LastName = Environment.GetEnvironmentVariable("LastName")!,
-                    Email = Environment.GetEnvironmentVariable("AdminEmail")!,
-                    UserName = Environment.GetEnvironmentVariable("AdminUserName")!,
-                    GenderId = (await genderRepository.Get(e => e.Value.ToLower() == "UnSet"))!.Id,
-                    Password = Generator.HashPassword(Environment.GetEnvironmentVariable("AdminPassword")!),
+                    FirstName = "Nguyên",
+                    LastName = "Hoàng",
+                    Email = EnvHelper.GetAdminEmail(),
+                    UserName = EnvHelper.GetAdminUserName(),
+                    GenderId = (await genderRepository.Get(e => e.Value.ToLower() == "unset"))!.Id,
+                    Password = Generator.HashPassword(EnvHelper.GetAdminPassword()),
                     PhoneNumber = "0000000000",
                     IsEmailComfirmed = true,
                     IsActivated = true,

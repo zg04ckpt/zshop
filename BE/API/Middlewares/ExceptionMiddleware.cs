@@ -37,6 +37,11 @@ namespace API.Middlewares
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 await context.Response.WriteAsync(JsonConvert.SerializeObject(new ApiErrorResult(ex)));
             }
+            else if (ex is LockedException)
+            {
+                context.Response.StatusCode = StatusCodes.Status423Locked;
+                await context.Response.WriteAsync(JsonConvert.SerializeObject(new ApiErrorResult(ex)));
+            }
             else
             {
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;

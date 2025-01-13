@@ -26,6 +26,19 @@ namespace Core.Services.Impl
             return await redis.GetDatabase().StringGetAsync($"{type}:{key}");
         }
 
+        /// <summary>
+        /// Get time to live of key
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="key"></param>
+        /// <returns>-1 if key is not exist, else return remaining time</returns>
+        public async Task<long> GetTTL(string type, string key)
+        {
+            TimeSpan? ttl = await redis.GetDatabase().KeyTimeToLiveAsync($"{type}:{key}");
+            if (ttl is null) return -1;
+            return (long)ttl.Value.TotalSeconds;
+        }
+
         public async Task<bool> IsExists(string type, string key)
         {
             return await redis.GetDatabase().KeyExistsAsync($"{type}:{key}");

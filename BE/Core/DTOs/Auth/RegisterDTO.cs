@@ -18,7 +18,8 @@ namespace Core.DTOs.Auth
         public string LastName { get; set; }
 
         [Required(ErrorMessage = "Vui lòng điền tên tài khoản.")]
-        [RegularExpression("^[a-zA-Z0-9]{4,16}$", ErrorMessage = "Tên người dùng chỉ được chứa chữ cái (không dấu), chữ số và dài 4-16 kí tự.")]
+        [RegularExpression("^[a-zA-Z0-9]{4,16}$", 
+            ErrorMessage = "Tên người dùng chỉ được chứa chữ cái (không dấu), chữ số và dài 4-16 kí tự.")]
         public string UserName { get; set; }
 
         [Required(ErrorMessage = "Vui lòng điền email.")]
@@ -30,9 +31,11 @@ namespace Core.DTOs.Auth
         public string PhoneNumber { get; set; }
 
         [Required(ErrorMessage = "Vui lòng điền mật khẩu.")]
-        [RegularExpression("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9]{8,16}$", ErrorMessage = "Mật khẩu phải chứa chữ cái in thường, in hoa, chữ số và dài từ 8-16 kí tự")]
+        [RegularExpression("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9!.#@$-]{8,16}$", 
+            ErrorMessage = "Mật khẩu phải chứa chữ cái in thường, in hoa, chữ số và dài từ 8-16 kí tự, có thể chứa kí tự đặc biệt (!.#@$-)")]
         public string Password { get; set; }
 
+        [Required(ErrorMessage = "Vui lòng điền mật khẩu xác nhận.")]
         [Compare("Password", ErrorMessage = "Mật khẩu xác nhận không đúng.")]
         public string ConfirmPassword { get; set; }
     }

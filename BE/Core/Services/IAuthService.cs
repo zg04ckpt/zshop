@@ -17,5 +17,7 @@ namespace Core.Services
         Task<ApiResult> ResendConfirmEmailCode(string userId);
         Task<ApiResult> ValidateEmailByCode(ConfirmEmailDTO data);
         Task<ApiResult<JwtTokenDTO>> RefreshToken(TokenDTO data);
+        Task<ApiResult> SendResetPassAuthCode(string email);
+        Task<ApiResult> RefreshPassword(ResetPasswordDTO data);
     }
 }

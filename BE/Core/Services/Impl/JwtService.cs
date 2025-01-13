@@ -1,6 +1,9 @@
-﻿using Core.DTOs.Auth;
+﻿using Core.Configurations;
+using Core.DTOs.Auth;
+using Core.Utilities;
 using Data.Entities.System;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -15,12 +18,12 @@ namespace Core.Services.Impl
 {
     public class JwtService : IJwtService
     {
-        private readonly IConfiguration config;
         private readonly IRedisService redisService;
+        private readonly JwtConfig jwtConfig;
 
-        public JwtService(IConfiguration config, IRedisService redisService)
+        public JwtService(IOptions<JwtConfig> config, IRedisService redisService)
         {
-            this.config = config;
+            this.jwtConfig = config.Value;
             this.redisService = redisService;
         }
 
@@ -34,17 +37,17 @@ namespace Core.Services.Impl
             userRoleNames.ForEach(e => claims.Add(new(ClaimTypes.Role, e)));
 
             // Prepare token key from secret key
-            byte[] bytes = Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("SecretKey")!);
+            byte[] bytes = Encoding.UTF8.GetBytes(EnvHelper.GetSecretKey());
             SymmetricSecurityKey tokenKey = new(bytes);
 
             // Expiration time
-            DateTime expireAt = DateTime.Now.AddMinutes(double.Parse(config.GetSection("JwtConfig")["AccessTokenTTL"]));
+            DateTime expireAt = DateTime.Now.AddMinutes(jwtConfig.AccessTokenTTL);
 
             // Gen new access token & refresh token
             JwtSecurityToken token = new
             (
-                issuer: config.GetSection("JwtConfig")["Issuer"],
-                audience: config.GetSection("JwtConfig")["Audience"],
+                issuer: jwtConfig.Issuer,
+                audience: jwtConfig.Audience,
                 signingCredentials: new SigningCredentials(tokenKey, SecurityAlgorithms.HmacSha256),
                 claims: claims,
                 expires: expireAt
@@ -56,15 +59,15 @@ namespace Core.Services.Impl
             if (isLogin)
             {
                 redisService.Set(
-                    "valid_refresh_token",
+                    KeySet.RedisType.REFRESH_TOKEN,
                     user.Id.ToString(), 
                     refreshToken, 
-                    TimeSpan.FromMinutes(int.Parse(config.GetSection("JwtConfig")["RefreshTokenTTL"])));
+                    TimeSpan.FromMinutes(jwtConfig.RefreshTokenTTL));
             }
             else
             {
                 // If this is refresh access token => update new refresh token
-                redisService.UpdateAndKeepTTL("valid_refresh_token", user.Id.ToString(), refreshToken);
+                redisService.UpdateAndKeepTTL(KeySet.RedisType.REFRESH_TOKEN, user.Id.ToString(), refreshToken);
             }    
 
             return new JwtTokenDTO
@@ -88,15 +91,15 @@ namespace Core.Services.Impl
         public ClaimsPrincipal? ValidateAccessToken(string accessToken)
         {
             // Prepare params to validate expired accesstoken 
-            byte[] bytes = Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("SecretKey")!);
+            byte[] bytes = Encoding.UTF8.GetBytes(EnvHelper.GetSecretKey());
             SymmetricSecurityKey key = new(bytes);
             TokenValidationParameters param = new()
             {
                 ValidateIssuer = true,
-                ValidIssuer = config.GetSection("JwtConfig")["Issuer"],
+                ValidIssuer = jwtConfig.Issuer,
 
                 ValidateAudience = true,
-                ValidAudience = config.GetSection("JwtConfig")["Audience"],
+                ValidAudience = jwtConfig.Audience,
 
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = key,
@@ -123,18 +126,18 @@ namespace Core.Services.Impl
         {
             // save access token to backlist
             await redisService.Set(
-                "revoked_access_token",
+                KeySet.RedisType.REVOKED_ACCESS_TOKEN,
                 accessToken, "-", 
-                TimeSpan.FromMinutes(int.Parse(config.GetSection("JwtConfig")["AccessTokenTTL"])));
+                TimeSpan.FromMinutes(jwtConfig.AccessTokenTTL));
 
-            // remove refresh token to free memory
+            // remove refresh token to free up memory
             ClaimsPrincipal claim = ValidateAccessToken(accessToken)!;
-            await redisService.Delete("valid_refresh_token", claim.FindFirstValue(ClaimTypes.NameIdentifier));
+            await redisService.Delete(KeySet.RedisType.REFRESH_TOKEN, claim.FindFirstValue(ClaimTypes.NameIdentifier));
         }
 
         public async Task<bool> ValidateRefreshToken(string userId, string refreshToken)
         {
-            string? token = await redisService.Get("valid_refresh_token", userId);
+            string? token = await redisService.Get(KeySet.RedisType.REFRESH_TOKEN, userId);
             if (token is null ||  !token.Equals(refreshToken))
                 return false;
             return true;
@@ -142,7 +145,7 @@ namespace Core.Services.Impl
 
         public async Task<bool> IsRevokedToken(string accessToken)
         {
-            return await redisService.IsExists("revoked_access_token", accessToken);
+            return await redisService.IsExists(KeySet.RedisType.REVOKED_ACCESS_TOKEN, accessToken);
         }
     }
 }

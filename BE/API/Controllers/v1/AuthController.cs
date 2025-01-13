@@ -44,8 +44,8 @@ namespace API.Controllers.v1
             return Ok(await authService.LogOut(accessToken));
         }
 
-        [HttpPost("resend-auth-code")]
-        public async Task<IActionResult> ResendAuthenticationCode([FromBody] ResendEmailAuthCodeDTO data)
+        [HttpPost("resend-confirm-mail-auth-code")]
+        public async Task<IActionResult> ResendConfirmEmailAuthenticationCode([FromBody] ResendEmailAuthCodeDTO data)
         {
             return Ok(await authService.ResendConfirmEmailCode(data.UserId));
         }
@@ -54,6 +54,18 @@ namespace API.Controllers.v1
         public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailDTO data)
         {
             return Ok(await authService.ValidateEmailByCode(data));
+        }
+
+        [HttpPost("send-reset-pass-auth-code")]
+        public async Task<IActionResult> SendResetPassAuthenticationCode([FromBody] SendResetPassAuthCodeDTO data)
+        {
+            return Ok(await authService.SendResetPassAuthCode(data.Email));
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO data)
+        {
+            return Ok(await authService.RefreshPassword(data));
         }
     }
 }
