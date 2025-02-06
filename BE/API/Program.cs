@@ -1,5 +1,6 @@
-using API.Middlewares;
+﻿using API.Middlewares;
 using Core.Configurations;
+using Core.DTOs.Common;
 using Core.Repositories;
 using Core.Repositories.Impl;
 using Core.Services;
@@ -7,6 +8,7 @@ using Core.Services.Impl;
 using Core.Utilities;
 using Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
@@ -62,7 +64,21 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("OnlyAdmin", policy => policy.RequireClaim(ClaimTypes.Role, "Admin"));
-}); 
+});
+
+// Add cor
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(
+        "AllowWebClient",
+        builder => builder
+        .WithOrigins(config.GetSection("AllowedHosts")["Web"])
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials());
+});
+
+
 
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IRoleRepository, RoleRepository>();
@@ -71,7 +87,9 @@ builder.Services.AddTransient<IGenderRepository, GenderRepository>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 
 builder.Services.AddSingleton<ExceptionMiddleware>();
+builder.Services.AddSingleton<ValidationMiddleware>();
 builder.Services.AddSingleton<JwtMiddleware>();
+
 builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddSingleton<IRedisService, RedisService>();
 builder.Services.AddSingleton<IStorageService, StorageService>();
@@ -81,6 +99,28 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    // Change validation error response
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        // Get errors
+        var errors = context.ModelState
+            .Where(entry => entry.Value.Errors.Count > 0)
+            .ToDictionary(
+                entry => entry.Key,
+                entry => entry.Value.Errors.Select(e => e.ErrorMessage).ToArray() // Danh sách lỗi
+            );
+
+        return new BadRequestObjectResult(Helper.ToJsonString(new ApiErrorResult
+        {
+            IsSuccess = false,
+            Errors = errors,
+            Message = "Định dạng không hợp lệ."
+        }));
+    };
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -89,6 +129,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("AllowWebClient");
 
 app.UseHttpsRedirection();
 

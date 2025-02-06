@@ -1,0 +1,9 @@
+.history .tab .tab-item:hover {
+    color: #c80808;
+    cursor: pointer;
+}
+
+.history .tab .tab-item.selected {
+    color: #c80808;
+    border-bottom: 2px solid #c80808;
+}

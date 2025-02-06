@@ -1,0 +1,29 @@
+button {
+    border-radius: 0px;
+    border: 0;
+    box-shadow: 0 0 2px gray;
+    font-weight: 300;
+    background-color: white;
+    padding: 0px;
+}
+
+button .content {
+    padding: 2px 4px;
+    font-size: 12px;
+}
+
+button:hover {
+    opacity: 0.8;
+    background-color: rgba(128, 128, 128, 0.302);
+}
+
+button .loading {
+    /* background-color: rgba(222, 221, 221, 0.458); */
+    color: #000000;
+    /* pointer-events: none; */
+}
+
+button:disabled {
+    pointer-events: none; 
+    opacity: 0.6; 
+}

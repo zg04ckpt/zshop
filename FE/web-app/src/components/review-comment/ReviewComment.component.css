@@ -1,0 +1,39 @@
+.header * {
+    font-size: 14px;
+}
+
+.rate i {
+    color: #f7d80b;
+    font-size: 12px;
+}
+
+.rate .rate-float {
+    font-size: 12px;
+}
+
+.review-video img, img.review-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+}
+
+.review-video .review-video-tag {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 14px;
+    background-color: rgba(0, 0, 0, 0.49);
+    position: absolute;
+    bottom: 0px;
+}
+
+.review-video .review-video-tag i {
+    font-size: 12px;
+    color: white;
+    margin-left: 2px;
+}
+
+.review-video .review-video-tag .duration {
+    font-size: 12px;
+    color: white;
+}

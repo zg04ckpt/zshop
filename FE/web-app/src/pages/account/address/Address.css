@@ -1,0 +1,37 @@
+.address .address-option {
+    border: 1px #dedede solid;
+    border-radius: 5px;
+}
+
+.address .change-address {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 5px;
+
+}
+
+.address .change-address i:hover {
+    color: red;
+    cursor: pointer;
+    transform: scale(1.2);
+}
+
+.address .address-option.default {
+    border: 1px #c80808 solid;
+    position: relative;
+}
+
+.address .address-option.default::after {
+    content: 'Mặc định';
+    position: absolute;
+    top: 0;
+    left: 30px;
+    transform: translateY(-50%);
+    font-size: 14px;
+    display: block;
+    background-color: white;
+    color: #c80808;
+    font-weight: bold;
+    padding: 0px 4px;
+}

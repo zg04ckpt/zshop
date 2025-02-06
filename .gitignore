@@ -1,5 +1,11 @@
+# React
+**/node_modules
+
 # .NET
 .vs
 **/bin
 **/obj
 **/appsettings.Development.json
+
+# Angular
+**/Web

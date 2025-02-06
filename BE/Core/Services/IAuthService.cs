@@ -11,7 +11,7 @@ namespace Core.Services
 {
     public interface IAuthService
     {
-        Task<ApiResult<RegisterResponseDTO>> Register(RegisterDTO data);
+        Task<ApiResult<string>> Register(RegisterDTO data);
         Task<ApiResult<LoginResponseDTO>> LogIn(LoginDTO data);
         Task<ApiResult> LogOut(string accessToken);
         Task<ApiResult> ResendConfirmEmailCode(string userId);

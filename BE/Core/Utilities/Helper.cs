@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -7,8 +8,10 @@ using System.Threading.Tasks;
 
 namespace Core.Utilities
 {
-    public class Generator
+    public class Helper
     {
+        public static string ToJsonString(object data) => JsonConvert.SerializeObject(data);
+
         public static string HashPassword(string password)
         {
             using var hasher = new HMACSHA256(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("SecretKey")!));

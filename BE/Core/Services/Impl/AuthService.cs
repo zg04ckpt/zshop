@@ -63,7 +63,7 @@ namespace Core.Services.Impl
             // Limit incorrect password times
             // 16d2581c155ca7741af54d3f48bebc0d0ef79d895354c254c40ee649657c19e3
             var maxFailCount = authConfig.MaxFailedAttempts;
-            if (Generator.HashPassword(data.Password) != user.Password)
+            if (Helper.HashPassword(data.Password) != user.Password)
             {
                 user.AccessFailedCount++;
                 if (user.AccessFailedCount > maxFailCount)
@@ -125,7 +125,7 @@ namespace Core.Services.Impl
                 throw new BadRequestException("Mã xác thực không hợp lệ.");
 
             // reset pass
-            user.Password = Generator.HashPassword(data.Password);
+            user.Password = Helper.HashPassword(data.Password);
             userRepository.Update(user);
             await userRepository.Save();
 
@@ -155,7 +155,7 @@ namespace Core.Services.Impl
             return new ApiSuccessResult<JwtTokenDTO>(token);
         }
 
-        public async Task<ApiResult<RegisterResponseDTO>> Register(RegisterDTO data)
+        public async Task<ApiResult<string>> Register(RegisterDTO data)
         {
             // check duplication 
             if (await userRepository.IsExists(e => e.UserName.ToLower() == data.UserName.ToLower()))
@@ -177,9 +177,9 @@ namespace Core.Services.Impl
 
             // save when success all and response with created user id
             await userRepository.Save();
-            return new ApiSuccessResult<RegisterResponseDTO>(
-                "Đăng kí tài khoản thành công, vui lòng kiểm tra email đăng kí để lấy mã xác thực tài khoản.", 
-                new RegisterResponseDTO { UserId = user.Id.ToString() });
+            return new ApiSuccessResult<string>(
+                "Đăng kí tài khoản thành công, vui lòng kiểm tra email đăng kí để lấy mã xác thực tài khoản.",
+                user.Id.ToString());
         }
 
         public async Task<ApiResult> ResendConfirmEmailCode(string userId)
@@ -203,7 +203,7 @@ namespace Core.Services.Impl
                 ?? throw new BadRequestException("Người dùng không tồn tại");
 
             // Generate 6 digit chars, save to redis and send to user email
-            string code = Generator.GenerateRandomToken("0123456789", 6);
+            string code = Helper.GenerateRandomToken("0123456789", 6);
             int ttl = authConfig.ResetPassAuthCodeTTL;
             if (!await redisService.Set(KeySet.RedisType.RESET_PASS, user.Id.ToString(), code, TimeSpan.FromMinutes(ttl)))
                 throw new InternalServerErrorException("Đã có lỗi xảy ra, vui lòng thử lại.");
@@ -235,7 +235,7 @@ namespace Core.Services.Impl
 
         private async Task<bool> AuthenticateUserEmail(User user)
         {
-            string authenticationCode = Generator.GenerateRandomToken(src: "0123456789", len: 6);
+            string authenticationCode = Helper.GenerateRandomToken(src: "0123456789", len: 6);
             int ttl = authConfig.ConfirmEmailAuthCodeTTL;
             // Use redis to save authentication code
             bool saveStatus = await redisService.Set(

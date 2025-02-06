@@ -41,7 +41,7 @@ namespace Core.Utilities
                     Email = EnvHelper.GetAdminEmail(),
                     UserName = EnvHelper.GetAdminUserName(),
                     GenderId = (await genderRepository.Get(e => e.Value.ToLower() == "unset"))!.Id,
-                    Password = Generator.HashPassword(EnvHelper.GetAdminPassword()),
+                    Password = Helper.HashPassword(EnvHelper.GetAdminPassword()),
                     PhoneNumber = "0000000000",
                     IsEmailComfirmed = true,
                     IsActivated = true,

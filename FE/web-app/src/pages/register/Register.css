@@ -1,0 +1,27 @@
+.register button {
+    height: 30px;
+    font-size: 14px;
+    width: 160px;
+}
+
+
+
+.register .act-text {
+    color: rgb(0, 166, 255);
+    cursor: pointer;
+}
+
+.register label {
+    font-weight: lighter;
+}
+
+.register label.required::before {
+    content: '* ';
+    color: red;
+    font-weight: bold;
+}
+
+.register img {
+    width: 100px;
+    height: 100px;
+}

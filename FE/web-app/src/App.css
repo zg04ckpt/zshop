@@ -1,0 +1,95 @@
+
+
+.vertical-scrollable {
+  overflow-y: auto;
+}
+
+.vertical-scrollable::-webkit-scrollbar {
+  width: 8px; /* Đặt chiều rộng của thanh cuộn */
+}
+
+.horizontal-scrollable {
+  overflow-x: auto;
+}
+
+.horizontal-scrollable::-webkit-scrollbar {
+  height: 8px; /* Đặt chiều cao của thanh cuộn */
+}
+
+.scrollable:hover::-webkit-scrollbar-thumb {
+  background-color: #888;
+}
+
+.scrollable::-webkit-scrollbar-button {
+  display: none; /* Ẩn các nút mũi tên */
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+  background-color: unset; /* Màu của thanh cuộn */
+  border-radius: 0px; /* Bo tròn các góc của thanh cuộn */
+}
+
+.max-1-line {
+  display: -webkit-box;
+  -webkit-line-clamp: 1; /* Số dòng tối đa */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.max-3-lines {
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Số dòng tối đa */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+input, select {
+  border: 1px solid #dedede;
+  border-radius: 3px;
+  padding: 2px 4px;
+  color: rgb(83, 83, 83);
+}
+
+input:focus, select:focus {
+  outline: 0;
+  border: 1px solid #2d2d2d;
+  color: #2d2d2d;
+}
+
+.pointer-hover:hover {
+  cursor: pointer;
+}
+
+.action-text {
+  text-decoration: none;
+  color: black;
+}
+
+.action-text:hover {
+  color: aqua;
+  cursor: pointer;
+}
+
+.label {
+  border-left: 4px aqua solid;
+  padding-left: 4px;
+}
+
+.dropdown-item:hover {
+  cursor: pointer;
+}
+
+.cover-all-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(128, 128, 128, 0.3);
+  z-index: 100;
+}
+
+
+

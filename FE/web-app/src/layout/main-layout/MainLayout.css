@@ -1,0 +1,7 @@
+.MainLayout {
+    background-color: #edf1f5;
+}
+
+.page {
+    min-height: calc(100vh - 60px);
+}
