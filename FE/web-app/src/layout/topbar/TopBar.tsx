@@ -4,6 +4,7 @@ import band from "../../assets/images/band.png"
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/images/test-img.jpg"
 import { toast } from "react-toastify";
+import Button from "../../components/button/Button.component";
 
 const TopBar = () => {
     const navigate = useNavigate();
@@ -22,12 +23,18 @@ const TopBar = () => {
                         <i className='position-relative bx bx-cart me-3 fw-bold cart' onClick={() => navigate('cart')} style={{fontSize: '28px'}}>
                             <div className="cart-count">2</div>
                         </i>
-                        <div className="me-2">Xin chào Nguyên!</div>
-                        <img src={logo} alt="" className="avt pointer-hover" data-bs-toggle="dropdown"/>
+
+                        {/* <div className="me-2">Xin chào Nguyên!</div>
+                        <img src={logo} alt="" className="avt pointer-hover" data-bs-toggle="dropdown"/> */}
+
+                        <Button label="Đăng nhập" className="me-1" onClick={() => {}}></Button>
+                        <Button label="Đăng kí" className="me-1" onClick={() => {}}></Button>
+
                         {/* Option */}
                         <div className="dropdown-menu rounded-0 py-0">
                             <div className="dropdown-item" onClick={() => navigate('/register')}><i className='bx bx-user-plus'></i> Đăng kí</div>
                             <div className="dropdown-item"><i className='bx bx-log-in'></i> Đăng nhập</div>
+                            <div className="dropdown-item" onClick={() => navigate('/admin')}><i className='bx bx-sushi'></i> Quản trị</div>
                             <div className="dropdown-item" onClick={() => navigate('/account')}><i className='bx bx-cog'></i> Quản lí</div>
                             <div className="dropdown-item"><i className='bx bx-log-out'></i> Đăng xuất</div>
                         </div>

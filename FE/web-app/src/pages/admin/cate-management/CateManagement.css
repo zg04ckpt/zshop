@@ -1,0 +1,52 @@
+.cate-management table thead th {
+    border-bottom: 1px solid #dedede;
+}
+
+.cate-management * {
+    font-size: 14px;
+}
+
+.cate-management table tbody tr:hover {
+    background-color: #dedede70;
+}
+
+.cate-management table td {
+    align-content: start;
+}
+
+.cate-management .action i {
+    border: 1px #dedede solid;
+    padding: 2px;
+    margin: 0px 2px;
+}
+
+.cate-management .action i:hover {
+    color: white;
+    background-color: black;
+    cursor: pointer;
+}
+
+.cate-management img {
+    height: 200px;
+    padding: 5px;
+}
+
+.cate-management .filter {
+    height: 36px;
+}
+
+.cate-management .search-btn {
+    border: 1px solid #dedede;
+    padding: 5px;
+}
+
+.cate-management .search-btn:hover {
+    color: white;
+    background-color: black;
+    cursor: pointer;
+}
+
+.cate-management .filter-dialog .filter {
+    width: 400px;
+    margin-top: 80px;
+}

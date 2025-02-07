@@ -15,7 +15,12 @@ import Register from './pages/register/Register';
 import { ToastContainer } from 'react-toastify';
 import LoginDialog from './components/login-dialog/LoginDialog.component';
 import ConfirmEmail from './pages/confirm-email/ConfirmEmail';
-import Search from './pages/Search/Search';
+import Search from './pages/search/Search';
+import AdminLayout from './pages/admin/AdminLayout';
+import Overview from './pages/admin/overview/Overview';
+import ProductManagement from './pages/admin/product-management/ProductManagement';
+import UserManagement from './pages/admin/user-management/UserManagement';
+import CateManagement from './pages/admin/cate-management/CateManagement';
 
 const router = createBrowserRouter([{ 
     path: '/',
@@ -35,6 +40,13 @@ const router = createBrowserRouter([{
       { path: 'register', element: <Register/> },
       { path: 'confirm-email', element: <ConfirmEmail/> },
       { path: 'cart', element: <Cart/> },
+      { path: 'admin', element: <AdminLayout/>, children: [
+        { index: true, element: <Overview/> },
+        { path: 'product', element: <ProductManagement/> },
+        { path: 'user', element: <UserManagement/> },
+        { path: 'cate', element: <CateManagement/> },
+      ]},
+
       { path: 'test', element: <Test/> },
 
     ] 

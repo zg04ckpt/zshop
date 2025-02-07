@@ -1,0 +1,52 @@
+.product-management table thead th {
+    border-bottom: 1px solid #dedede;
+}
+
+.product-management * {
+    font-size: 14px;
+}
+
+.product-management table tbody tr:hover {
+    background-color: #dedede70;
+}
+
+.product-management table td {
+    align-content: start;
+}
+
+.product-management .action i {
+    border: 1px #dedede solid;
+    padding: 2px;
+    margin: 0px 2px;
+}
+
+.product-management .action i:hover {
+    color: white;
+    background-color: black;
+    cursor: pointer;
+}
+
+.product-management img {
+    height: 200px;
+    padding: 5px;
+}
+
+.product-management .filter {
+    height: 36px;
+}
+
+.product-management .search-btn {
+    border: 1px solid #dedede;
+    padding: 5px;
+}
+
+.product-management .search-btn:hover {
+    color: white;
+    background-color: black;
+    cursor: pointer;
+}
+
+.product-management .filter-dialog .filter {
+    width: 400px;
+    margin-top: 80px;
+}
