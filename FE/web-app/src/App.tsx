@@ -13,7 +13,6 @@ import Address from './pages/account/address/Address';
 import History from './pages/account/history/History';
 import Register from './pages/register/Register';
 import { ToastContainer } from 'react-toastify';
-import LoginDialog from './components/login-dialog/LoginDialog.component';
 import ConfirmEmail from './pages/confirm-email/ConfirmEmail';
 import Search from './pages/search/Search';
 import AdminLayout from './pages/admin/AdminLayout';

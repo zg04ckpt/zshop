@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import './LoginDialog.component.css';
-import ValidationInput from "../validation-input/ValidationInput.component";
+import ValidationInput from "../../components/validation-input/ValidationInput.component";
 
 const LoginDialog = () => {
     const [value2, setValue2] = useState<string>('');
