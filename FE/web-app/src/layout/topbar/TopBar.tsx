@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import './TopBar.css'
 import band from "../../assets/images/band.png"
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/images/test-img.jpg"
 import { toast } from "react-toastify";
 import Button from "../../components/button/Button.component";
+import { useLoginDialog } from "../../features/login/LoginDialog.context";
 
 const TopBar = () => {
     const navigate = useNavigate();
+    const { showLoginDialog: show } = useLoginDialog();
 
     return (
         <div>
@@ -27,7 +29,7 @@ const TopBar = () => {
                         {/* <div className="me-2">Xin chào Nguyên!</div>
                         <img src={logo} alt="" className="avt pointer-hover" data-bs-toggle="dropdown"/> */}
 
-                        <Button label="Đăng nhập" className="me-1" onClick={() => {}}></Button>
+                        <Button label="Đăng nhập" className="me-1" onClick={() => show()}></Button>
                         <Button label="Đăng kí" className="me-1" onClick={() => {}}></Button>
 
                         {/* Option */}

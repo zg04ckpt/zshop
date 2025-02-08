@@ -11,7 +11,7 @@ import AccountLayout from './pages/account/AccountLayout';
 import AccountInfo from './pages/account/account-info/AccountInfo';
 import Address from './pages/account/address/Address';
 import History from './pages/account/history/History';
-import Register from './pages/register/Register';
+import Register from './features/register/Register.page';
 import { ToastContainer } from 'react-toastify';
 import ConfirmEmail from './pages/confirm-email/ConfirmEmail';
 import Search from './pages/search/Search';
@@ -20,6 +20,8 @@ import Overview from './pages/admin/overview/Overview';
 import ProductManagement from './pages/admin/product-management/ProductManagement';
 import UserManagement from './pages/admin/user-management/UserManagement';
 import CateManagement from './pages/admin/cate-management/CateManagement';
+import LoginDialog from './features/login/LoginDialog.component';
+import { LoginDialogProvider } from './features/login/LoginDialog.context';
 
 const router = createBrowserRouter([{ 
     path: '/',
@@ -55,20 +57,18 @@ function App() {
   return (
     <>
       {/* Toast */}
-      <ToastContainer 
-        position="top-right" 
-        autoClose={2000} 
-        hideProgressBar={false} 
-        newestOnTop={false} 
-        closeOnClick
+      <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} newestOnTop={false} closeOnClick
         rtl={false}
         // pauseOnFocusLoss
         draggable
         pauseOnHover={false}
         theme="light"/>
-        
-      <RouterProvider router={router}></RouterProvider>
-      {/* <LoginDialog/> */}
+
+      <LoginDialogProvider>
+        <RouterProvider router={router}>
+        </RouterProvider>
+        <LoginDialog />
+      </LoginDialogProvider>
     </>
   );
 }

@@ -20,7 +20,7 @@ const ConfirmEmail = () => {
     return (
         <div className="confirm-email-dialog mt-3">
             <div className="card card-body rounded-0 p-3 position-absolute start-50 translate-middle-x">
-                <Loading/>
+                <Loading isShow={true} />
                 <h2 className="fw-bolder text-center">Xác thực email</h2>
                 <div className="px-2 mt-0 text-center">
                     <p className="fw-light text-center">Vui lòng nhập mã xác thực 6 số được gửi đến nguyen1402ckpt2k4@gmail.com</p>
