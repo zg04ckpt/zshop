@@ -1,5 +1,7 @@
 # React
 **/node_modules
+**/.vscode
+**/.env.development
 
 # .NET
 .vs
@@ -7,5 +9,6 @@
 **/obj
 **/appsettings.Development.json
 
-# Angular
+# Common
 **/Web
+.github

@@ -99,12 +99,17 @@ namespace Core.Services.Impl
 
             return new ApiSuccessResult<LoginResponseDTO>(new LoginResponseDTO
             {
-                UserName = user.UserName,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                AvatarUrl = user.AvatarUrl,
+                
+                User = new UserDTO
+                {
+                    UserId = user.Id.ToString(),
+                    UserName = user.UserName,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    AvatarUrl = user.AvatarUrl,
+                    Roles = roles
+                },
                 Token = token,
-                Roles = roles
             });
         }
 
