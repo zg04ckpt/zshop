@@ -1,5 +1,5 @@
 import React from "react";
-import "./Pagination.component.css"
+import "./Pagination.css"
 import { BaseProp } from "../../model/base-prop.model";
 
 type PaginationProp = BaseProp & {

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import './History.css';
-import Button from "../../../components/button/Button.component";
-import ProductItem from "../../../components/product-item/ProductItem.component";
-import Pagination from "../../../components/pagination/Pagination.component";
+import Button from "../../../components/button/Button";
+import ProductItem from "../../../components/product-item/ProductItem";
+import Pagination from "../../../components/pagination/Pagination";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 const History = () => {

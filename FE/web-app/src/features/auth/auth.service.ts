@@ -9,6 +9,12 @@ export class AuthService {
         return res.data.data!;
     }
 
+    logout = async (): Promise<void> => {
+        await serverApi.post<ApiResult>(`/auth/logout`);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+    }
+
     saveLocalUser = (data: LocalUser) => {
         localStorage.setItem('user', JSON.stringify(data));
     }
@@ -23,7 +29,7 @@ export class AuthService {
     }
 
     getToken = (): JwtToken|null => {
-        const data = localStorage.getItem('user');
+        const data = localStorage.getItem('token');
         return data? JSON.parse(data) as JwtToken : null;
     }
 }

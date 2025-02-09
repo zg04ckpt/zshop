@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import './CateManagement.css';
 import logo from "../../../../assets/images/test-img.jpg";
-import Button from "../../../components/button/Button.component";
+import Button from "../../../components/button/Button";
 
 const CateManagement = () => {
     const [showFilter, setShowFilter] = useState(false);

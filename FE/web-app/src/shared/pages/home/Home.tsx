@@ -1,6 +1,6 @@
 import React from "react";
-import ProductItem from "../../components/product-item/ProductItem.component";
-import Button from "../../components/button/Button.component";
+import ProductItem from "../../components/product-item/ProductItem";
+import Button from "../../components/button/Button";
 import { Link } from "react-router-dom";
 import { Header } from "../../layout/header/Header";
 import logo from "../../../assets/images/test-img.jpg";

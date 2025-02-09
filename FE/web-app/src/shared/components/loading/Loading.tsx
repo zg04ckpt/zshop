@@ -1,5 +1,5 @@
 import React from "react";
-import './Loading.component.css';
+import './Loading.css';
 import { BaseProp } from "../../model/base-prop.model";
 
 type LoadingProp = BaseProp & {

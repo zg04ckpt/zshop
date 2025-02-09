@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import './ConfirmEmail.css';
-import Loading from "../../components/loading/Loading.component";
+import Loading from "../../components/loading/Loading";
 
 const ConfirmEmail = () => {
     const [remaining, setRemaining] = useState(0);

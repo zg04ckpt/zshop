@@ -1,9 +1,9 @@
 import React from "react";
 import './Search.css';
-import ProductItem from "../../components/product-item/ProductItem.component";
+import ProductItem from "../../components/product-item/ProductItem";
 import { Link } from "react-router-dom";
-import Button from "../../components/button/Button.component";
-import ProductFilter from "../../components/product-filter/ProductFilter.component";
+import Button from "../../components/button/Button";
+import ProductFilter from "../../components/product-filter/ProductFilter";
 
 const Search = () => {
     const testData = []

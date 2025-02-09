@@ -1,6 +1,6 @@
 import React from "react";
 import './Cart.css'
-import Button from "../../components/button/Button.component";
+import Button from "../../components/button/Button";
 import testLogo from "../../../assets/images/test-img.jpg";
 
 const Cart = () => {

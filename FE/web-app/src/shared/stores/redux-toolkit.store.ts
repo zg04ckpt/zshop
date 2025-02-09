@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { authReducer } from "../../features/auth";
+import { confirmDialogReducer } from "../components/confirm-dialog/confirm-dialog.slice";
 
 export const reduxToolkitStore = configureStore({
     reducer: {
-        auth: authReducer
+        auth: authReducer,
+        confirmDialog: confirmDialogReducer
     }
 });
 

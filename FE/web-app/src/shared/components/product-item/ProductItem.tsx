@@ -1,7 +1,7 @@
 import React from "react";
-import Button from "../button/Button.component";
-import testImg from "../../../assets/images/test-img.jpg"
-import "./ProductItem.component.css"
+import Button from "../button/Button";
+import testImg from "../../../assets/images/test-img.jpg";
+import "./ProductItem.css";
 import { useNavigate } from "react-router-dom";
 import { BaseProp } from "../../model/base-prop.model";
 

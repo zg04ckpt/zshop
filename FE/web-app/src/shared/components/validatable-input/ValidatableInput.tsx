@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import './ValidatableInput.component.css';
+import './ValidatableInput.css';
 import { BaseProp } from "../../model/base-prop.model";
 
 type InputProp<T> = BaseProp & {

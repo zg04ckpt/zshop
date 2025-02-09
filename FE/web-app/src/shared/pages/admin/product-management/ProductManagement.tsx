@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import './ProductManagement.css';
 import logo from "../../../../assets/images/test-img.jpg";
-import Button from "../../../components/button/Button.component";
-import ProductFilter from "../../../components/product-filter/ProductFilter.component";
+import Button from "../../../components/button/Button";
+import ProductFilter from "../../../components/product-filter/ProductFilter";
 
 const ProductManagement = () => {
     const [showFilter, setShowFilter] = useState(false);

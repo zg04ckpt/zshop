@@ -1,7 +1,7 @@
 import React from "react";
 import './Order.css'
 import testLogo from "../../../assets/images/test-img.jpg";
-import Button from "../../components/button/Button.component";
+import Button from "../../components/button/Button";
 
 const Order = () => {
     return (

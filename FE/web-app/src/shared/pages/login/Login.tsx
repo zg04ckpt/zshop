@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import './Login.page.css';
+import './Login.css';
 import ReactDOM, { createPortal } from "react-dom";
-import { useLocation, useNavigate } from "react-router-dom";
-import Loading from "../../components/loading/Loading.component";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import Loading from "../../components/loading/Loading";
 import { toast } from "react-toastify";
 import { useLogin } from "../../../features/auth";
-import { ValidatableInput } from "../../components/validatable-input/ValidatableInput.component";
+import { ValidatableInput } from "../../components/validatable-input/ValidatableInput";
 
 const Login = () => {
     const navigate = useNavigate();
@@ -14,18 +14,15 @@ const Login = () => {
     const [password, setPassword] = useState<string>('');
     const [formFocus, setFormFocus] = useState<boolean>(false);
     const { loading, login } = useLogin();
+    const [searchParams] = useSearchParams();
 
     // handle login action
     const handleLogin = async () => {
         setFormFocus(true);
-        const user = await login({
+        await login({
             email: email,
             password: password
-        });
-        if(user) {
-            toast.success(`Xin chào ${user!.firstName}`);
-            window.history.back();
-        }
+        }, searchParams.get('return_url') || '');
     }
 
     return (

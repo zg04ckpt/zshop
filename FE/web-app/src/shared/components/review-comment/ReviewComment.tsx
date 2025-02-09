@@ -1,7 +1,7 @@
 import React from "react";
-import testImg from "../../../assets/images/test-img.jpg"
+import testImg from "../../../assets/images/test-img.jpg";
 import { BaseProp } from "../../model/base-prop.model";
-import './ReviewComment.component.css'
+import './ReviewComment.css';
 
 type ReviewCommentProp = BaseProp & {
 

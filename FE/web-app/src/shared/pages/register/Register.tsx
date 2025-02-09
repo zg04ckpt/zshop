@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import './Register.page.css';
-import Button from "../../components/button/Button.component";
+import './Register.css';
+import Button from "../../components/button/Button";
 import { values } from "lodash";
-import Loading from "../../components/loading/Loading.component";
+import Loading from "../../components/loading/Loading";
 import { useNavigate } from "react-router-dom";
-import { ValidatableInput } from "../../components/validatable-input/ValidatableInput.component";
+import { ValidatableInput } from "../../components/validatable-input/ValidatableInput";
 
 const Register = () => {
     const navigate = useNavigate();

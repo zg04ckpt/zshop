@@ -1,6 +1,6 @@
 import React from "react";
 import './Address.css';
-import Button from "../../../components/button/Button.component";
+import Button from "../../../components/button/Button";
 
 const Address = () => {
     return (

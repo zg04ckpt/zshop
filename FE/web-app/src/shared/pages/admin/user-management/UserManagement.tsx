@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import './UserManagement.css';
-import Button from "../../../components/button/Button.component";
-import ProductFilter from "../../../components/product-filter/ProductFilter.component";
+import Button from "../../../components/button/Button";
+import ProductFilter from "../../../components/product-filter/ProductFilter";
 
 const UserManagement = () => {
     const [showFilter, setShowFilter] = useState(false);

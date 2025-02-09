@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import './App.css';
 import { createBrowserRouter, RouterProvider, useNavigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import MainLayout from './shared/layout/main-layout/MainLayout';
 import AccountInfo from './shared/pages/account/account-info/AccountInfo';
 import AccountLayout from './shared/pages/account/AccountLayout';
@@ -15,15 +15,16 @@ import Cart from './shared/pages/cart/Cart';
 import ConfirmEmail from './shared/pages/confirm-email/ConfirmEmail';
 import Detail from './shared/pages/detail/Detail';
 import Home from './shared/pages/home/Home';
-import Login from './shared/pages/login/Login.page';
+import Login from './shared/pages/login/Login';
 import Order from './shared/pages/order/Order';
-import Register from './shared/pages/register/Register.page';
+import Register from './shared/pages/register/Register';
 import Search from './shared/pages/search/Search';
 import Test from './shared/pages/Test';
 import History from "./shared/pages/account/history/History";
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from './shared/stores/redux-toolkit.store';
 import { updateUser } from './features/auth/auth.slice';
+import ConfirmDialog from './shared/components/confirm-dialog/ConfirmDialog';
 
 export const router = createBrowserRouter([{ 
   path: '/',
@@ -62,13 +63,17 @@ function App() {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    dispatch(updateUser())
+    dispatch(updateUser());
   }, []);
 
   return (
     <>
       {/* Toast */}
       <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} draggable pauseOnHover={false} theme="light"/>
+      
+      {/* Confirm dialog */}
+      <ConfirmDialog/>
+
       <RouterProvider router={router}></RouterProvider>
     </>
   );

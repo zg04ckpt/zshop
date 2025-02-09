@@ -1,6 +1,6 @@
 import React from "react";
-import './ProductFilter.component.css';
-import Button from "../button/Button.component";
+import './ProductFilter.css';
+import Button from "../button/Button";
 
 const ProductFilter = () => {
     const testData = []

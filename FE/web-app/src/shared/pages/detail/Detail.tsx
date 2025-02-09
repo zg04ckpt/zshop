@@ -1,9 +1,9 @@
 import React from "react";
 import testLogo from "../../../assets/images/test-img.jpg";
 import "./Detail.css"
-import Button from "../../components/button/Button.component";
-import ReviewComment from "../../components/review-comment/ReviewComment.component";
-import ProductItem from "../../components/product-item/ProductItem.component";
+import Button from "../../components/button/Button";
+import ReviewComment from "../../components/review-comment/ReviewComment";
+import ProductItem from "../../components/product-item/ProductItem";
 import { useNavigate } from "react-router-dom";
 
 const Detail = () => {
