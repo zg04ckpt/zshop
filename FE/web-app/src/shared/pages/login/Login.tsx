@@ -4,25 +4,27 @@ import ReactDOM, { createPortal } from "react-dom";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Loading from "../../components/loading/Loading";
 import { toast } from "react-toastify";
-import { useLogin } from "../../../features/auth";
+import { useAuth } from "../../../features/auth/auth.index";
 import { ValidatableInput } from "../../components/validatable-input/ValidatableInput";
 
 const Login = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
+    const [searchParams] = useSearchParams();
 
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [formFocus, setFormFocus] = useState<boolean>(false);
-    const { loading, login } = useLogin();
-    const [searchParams] = useSearchParams();
+    const [loading, setLoading] = useState<boolean>(false);
 
     // handle login action
     const handleLogin = async () => {
         setFormFocus(true);
-        await login({
-            email: email,
-            password: password
-        }, searchParams.get('return_url') || '');
+        setLoading(true);
+        if(await login({ email: email, password: password })) {
+            navigate('/' + searchParams.get('return_url') || '');
+        }
+        setLoading(false);
     }
 
     return (

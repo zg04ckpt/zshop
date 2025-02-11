@@ -6,25 +6,31 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Button from "../../components/button/Button";
 import { AppDispatch, RootState } from "../../stores/redux-toolkit.store";
 import { useSelector } from "react-redux";
-import { LocalUser } from "../../../features/auth/model";
+import { LocalUser } from "../../../features/auth/auth.model";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
-import { showConfirm } from "../../components/confirm-dialog/confirm-dialog.slice";
-import { useLogin, useLogout } from "../../../features/auth";
+import { useAppContext } from "../../stores/app.context";
+import { useAuth } from "../../../features/auth/auth.hook";
 
 const TopBar = () => {
-    const confirmDispatch: AppDispatch = useDispatch();
+    const appContext = useAppContext();
     const navigate = useNavigate();
-    const { navigateToLoginPage } = useLogin();
+    const { navigateToLoginPage, logout } = useAuth();
     const user: LocalUser|null = useSelector((state: RootState) => state.auth.user);
-    const { logout } = useLogout();
 
     const handleLogout = () => {
-        confirmDispatch(showConfirm({
-            message: 'Xác nhận đăng xuất?',
-            onConfirm: () => logout(),
+        appContext!.showConfirmDialog({
+            message:'Xác nhận đăng xuất?',
+            onConfirm: async () => {
+                if(await logout()) {
+                    // back to home
+                    toast.info("Đã đăng xuất");
+                    navigate('/');
+                }
+            },
             onReject: () => {}
-        }))
+        });
+
     }
     
     return (
@@ -44,7 +50,7 @@ const TopBar = () => {
 
                         { !user && <>
                             <Button label="Đăng nhập" className="me-1" onClick={navigateToLoginPage}></Button>
-                            <Button label="Đăng kí" className="me-1" onClick={() => {}}></Button>
+                            <Button label="Đăng kí" className="me-1" onClick={() => {navigate('/register')}}></Button>
                         </> }
 
                         { user && <>

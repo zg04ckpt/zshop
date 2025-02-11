@@ -1,5 +1,5 @@
 import { use, useEffect, useState } from "react"
-import { LocalUser, LoginRequest, LoginResponse } from "./model";
+import { LocalUser, LoginRequest, LoginResponse, RegisterRequest } from "./auth.model";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AppDispatch } from "../../shared/stores/redux-toolkit.store";
 import { useDispatch } from "react-redux";
@@ -8,16 +8,14 @@ import { AuthService } from "./auth.service";
 import { toast } from "react-toastify";
 import { handleServerApiError } from "../../shared/configs/axios.config";
 
-export const useLogin = () => {
+export const useAuth = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const [loading, setLoading] = useState<boolean>(false);
     const dispatch: AppDispatch = useDispatch();
     const authService = new AuthService();
 
-    const login = async (data: LoginRequest, returnUrl: string): Promise<void> => {
+    const login = async (data: LoginRequest): Promise<boolean> => {
         try {
-            setLoading(true);
             const res = await authService.login(data);
 
             // Save user to local
@@ -28,12 +26,10 @@ export const useLogin = () => {
             dispatch(updateUser());
 
             toast.success(`Xin chào ${res!.user.firstName}`);
-            // back to origin page
-            navigate(`/${returnUrl}`)
+            return true;
         } catch (err: any) {
-            handleServerApiError(navigate, err);
-        } finally {
-            setLoading(false);
+            handleServerApiError(navigate, location.pathname.substring(1), err, dispatch);
+            return false;
         }
     }
 
@@ -41,27 +37,124 @@ export const useLogin = () => {
         navigate(`/login?return_url=${location.pathname.substring(1)}`);
     }
 
-    return { login, loading, navigateToLoginPage }
-}
+    const register = async (data: RegisterRequest): Promise<boolean> => {
+        try {
+            await authService.register(data);
+            // Change to confirm email status
+            return true;
+        } catch (err: any) {
+            handleServerApiError(navigate, location.pathname.substring(1), err, dispatch);
+            return false;
+        }
+    }
 
-export const useLogout = () => {
-    const navigate = useNavigate();
-    const dispatch: AppDispatch = useDispatch();
-    const authService = new AuthService();
+    const resendEmailConfirmCode = async (email: string): Promise<boolean> => {
+        try {
+            await authService.resendConfirmEmailCode(email);
+            return true;
+        } catch (err: any) {
+            handleServerApiError(navigate, location.pathname.substring(1), err, dispatch);
+            return false;
+        }
+    } 
 
-    const logout = async (): Promise<void> => {
+    const confirmEmail = async (email: string, code: string): Promise<boolean> => {
+        try {
+            await authService.confirmEmail({email, code});
+            return true;
+        } catch (err: any) {
+            handleServerApiError(navigate, location.pathname.substring(1), err, dispatch);
+            return false;
+        }
+    }
+
+    const navigateToRegisterPage = () => {
+        navigate(`/register?return_url=${location.pathname.substring(1)}`);
+    }
+
+    const logout = async (): Promise<boolean> => {
         try {
             await authService.logout();
             // emit user state
             dispatch(updateUser());
-            toast.info("Đã đăng xuất");
 
-            // back to home
-            navigate('/');
+            return true;
         } catch (err: any) {
-            handleServerApiError(navigate, err);
+            handleServerApiError(navigate, location.pathname.substring(1), err, dispatch);
+            return false;
         }
     }
 
-    return { logout }
+    return { 
+        login, navigateToLoginPage, 
+        register, resendEmailConfirmCode, confirmEmail, navigateToRegisterPage,
+        logout
+     }
 }
+
+// export const useRegister = () => {
+//     const navigate = useNavigate();
+//     const location = useLocation();
+//     const dispatch: AppDispatch = useDispatch();
+//     const authService = new AuthService();
+
+//     const register = async (data: RegisterRequest): Promise<boolean> => {
+//         try {
+//             await authService.register(data);
+//             // Change to confirm email status
+//             return true;
+//         } catch (err: any) {
+//             handleServerApiError(navigate, location.pathname.substring(1), err, dispatch);
+//             return false;
+//         }
+//     }
+
+//     const resendEmailConfirmCode = async (email: string): Promise<boolean> => {
+//         try {
+//             await authService.resendConfirmEmailCode(email);
+//             return true;
+//         } catch (err: any) {
+//             handleServerApiError(navigate, location.pathname.substring(1), err, dispatch);
+//             return false;
+//         }
+//     } 
+
+//     const confirmEmail = async (email: string, code: string): Promise<boolean> => {
+//         try {
+//             await authService.confirmEmail({email, code});
+//             return true;
+//         } catch (err: any) {
+//             handleServerApiError(navigate, location.pathname.substring(1), err, dispatch);
+//             return false;
+//         }
+//     }
+
+//     const navigateToRegisterPage = () => {
+//         navigate(`/register?return_url=${location.pathname.substring(1)}`);
+//     }
+
+//     return { register, resendEmailConfirmCode, confirmEmail, navigateToRegisterPage }
+// }
+
+// export const useLogout = () => {
+//     const navigate = useNavigate();
+//     const location = useLocation();
+//     const dispatch: AppDispatch = useDispatch();
+//     const authService = new AuthService();
+
+//     const logout = async (): Promise<void> => {
+//         try {
+//             await authService.logout();
+//             // emit user state
+//             dispatch(updateUser());
+//             toast.info("Đã đăng xuất");
+
+//             // back to home
+//             navigate('/');
+//         } catch (err: any) {
+//             handleServerApiError(navigate, location.pathname.substring(1), err, dispatch);
+//         }
+//     }
+
+//     return { logout }
+// }

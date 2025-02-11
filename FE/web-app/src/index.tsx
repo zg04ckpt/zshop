@@ -5,6 +5,7 @@ import App from './App';
 import { RouterProvider } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { reduxToolkitStore } from './shared/stores/redux-toolkit.store';
+import { AppContextProvider } from './shared/stores/app.context';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -12,7 +13,9 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <Provider store={reduxToolkitStore}>
-      <App />
+      <AppContextProvider>
+        <App />
+      </AppContextProvider>
     </Provider>
   </React.StrictMode>
 );

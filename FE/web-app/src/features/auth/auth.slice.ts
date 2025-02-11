@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { LocalUser } from "./model";
+import { LocalUser } from "./auth.model";
 import { AuthService } from "./auth.service";
 
 interface AuthState {
@@ -21,4 +21,4 @@ const slice = createSlice({
 });
 
 export const { updateUser } = slice.actions;
-export default slice.reducer;
+export const authReducer = slice.reducer;
