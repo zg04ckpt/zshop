@@ -1,5 +1,5 @@
 import { use, useEffect, useState } from "react"
-import { LocalUser, LoginRequest, LoginResponse, RegisterRequest } from "./auth.model";
+import { LocalUser, LoginDTO, LoginResponseDTO, RegisterDTO } from "./auth.model";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AppDispatch } from "../../shared/stores/redux-toolkit.store";
 import { useDispatch } from "react-redux";
@@ -14,7 +14,7 @@ export const useAuth = () => {
     const dispatch: AppDispatch = useDispatch();
     const authService = new AuthService();
 
-    const login = async (data: LoginRequest): Promise<boolean> => {
+    const login = async (data: LoginDTO): Promise<boolean> => {
         try {
             const res = await authService.login(data);
 
@@ -37,7 +37,7 @@ export const useAuth = () => {
         navigate(`/login?return_url=${location.pathname.substring(1)}`);
     }
 
-    const register = async (data: RegisterRequest): Promise<boolean> => {
+    const register = async (data: RegisterDTO): Promise<boolean> => {
         try {
             await authService.register(data);
             // Change to confirm email status

@@ -11,11 +11,12 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
-  <React.StrictMode>
-    <Provider store={reduxToolkitStore}>
-      <AppContextProvider>
-        <App />
-      </AppContextProvider>
-    </Provider>
-  </React.StrictMode>
+  // <React.StrictMode>
+    
+  // </React.StrictMode>
+  <Provider store={reduxToolkitStore}>
+    <AppContextProvider>
+      <App />
+    </AppContextProvider>
+  </Provider>
 );

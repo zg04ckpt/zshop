@@ -1,23 +1,23 @@
-export interface LoginRequest {
+export interface LoginDTO {
     email: string;
     password: string;
 }
 
-export interface JwtToken {
+export interface JwtTokenDTO {
     accessToken: string;
     refreshToken: string;
     type: string;
     expireAt: Date;
 }
 
-export interface RefreshTokenRequest {
+export interface RefreshTokenDTO {
     accessToken: string;
     refreshToken: string;
 }
 
-export interface LoginResponse {
+export interface LoginResponseDTO {
     user: LocalUser;
-    token: JwtToken;
+    token: JwtTokenDTO;
 }
 
 export interface LocalUser {
@@ -29,7 +29,7 @@ export interface LocalUser {
     roles: string[];
 }
 
-export interface RegisterRequest {
+export interface RegisterDTO {
     firstName: string;
     lastName: string;
     userName: string;
@@ -39,7 +39,7 @@ export interface RegisterRequest {
     confirmPassword: string;
 }
 
-export interface ConfirmEmailRequest {
+export interface ConfirmEmailDTO {
     email: string;
     code: string;
 }

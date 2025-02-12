@@ -17,3 +17,15 @@
 .account-info input {
     width: 100%;
 }
+
+
+.account-info th {
+    font-weight: 300;
+    width: 120px;
+}
+
+.account-info .upload-img {
+    font-size: 14px;
+    border: 1px solid #dedede;
+    padding: 1px 4px;
+}

@@ -17,6 +17,7 @@ button:hover {
     background-color: rgba(128, 128, 128, 0.302);
 }
 
+
 button .loading {
     /* background-color: rgba(222, 221, 221, 0.458); */
     color: #000000;

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import './ValidatableInput.css';
 import { BaseProp } from "../../model/base-prop.model";
+import { initial } from "lodash";
 
 type InputProp<T> = BaseProp & {
     type: string;
+    initVal?: string;
     valueChange: (val:string) => void;
     validator: (val:string) => string|null;
     compareValue?: string;
@@ -32,6 +34,8 @@ export const ValidatableInput = <T,>(prop: InputProp<T>) => {
         prop.valueChange(value);
     }, [value, focus, prop.compareValue, prop.isFormFocus]);
 
+    useEffect(() => setValue(prop.initVal || ''), [prop.initVal]);
+
     // // This input value is valid when error == null
     // useEffect(() => {
     //     prop.validChange(!error);
@@ -39,7 +43,7 @@ export const ValidatableInput = <T,>(prop: InputProp<T>) => {
 
     return (
         <div className="validation-input">
-            <input onFocus={() => setFocus(true)} onChange={e => setValue(e.target.value)} className={`${error? 'invalid':''}`} type={prop.type}/>
+            <input value={value} onFocus={() => setFocus(true)} onChange={e => setValue(e.target.value)} className={`${error? 'invalid':''}`} type={prop.type}/>
             <div className="error-mess">{ error && <div>{error}</div> }</div>
         </div>
     );

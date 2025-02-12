@@ -54,7 +54,7 @@ const TopBar = () => {
                         </> }
 
                         { user && <>
-                            <div className="me-2">Xin chào Nguyên!</div>
+                            <div className="me-2">Xin chào {user.firstName}!</div>
                             <img src={user.avatarUrl || logo} alt="" className="avt pointer-hover" data-bs-toggle="dropdown"/>
 
 

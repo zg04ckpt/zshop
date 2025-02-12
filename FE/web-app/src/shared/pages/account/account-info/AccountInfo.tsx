@@ -1,18 +1,102 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import './AccountInfo.css';
 import testLogo from "../../../../assets/images/test-img.jpg";
 import Button from "../../../components/button/Button";
+import { UserProfileDTO } from "../../../../features/user/user.model";
+import { useUser } from "../../../../features/user/user.hook";
+import { useAppContext } from "../../../stores/app.context";
+import { updateUser } from "../../../../features/auth/auth.slice";
+import { toast } from "react-toastify";
+import Loading from "../../../components/loading/Loading";
+import { ValidatableInput } from "../../../components/validatable-input/ValidatableInput";
+import { dateToInputValue, stringToDate } from "../../../helper";
 
 const AccountInfo = () => {
+    const { getProfile, updateProfile, updateTopBar } = useUser();
+    const appContext = useAppContext();
+
+    const [profile, setProfile] = useState<UserProfileDTO|null>(null);
+    const [avatarImage, setAvatarImage] = useState<File|null>(null);
+    const [previewAvatar, setPreviewAvatar] = useState<string|null>(null);
+    const [formFocus, setFormFocus] = useState<boolean>(false);
+    const [backup, setBackup] = useState<UserProfileDTO|null>(null);
+
+    const [loading, setLoading] = useState<boolean>(false);
+    
+    const init = async () => {
+        setLoading(true);
+        const data = await getProfile();
+        if(data) {
+            setProfile(data);
+            setBackup(data);
+        }
+        setLoading(false);
+        console.log(backup);
+    }
+
+    const handleUpdateAction = () => {
+        appContext?.showConfirmDialog({
+            message: "Xác nhận cập nhật?",
+            onConfirm: async () => {
+                setFormFocus(true);
+                setLoading(true);
+                if(await updateProfile({
+                    lastName: profile!.lastName,
+                    firstName: profile!.firstName,
+                    dateOfBirth: profile!.dateOfBirth,
+                    email: profile!.email,
+                    genderId: profile!.genderId,
+                    phoneNumber: profile!.phoneNumber,
+                    newAvatar: avatarImage
+                })) {
+                    setBackup(profile);
+                    updateTopBar(profile!.lastName, profile!.firstName, previewAvatar);
+                    toast.success("Cập nhật hồ sơ thành công.");
+                } else {
+                    setProfile(backup);
+                    setPreviewAvatar(profile?.avatarUrl || null);
+                }
+                setLoading(false);
+            },
+            onReject: () => {
+                setProfile(backup);
+                setPreviewAvatar(profile?.avatarUrl || null);
+            }
+        });
+        
+    }
+
+    const handleUploadImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+        try {
+            setAvatarImage(e.target.files![0]);
+            const fileReader = new FileReader();
+            fileReader.onload = () => {
+                setPreviewAvatar(fileReader.result as string);
+                e.target.value = '';
+            }
+            fileReader.readAsDataURL(e.target.files![0]);
+        } catch {
+            toast.error('Lỗi đọc file');
+        }
+    }
+
+    useEffect(() => {
+        init();
+    }, []);
+    
     return (
         <div className="account-info">
-            <div className="card card-body rounded-0 ">
+            <div className="card card-body rounded-0">
+                <Loading isShow={loading}/>
                 <div className="row">
 
                     {/* Image */}
                     <div className="col-2 text-center">
-                        <img src={testLogo} alt="" />
-                        <Button className="mt-2" label="Đổi ảnh" onClick={() => {}}></Button>
+                        <img src={previewAvatar || profile?.avatarUrl || testLogo} alt="" />
+                        <label className="upload-img mt-2 pointer-hover">
+                            Tải ảnh lên
+                            <input type="file" accept=".PNG, .JPG" hidden onChange={e => handleUploadImage(e)}/>
+                        </label>
                     </div>
 
                     <div className="col-10">
@@ -21,40 +105,125 @@ const AccountInfo = () => {
                                 {/* Username */}
                                 <tr>
                                     <th>Tên tài khoản:</th>
-                                    <td>nguyencao142</td>
+                                    <td>{profile?.userName}</td>
                                 </tr>
+                                {/* Last name */}
+                                <tr>
+                                    <th>Họ đệm:</th>
+                                    <td>
+                                        <ValidatableInput 
+                                            isFormFocus={formFocus}
+                                            type="text" 
+                                            initVal={profile?.lastName || ''}
+                                            valueChange={val => setProfile({
+                                                ... profile!,
+                                                lastName: val
+                                            })} 
+                                            validator={val => {
+                                                if (!val) return "Họ đệm không được bỏ trống";
+                                                return null;
+                                            }}/>
+                                    </td>
+                                </tr>
+                                {/* First name */}
+                                <tr>
+                                    <th>Tên:</th>
+                                    <td>
+                                        <ValidatableInput 
+                                            isFormFocus={formFocus}
+                                            type="text" 
+                                            initVal={profile?.firstName}
+                                            valueChange={val => setProfile({
+                                                ... profile!,
+                                                firstName: val
+                                            })} 
+                                            validator={val => {
+                                                if (!val) return "Tên không được bỏ trống";
+                                                return null;
+                                            }}/>
+                                    </td>
+                                </tr>
+                                
                                 {/* Email */}
                                 <tr>
                                     <th>Email:</th>
-                                    <td><input type="text" value={'nguyen1402ckasd@gmail.com'}/></td>
+                                    <td>
+                                        <ValidatableInput 
+                                            isFormFocus={formFocus}
+                                            type="text" 
+                                            initVal={profile?.email}
+                                            valueChange={val => setProfile({
+                                                ... profile!,
+                                                email: val
+                                            })} 
+                                            validator={val => {
+                                                if (!val) return `Email không được bỏ trống.`;
+                                                if (!/^[a-zA-Z0-9._]+@[a-zA-Z0-9.]+\.[a-zA-Z]{2,4}$/.test(val))
+                                                    return `Email không hợp lệ`;
+                                                return null;
+                                            }}/>
+                                    </td>
                                 </tr>
-                                {/* Phonenumber */}
+                                {/* PhoneNumber */}
                                 <tr>
                                     <th>Số điện thoại:</th>
-                                    <td><input type="text" value={'0333333333'}/></td>
+                                    <td>
+                                        <ValidatableInput 
+                                            isFormFocus={formFocus}
+                                            type="text" 
+                                            initVal={profile?.phoneNumber}
+                                            valueChange={val => setProfile({
+                                                ... profile!,
+                                                phoneNumber: val
+                                            })} 
+                                            validator={val => {
+                                                if (!val) return `Số điện thoại không được bỏ trống.`;
+                                                if (!/^[0-9]+$/.test(val))
+                                                    return `Số điện thoại chỉ chứa chữ số`;
+                                                return null;
+                                            }}/>
+                                    </td>
                                 </tr>
                                 {/* Sex */}
                                 <tr>
                                     <th>Giới tính:</th>
                                     <td>
-                                        <select name="" id="">
-                                            <option value="">Nam</option>
-                                            <option value="">Nữ</option>
-                                            <option value="" selected>Khác</option>
+                                        <select onChange={e => setProfile({
+                                            ... profile!,
+                                            genderId: Number(e.target.value)
+                                        })}>
+                                            <option value="1" selected={profile?.genderId == 1}>Nam</option>
+                                            <option value="2" selected={profile?.genderId == 2}>Nữ</option>
+                                            <option value="3" selected={profile?.genderId == 3}>Khác</option>
                                         </select>
                                     </td>
                                 </tr>
                                 {/* DOB */}
                                 <tr>
                                     <th>Ngày sinh:</th>
-                                    <td><input type="date" name="" id="" /></td>
+                                    <td>
+                                        <input 
+                                            onChange={e => setProfile({ ... profile!, dateOfBirth: stringToDate(e.target.value) })} 
+                                            type="date" 
+                                            value={dateToInputValue(profile?.dateOfBirth)}/>
+                                        {/* <ValidatableInput 
+                                            isFormFocus={formFocus}
+                                            type="date" 
+                                            initVal={profile?.dateOfBirth?  profile.dateOfBirth.toISOString().split('T')[0]:''}
+                                            valueChange={val => setProfile({
+                                                ... profile!,
+                                                dateOfBirth: new Date(val)
+                                            })} 
+                                            validator={val => null}/> */}
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
 
-                        <Button className="w-auto" label="Lưu thay đổi" onClick={() => {}}></Button>
                     </div>
-
+                </div>
+                <div className="d-flex justify-content-center">
+                    <Button pxWidth={100} blackTheme label="Lưu thay đổi" onClick={() => handleUpdateAction()}></Button>
                 </div>
             </div>
         </div>

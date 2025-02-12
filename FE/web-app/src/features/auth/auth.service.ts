@@ -1,14 +1,14 @@
 import { serverApi } from "../../shared/configs/axios.config";
 import { ApiResult } from "../../shared/model/api-result.model";
-import { ConfirmEmailRequest, JwtToken, LocalUser, LoginRequest, LoginResponse, RegisterRequest } from "./auth.model";
+import { ConfirmEmailDTO, JwtTokenDTO, LocalUser, LoginDTO, LoginResponseDTO, RegisterDTO } from "./auth.model";
 
 export class AuthService {
 
-    register = async (data: RegisterRequest): Promise<void> => {
+    register = async (data: RegisterDTO): Promise<void> => {
         await serverApi.post<ApiResult<void>>("/auth/register", data);
     }
 
-    confirmEmail = async (data: ConfirmEmailRequest): Promise<void> => {
+    confirmEmail = async (data: ConfirmEmailDTO): Promise<void> => {
         await serverApi.post<ApiResult<void>>("/auth/confirm-email", data);
     }
 
@@ -16,8 +16,8 @@ export class AuthService {
         await serverApi.post<ApiResult<void>>("/auth/resend-confirm-mail-auth-code", { email: email });
     }
 
-    login = async (data: LoginRequest): Promise<LoginResponse> => {
-        const res = await serverApi.post<ApiResult<LoginResponse>>("/auth/login", data);
+    login = async (data: LoginDTO): Promise<LoginResponseDTO> => {
+        const res = await serverApi.post<ApiResult<LoginResponseDTO>>("/auth/login", data);
         return res.data.data!;
     }
 
@@ -28,7 +28,7 @@ export class AuthService {
 
     refreshToken = async (): Promise<boolean> => {
         const token = this.getToken();
-        const res = await serverApi.post<ApiResult<JwtToken>>("/auth/refresh", {
+        const res = await serverApi.post<ApiResult<JwtTokenDTO>>("/auth/refresh", {
             accessToken: token!.accessToken,
             refreshToken: token!.refreshToken
         });
@@ -48,13 +48,13 @@ export class AuthService {
         return data? JSON.parse(data) as LocalUser : null;
     }
 
-    saveToken = (data: JwtToken) => {
+    saveToken = (data: JwtTokenDTO) => {
         localStorage.setItem('token', JSON.stringify(data));
     }
 
-    getToken = (): JwtToken|null => {
+    getToken = (): JwtTokenDTO|null => {
         const data = localStorage.getItem('token');
-        return data? JSON.parse(data) as JwtToken : null;
+        return data? JSON.parse(data) as JwtTokenDTO : null;
     }
 
     clearAuth = () => {

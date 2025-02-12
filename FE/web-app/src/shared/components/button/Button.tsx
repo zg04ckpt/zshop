@@ -18,6 +18,7 @@ export default function Button(prop: ButtonProp) {
         backgroundColor: prop.blackTheme? 'black': 'white',
     }
     return (
+        
         <button style={customStyle} onClick={prop.onClick} className={prop.className} disabled={prop.loading}>
             <div className="content d-flex position-relative" >
                 {prop.icon && <div className="me-1"> {prop.icon} </div>}
@@ -31,8 +32,6 @@ export default function Button(prop: ButtonProp) {
                 )}
                 
             </div>
-            
-            
         </button>
     );
 }

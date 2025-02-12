@@ -69,7 +69,7 @@ function App() {
   return (
     <>
       {/* Toast */}
-      <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} draggable pauseOnHover={false} theme="light"/>
+      <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} newestOnTop limit={2} closeOnClick rtl={false} draggable pauseOnHover={false} theme="light"/>
       
       {/* Confirm dialog */}
       <ConfirmDialog/>
