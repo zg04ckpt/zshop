@@ -12,7 +12,7 @@ import { ValidatableInput } from "../../../components/validatable-input/Validata
 import { dateToInputValue, stringToDate } from "../../../helper";
 
 const AccountInfo = () => {
-    const { getProfile, updateProfile, updateTopBar } = useUser();
+    const { getProfile, updateProfile, updateUserLocalInfo } = useUser();
     const appContext = useAppContext();
 
     const [profile, setProfile] = useState<UserProfileDTO|null>(null);
@@ -50,7 +50,7 @@ const AccountInfo = () => {
                     newAvatar: avatarImage
                 })) {
                     setBackup(profile);
-                    updateTopBar(profile!.lastName, profile!.firstName, previewAvatar);
+                    updateUserLocalInfo (profile!.lastName, profile!.firstName, previewAvatar);
                     toast.success("Cập nhật hồ sơ thành công.");
                 } else {
                     setProfile(backup);

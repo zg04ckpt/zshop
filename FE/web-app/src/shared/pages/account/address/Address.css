@@ -35,3 +35,7 @@
     font-weight: bold;
     padding: 0px 4px;
 }
+
+.add-address-dialog label {
+    font-weight: 300;
+}
