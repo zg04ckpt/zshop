@@ -12,7 +12,7 @@ const AdminLayout = () => {
 
     return (
         <div className="admin">
-            <div className="card card-body rounded-0 mt-4 pt-2">
+            <div className="card card-body rounded-0 mt-2 pt-2">
                 {/* Navigation tab */}
                 <div className="d-flex tab mb-2">
                 <div className={`tab-item px-3 py-1 ${isSelected('/admin')}`} 

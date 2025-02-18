@@ -22,7 +22,7 @@ const Login = () => {
         setFormFocus(true);
         setLoading(true);
         if(await login({ email: email, password: password })) {
-            navigate('/' + searchParams.get('return_url') || '');
+            navigate('/' + (searchParams.get('return_url') || ''));
         }
         setLoading(false);
     }

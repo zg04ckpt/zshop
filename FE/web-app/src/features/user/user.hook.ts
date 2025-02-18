@@ -2,11 +2,12 @@ import { useDispatch } from "react-redux";
 import { useNavigate, useLocation, data } from "react-router-dom";
 import { handleServerApiError } from "../../shared/configs/axios.config";
 import { AppDispatch } from "../../shared/stores/redux-toolkit.store";
-import { AddressDataDTO, AddressDTO, AddressItemDTO, UpdateUserProfileDTO, UserProfileDTO } from "./user.model";
+import { AddressDataDTO, AddressDTO, AddressItemDTO, RoleSelectItemDTO, SearchUserDTO, UpdateUserProfileDTO, UserItemDTO, UserProfileDTO } from "./user.model";
 import { UserService } from "./user.service"
 import { AuthService } from "../auth/auth.service";
 import { LocalUser } from "../auth/auth.model";
 import { updateUser } from "../auth/auth.slice";
+import { Paginated } from "../../shared/model/base-paging.model";
 
 export const useUser = () => {
 
@@ -107,8 +108,29 @@ export const useUser = () => {
         }
     }
 
+    const getUsersAsList = async (data: SearchUserDTO): Promise<Paginated<UserItemDTO>|null> => {
+        try {
+            const res = await userService.getUsersAsListItem(data);
+            return res;
+        } catch (err: any) {
+            handleServerApiError(navigate, location.pathname.substring(1), err, dispatch);
+            return null;
+        }
+    }
+
+    const getRolesOfUser = async (): Promise<RoleSelectItemDTO[]> => {
+        try {
+            const res = await userService.getRolesOfUser();
+            return res;
+        } catch (err: any) {
+            handleServerApiError(navigate, location.pathname.substring(1), err, dispatch);
+            return [];
+        }
+    }
+
     return { 
         getProfile, updateProfile, updateUserLocalInfo, 
-        initAddressData, getAddresses, addAddress, removeAddress, setDefaultAddress
+        initAddressData, getAddresses, addAddress, removeAddress, setDefaultAddress,
+        getUsersAsList, getRolesOfUser
     }
 }

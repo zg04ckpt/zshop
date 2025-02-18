@@ -9,7 +9,6 @@ button {
 
 button .content {
     padding: 2px 4px;
-    font-size: 12px;
 }
 
 button:hover {

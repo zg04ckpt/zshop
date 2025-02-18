@@ -5,6 +5,7 @@ import { BaseProp } from "../../model/base-prop.model";
 type ButtonProp = BaseProp & {
     blackTheme?: boolean;
     pxWidth?: number;
+    pxSize?: number;
     loading?: boolean;
     label: string;
     icon?: React.ReactNode;
@@ -16,12 +17,13 @@ export default function Button(prop: ButtonProp) {
         color: prop.blackTheme? 'white': 'black',
         width: prop.pxWidth? prop.pxWidth + 'px':'fit-content',
         backgroundColor: prop.blackTheme? 'black': 'white',
+        fontSize: prop.pxSize? prop.pxSize + 'px':'12px',
     }
     return (
         
         <button style={customStyle} onClick={prop.onClick} className={prop.className} disabled={prop.loading}>
-            <div className="content d-flex position-relative" >
-                {prop.icon && <div className="me-1"> {prop.icon} </div>}
+            <div className="content d-flex position-relative align-items-center" >
+                {prop.icon && <div className="me-1 fw-bolder"> {prop.icon} </div>}
                 <div className="w-100"> {prop.label} </div>
 
                 {/* Loading */}

@@ -12,6 +12,7 @@
 
 .cate-management table td {
     align-content: start;
+    border-bottom: 1px solid #dedede;
 }
 
 .cate-management .action i {
@@ -27,7 +28,10 @@
 }
 
 .cate-management img {
-    height: 200px;
+    height: 120px;
+    width: 120px;
+    border-radius: 50%;
+    object-fit: cover;
     padding: 5px;
 }
 

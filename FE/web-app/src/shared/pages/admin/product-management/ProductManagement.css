@@ -2,7 +2,7 @@
     border-bottom: 1px solid #dedede;
 }
 
-.product-management * {
+.product-management table * {
     font-size: 14px;
 }
 
@@ -28,6 +28,8 @@
 
 .product-management img {
     height: 200px;
+    width: 160px;
+    object-fit: contain;
     padding: 5px;
 }
 
@@ -49,4 +51,32 @@
 .product-management .filter-dialog .filter {
     width: 400px;
     margin-top: 80px;
+}
+
+.product-management label {
+    font-weight: 300;
+    font-size: 18px;
+}
+
+.product-management .upload-img {
+    font-size: 14px;
+    border: 1px solid #dedede;
+    padding: 1px 4px;
+}
+
+.product-management .cate-list .cate-item {
+    font-weight: 600;
+    border: 1px solid #dedede;
+}
+
+.product-management .cate-list .cate-item:hover {
+    background-color: rgba(198, 198, 198, 0.258);
+}
+
+.product-management .cate-list .cate-item i {
+    font-size: 24px;
+}
+
+.product-management .quick-setting {
+    font-size: 14px;
 }

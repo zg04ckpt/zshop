@@ -1,10 +1,13 @@
+import { data } from "react-router-dom";
 import { api, serverApi } from "../../shared/configs/axios.config";
 import { convertToFormData, stringToDate } from "../../shared/helper";
 import { ApiResult } from "../../shared/model/api-result.model";
 import { LocalUser } from "../auth/auth.model";
-import { AddressDataDTO, AddressDTO, AddressItemDTO, UpdateUserProfileDTO, UserProfileDTO } from "./user.model";
+import { AddressDataDTO, AddressDTO, AddressItemDTO, RoleSelectItemDTO, SearchUserDTO, UpdateUserProfileDTO, UserItemDTO, UserProfileDTO } from "./user.model";
+import { BasePaging, Paginated } from "../../shared/model/base-paging.model";
 
 export class UserService {
+    //#region Profile
     getProfile = async (): Promise<UserProfileDTO> => {
         const res = await serverApi.get<ApiResult<UserProfileDTO>>('/user/profile');
         let data = res.data.data!;
@@ -23,6 +26,9 @@ export class UserService {
         await serverApi.put<ApiResult>('/user/profile', formData);
     }
 
+    //#endregion
+
+    //#region Shipping address
     getAddressData = async (): Promise<AddressDataDTO> => {
         const res = await serverApi.get<ApiResult<AddressDataDTO>>(`/user/address/config`);
         return res.data.data!;
@@ -48,4 +54,23 @@ export class UserService {
     setAddressDefault = async (id: string): Promise<void> => {
         await serverApi.put<ApiResult>(`/user/address/${id}/set-default`);
     }
+    //#endregion
+
+
+    //#region Management
+    getUsersAsListItem = async (data: SearchUserDTO): Promise<Paginated<UserItemDTO>> => {
+        const res = await serverApi.get<ApiResult<Paginated<UserItemDTO>>>(
+            `/management/user`,
+            { params: data }
+        );
+        const users = res.data.data!;
+        users.data.forEach(e => e.lastLogin = new Date(e.lastLogin));
+        return res.data.data!;
+    }
+
+    getRolesOfUser = async (): Promise<RoleSelectItemDTO[]> => {
+        const res = await serverApi.get<ApiResult<RoleSelectItemDTO[]>>(`/management/user/roles`);
+        return res.data.data!;
+    }
+    //#endregion
 }

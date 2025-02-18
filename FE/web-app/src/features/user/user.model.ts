@@ -1,3 +1,7 @@
+import { extend } from "lodash";
+import { BasePaging } from "../../shared/model/base-paging.model";
+
+
 export interface UserProfileDTO {
     firstName: string;
     lastName: string;
@@ -47,3 +51,31 @@ export type AddressItemDTO = AddressDTO & {
     id: string,
     isDefault: boolean
 }
+
+// Management
+export interface SearchUserDTO extends BasePaging
+{
+    name: string;
+    userName: string;
+    email: string;
+    roleId: number;
+    isActivated: boolean;
+}
+
+export interface UserItemDTO
+{
+    id: string;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    userName: string;
+    isActivated: boolean;
+    lastLogin: Date;
+    roles: string[];
+}
+
+export interface RoleSelectItemDTO {
+    id: number;
+    name: string;
+}
+

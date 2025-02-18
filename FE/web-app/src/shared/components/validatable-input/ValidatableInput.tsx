@@ -10,7 +10,9 @@ type InputProp<T> = BaseProp & {
     validator: (val:string) => string|null;
     compareValue?: string;
     compareErrorMessage?: string;
-    isFormFocus?: boolean 
+    isFormFocus?: boolean;
+    isMultiLine?: boolean;
+    pxWidth?: number;
 }
 
 export const ValidatableInput = <T,>(prop: InputProp<T>) => {
@@ -30,20 +32,18 @@ export const ValidatableInput = <T,>(prop: InputProp<T>) => {
             } else {
                 setError(null);
             }
+            prop.valueChange(value);
         }
-        prop.valueChange(value);
     }, [value, focus, prop.compareValue, prop.isFormFocus]);
 
     useEffect(() => setValue(prop.initVal || ''), [prop.initVal]);
 
-    // // This input value is valid when error == null
-    // useEffect(() => {
-    //     prop.validChange(!error);
-    // }, [error]);
-
     return (
-        <div className="validation-input">
-            <input value={value} onFocus={() => setFocus(true)} onChange={e => setValue(e.target.value)} className={`${error? 'invalid':''}`} type={prop.type}/>
+        <div className="validation-input" style={{
+            width: prop.pxWidth? `${prop.pxWidth}px`:''
+        }}>
+            { prop.isMultiLine && <textarea value={value} onFocus={() => setFocus(true)} onChange={e => setValue(e.target.value)} className={`input ${error? 'invalid':''}`}></textarea> }
+            { !prop.isMultiLine && <input value={value} onFocus={() => setFocus(true)} onChange={e => setValue(e.target.value)} className={`input ${error? 'invalid':''}`} type={prop.type}/> }
             <div className="error-mess">{ error && <div>{error}</div> }</div>
         </div>
     );
