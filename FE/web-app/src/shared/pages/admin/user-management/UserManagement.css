@@ -2,8 +2,9 @@
     border-bottom: 1px solid #dedede;
 }
 
-.user-management * {
-    font-size: 14px;
+
+.user-management table {
+    min-height: 200px;
 }
 
 .user-management table tbody tr {
@@ -16,7 +17,6 @@
 
 .user-management table td {
     padding: 4px 0px;
-    align-content: start;
 }
 
 .user-management .action i {

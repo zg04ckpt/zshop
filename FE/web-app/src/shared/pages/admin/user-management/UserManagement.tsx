@@ -64,8 +64,7 @@ const UserManagement = () => {
     }, [page]);
 
     return (
-        <div className="user-management position-relative">
-            <Loading isShow={loading}/>
+        <div className="user-management ">
             {/* Top action */}
             <div className="d-flex mt-2 align-items-center">
                 <input type="text" placeholder="Nhập tên" className="me-2" value={name}
@@ -102,7 +101,8 @@ const UserManagement = () => {
                 <label className="fw-bolder">Tìm thấy {totalRecord} kết quả</label>
             </div>
 
-            <table className="w-100 mt-2">
+            <table className="w-100 mt-2 position-relative">
+                <Loading isShow={loading}/>
                 <thead>
                     <tr>
                         <th className="w-auto">#</th>

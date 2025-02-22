@@ -2,8 +2,8 @@
     border-bottom: 1px solid #dedede;
 }
 
-.product-management table * {
-    font-size: 14px;
+.product-management table {
+    min-height: 200px;
 }
 
 .product-management table tbody tr:hover {
@@ -14,27 +14,26 @@
     align-content: start;
 }
 
-.product-management .action i {
+.product-management table .action i {
     border: 1px #dedede solid;
-    padding: 2px;
+    width: 20px;
+    height: 20px;
+    align-content: center;
+    text-align: center;
     margin: 0px 2px;
 }
 
-.product-management .action i:hover {
+.product-management table .action i:hover {
     color: white;
     background-color: black;
     cursor: pointer;
 }
 
 .product-management img {
-    height: 200px;
-    width: 160px;
-    object-fit: contain;
+    height: 160px;
+    width: 120px;
+    object-fit: cover;
     padding: 5px;
-}
-
-.product-management .filter {
-    height: 36px;
 }
 
 .product-management .search-btn {
@@ -77,6 +76,10 @@
     font-size: 24px;
 }
 
-.product-management .quick-setting {
-    font-size: 14px;
+.product-management .filter label  {
+    font-size: 16px;
+}
+
+.product-management .updating label {
+    font-size: 16px;
 }

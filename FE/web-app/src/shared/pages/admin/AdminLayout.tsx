@@ -7,7 +7,7 @@ const AdminLayout = () => {
     const location = useLocation();
 
     const isSelected = (path: string) => {
-        return location.pathname === path? 'selected':''
+        return location.pathname.includes(path)? 'selected':''
     }
 
     return (
@@ -15,8 +15,8 @@ const AdminLayout = () => {
             <div className="card card-body rounded-0 mt-2 pt-2">
                 {/* Navigation tab */}
                 <div className="d-flex tab mb-2">
-                <div className={`tab-item px-3 py-1 ${isSelected('/admin')}`} 
-                        onClick={() => navigate('/admin')}>Tổng quan</div>
+                <div className={`tab-item px-3 py-1 ${isSelected('/admin/overview')}`} 
+                        onClick={() => navigate('/admin/overview')}>Tổng quan</div>
 
                     <div className={`tab-item px-3 py-1 ${isSelected('/admin/product')}`} 
                         onClick={() => navigate('/admin/product')}>Sản phẩm (32)</div>

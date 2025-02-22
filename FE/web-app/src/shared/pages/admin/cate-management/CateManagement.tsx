@@ -51,6 +51,7 @@ const CateManagement = () => {
             name, parentId, thumbnail: thumb, 
         })) {
             setPreviewImg(null);
+            setThumb(null);
             setName('');
             setParentId(-1);
             toast.info("Tạo danh mục mới thành công.")
@@ -111,7 +112,7 @@ const CateManagement = () => {
                                 <label htmlFor="">Tên danh mục mới</label>
                                 <ValidatableInput 
                                     type="text"
-                                    initVal={name}
+                                    initVal={''}
                                     isFormFocus={formFocus}
                                     validator={s => {
                                         if (!s) return "Tên danh mục trống";
@@ -187,15 +188,7 @@ const CateManagement = () => {
                             </label>
                             <div className="d-flex flex-fill pe-3 flex-column ms-4">
                                 <label htmlFor="">Tên danh mục</label>
-                                <ValidatableInput 
-                                    type="text"
-                                    initVal={name}
-                                    isFormFocus={formFocus}
-                                    validator={s => {
-                                        if (!s) return "Tên danh mục trống";
-                                        return null;
-                                    }}
-                                    valueChange={val => setName(val)}/>
+                                <input value={name} onChange={e => setName(e.target.value)}/>
                                 <label htmlFor="">Danh mục cha</label>
                                 <select value={parentId} onChange={e => setParentId(Number(e.target.value))}>
                                     <option value={-1}>--</option>

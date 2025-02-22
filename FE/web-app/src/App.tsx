@@ -9,7 +9,7 @@ import Address from './shared/pages/account/address/Address';
 import AdminLayout from './shared/pages/admin/AdminLayout';
 import CateManagement from './shared/pages/admin/cate-management/CateManagement';
 import Overview from './shared/pages/admin/overview/Overview';
-import ProductManagement from './shared/pages/admin/product-management/ProductManagement';
+import ListProduct from './shared/pages/admin/product-management/list/ListBook';
 import UserManagement from './shared/pages/admin/user-management/UserManagement';
 import Cart from './shared/pages/cart/Cart';
 import ConfirmEmail from './shared/pages/confirm-email/ConfirmEmail';
@@ -25,6 +25,8 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from './shared/stores/redux-toolkit.store';
 import { updateUser } from './features/auth/auth.slice';
 import ConfirmDialog from './shared/components/confirm-dialog/ConfirmDialog';
+import CreateBook from './shared/pages/admin/product-management/create/CreateBook';
+import UpdateBook from './shared/pages/admin/product-management/update/UpdateBook';
 
 export const router = createBrowserRouter([{ 
   path: '/',
@@ -48,8 +50,10 @@ export const router = createBrowserRouter([{
 
     { path: 'cart', element: <Cart/> },
     { path: 'admin', element: <AdminLayout/>, children: [
-      { index: true, element: <Overview/> },
-      { path: 'product', element: <ProductManagement/> },
+      { index: true, path:'overview', element: <Overview/> },
+      { path: 'product', element: <ListProduct/> },
+      { path: 'product/create', element: <CreateBook/> },
+      { path: 'product/update', element: <UpdateBook/> },
       { path: 'user', element: <UserManagement/> },
       { path: 'cate', element: <CateManagement/> },
     ]},

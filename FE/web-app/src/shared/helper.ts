@@ -29,6 +29,7 @@ const addPropToFormData = (formData: FormData, key: string, value: any) => {
 }
 
 export const dateToInputValue = (date: Date|null|undefined): string => {
+    debugger
     if (!date) return '';
     return date.toISOString().split('T')[0];
 }
@@ -67,6 +68,19 @@ export const scrollToTop = () => {
         top: 0,
         behavior: 'smooth'
     })
+}
+
+export const scrollToObject = (selector: string, offset: number = 80) => {
+    const element = document.querySelector(selector);
+    if (element) {
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - offset;
+
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+        });
+    }
 }
 
 export const defaultImageUrl = process.env.REACT_APP_DEFAULT_IMAGE_URL

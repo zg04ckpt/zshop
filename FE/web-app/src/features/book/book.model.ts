@@ -1,3 +1,5 @@
+import { BasePaging } from "../../shared/model/base-paging.model";
+
 export interface CategoryDTO
 {
     name: string;
@@ -20,4 +22,44 @@ export interface CategorySelectItemDTO
 {
     id: number;
     name: string;
+}
+
+export interface BookDTO
+{
+    cover: File|null;
+    name: string;
+    author: string;
+    publishDate: Date|null;
+    language: string;
+    price: number;
+    description: string;
+    categoryIds: number[];
+}
+
+export interface BookListItemDTO
+{
+    id: string;
+    cover: string;
+    name: string;
+    author: string;
+    language: string;
+    price: number;
+    currency: string;
+    avgRate: number;
+    description: string;
+    soldCount: number;
+    publishDate: Date;
+    createdAt: Date;
+    updatedAt: Date;
+    categories: string[];
+}
+
+export interface BookSearchDTO extends BasePaging
+{
+    name: string;
+    minPrice: number|null;
+    maxPrice: number|null;
+    sortBy: string;
+    order: string;
+    categoryIds: number[];
 }
