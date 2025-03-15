@@ -1,0 +1,15 @@
+.header img {
+    object-fit: cover; 
+    width: 80%; 
+    height: 300px;
+}
+
+.header .carousel .toggle-btn {
+    background-color: rgba(85, 82, 82, 0.253);
+    text-align: center;
+    color: white;
+}
+
+.header .carousel .toggle-btn:hover {
+    background-color: rgba(85, 82, 82, 0.638);
+}

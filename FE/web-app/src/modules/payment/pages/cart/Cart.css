@@ -1,0 +1,26 @@
+.cart .total-price {
+    font-size: 30px;
+    font-weight: bolder;
+    color: rgb(224, 55, 55);
+}
+
+.cart .table * {
+    font-size: 14px;
+}
+
+
+.cart .table img {
+    width: 100%;
+}
+
+.cart .change-action i {
+    border: 1px #dedede solid;
+    padding: 2px;
+    margin: 0px 2px;
+}
+
+.cart .change-action i:hover {
+    color: white;
+    background-color: black;
+    cursor: pointer;
+}

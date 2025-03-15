@@ -1,0 +1,71 @@
+.user-management table thead th {
+    border-bottom: 1px solid #dedede;
+}
+
+.user-management table tbody tr {
+    min-height: 40px;
+}
+
+.user-management table tbody tr:hover {
+    background-color: #dedede70;
+}
+
+.user-management table td {
+    padding: 4px 0px;
+}
+
+.user-management .action i {
+    border: 1px #dedede solid;
+    padding: 2px;
+    margin: 0px 2px;
+}
+
+.user-management .action i:hover {
+    color: white;
+    background-color: black;
+    cursor: pointer;
+}
+
+.user-management img {
+    height: 200px;
+    padding: 5px;
+}
+
+.user-management .filter {
+    height: 36px;
+}
+
+.user-management .search-btn {
+    border: 1px solid #dedede;
+    padding: 5px;
+}
+
+.user-management .search-btn:hover {
+    color: white;
+    background-color: black;
+    cursor: pointer;
+}
+
+.user-management .filter-dialog .filter {
+    width: 400px;
+    margin-top: 80px;
+}
+
+.user-management .tag {
+    border: 1px solid black;
+    padding: 0px 4px;
+    border-radius: 3px;
+    font-size: 12px;
+    width: fit-content;
+}
+
+.user-management .tag.tag-activated {
+    color: rgb(3, 181, 6);
+    background-color: rgba(44, 241, 44, 0.254);
+    border: 1px solid rgb(3, 181, 6);
+}
+.user-management .tag.tag-not-activated {
+    color: rgb(88, 93, 88);
+    background-color: rgba(28, 30, 28, 0.254);
+    border: 1px solid rgb(88, 93, 88);
+}

@@ -1,0 +1,8 @@
+.search .cate-item {
+    border-top: 1px solid #dedede;
+}
+
+.search .cate-item:hover {
+    cursor: pointer;
+    background-color: rgba(199, 199, 199, 0.331);
+}

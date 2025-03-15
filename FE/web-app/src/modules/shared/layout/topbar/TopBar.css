@@ -1,0 +1,49 @@
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 50px;
+    width: 100%;
+    background-color: rgb(255, 255, 255);
+    z-index: 5;
+    align-content: center;
+    box-shadow: 1px 1px 2px rgba(128, 128, 128, 0.454);
+}
+
+.topbar .account {
+    text-decoration: none;
+    color: black;
+}
+
+.topbar .avt {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    padding: 2px;
+    border: 1px aqua solid;
+}
+
+.topbar .avt:hover {
+    padding: 0;
+}
+
+.topbar .cart:hover,
+.topbar .account:hover {
+    color: aqua;
+    cursor: pointer;
+}
+
+.topbar .cart-count {
+    position: absolute;
+    color: rgb(255, 255, 255);
+    font-size: 10px;
+    top: 0;
+    right: -2px;
+    background-color: red;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    text-align: center;
+    align-content: center;
+}

@@ -1,0 +1,39 @@
+import React from "react";
+import './AdminLayout.css'
+import { Outlet, useLocation, useNavigate, useOutletContext } from "react-router-dom";
+
+const AdminLayout = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const outletContext = useOutletContext();
+
+    const isSelected = (path: string) => {
+        return location.pathname.includes(path)? 'selected':''
+    }
+
+    return (
+        <div className="admin">
+            <div className="card card-body rounded-0 mt-2 pt-2">
+                {/* Navigation tab */}
+                <div className="d-flex tab mb-2">
+                <div className={`tab-item px-3 py-1 ${isSelected('/admin/overview')}`} 
+                        onClick={() => navigate('/admin/overview')}>Tổng quan</div>
+
+                    <div className={`tab-item px-3 py-1 ${isSelected('/admin/product')}`} 
+                        onClick={() => navigate('/admin/product')}>Sản phẩm (32)</div>
+
+                    <div className={`tab-item px-3 py-1 ${isSelected('/admin/user')}`} 
+                        onClick={() => navigate('/admin/user')}>Người dùng (10)</div>
+
+                    <div className={`tab-item px-3 py-1 ${isSelected('/admin/cate')}`} 
+                        onClick={() => navigate('/admin/cate')}>Thể loại (10)</div>
+                </div>
+
+                {/* Content */}
+                <Outlet context={outletContext}/>
+            </div>
+        </div>
+    );
+}
+
+export default AdminLayout;

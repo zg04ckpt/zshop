@@ -1,0 +1,64 @@
+.order .table * {
+    font-size: 14px;
+}
+
+.order .table th {
+    text-align: start;
+}
+
+.order .table td {
+    border-top: 1px solid #dedede;
+}
+
+.order .table img {
+    width: 100%;
+}
+
+.order .change-action i {
+    border: 1px #dedede solid;
+    padding: 2px;
+    margin: 0px 2px;
+}
+
+.order .change-action i:hover {
+    color: white;
+    background-color: black;
+    cursor: pointer;
+}
+
+.order .address {
+    border: 1px #dedede solid;
+    border-radius: 5px;
+}
+
+.order .change-address {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 5px;
+
+}
+
+.order .change-address:hover, .voucher i:hover {
+    color: red;
+    cursor: pointer;
+    transform: scale(1.2);
+}
+
+.order .voucher {
+    font-size: 12px;
+    border: 1px #dedede solid;
+    padding: 1px 4px;
+    align-items: center;
+}
+
+.order .voucher i {
+    font-size: 16px;
+    margin: 0;
+    padding: 0;
+}
+
+.order i.disabled {
+    pointer-events: none;
+    opacity: 0.6;
+}

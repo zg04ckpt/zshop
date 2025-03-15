@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^6.4.6",
     "@reduxjs/toolkit": "^2.5.1",
     "@types/react-redux": "^7.1.34",
     "@types/react-router-dom": "^5.3.3",
@@ -14,10 +17,10 @@
     "qs": "^6.14.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hot-toast": "^2.5.2",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.5",
-    "react-scripts": "5.0.1",
-    "react-toastify": "^11.0.3"
+    "react-scripts": "5.0.1"
   },
   "scripts": {
     "start": "react-scripts start",

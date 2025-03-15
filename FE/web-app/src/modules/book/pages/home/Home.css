@@ -1,0 +1,15 @@
+.home .cate-item img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.home .cate-item:hover {
+    background-color: rgba(85, 82, 82, 0.253);
+    color: rgb(255, 255, 255);
+    img {
+        transform: scale(1.05);
+    }
+    cursor: pointer;
+}

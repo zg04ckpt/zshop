@@ -1,5 +1,3 @@
-
-
 .vertical-scrollable {
   overflow-y: auto;
 }
@@ -47,9 +45,12 @@
 
 input, select {
   border: 1px solid #dedede;
-  border-radius: 3px;
   padding: 2px 4px;
   color: rgb(83, 83, 83);
+}
+
+.card.card-body {
+  background-color: white;
 }
 
 input:focus, select:focus {
@@ -75,6 +76,7 @@ input:focus, select:focus {
 .label {
   border-left: 4px aqua solid;
   padding-left: 4px;
+  font-weight: 300;
 }
 
 .dropdown-item:hover {
@@ -96,6 +98,8 @@ button.disabled {
   cursor: not-allowed;
   pointer-events: none;
 }
+
+
 
 
 
