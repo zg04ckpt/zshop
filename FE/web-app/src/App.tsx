@@ -8,36 +8,49 @@ import { AdminLayout, AppDispatch, ConfirmDialog, Footer, setupInterceptors, set
 import { ConfirmEmail, getLocalUser, Login, Register } from './modules/auth';
 import { CateManagement, CreateBook, Detail, Home, ListBook, Search } from './modules/book';
 import { Cart, Order } from './modules/payment';
-import { AccountAddress, AccountHistory, AccountInfo, AccountLayout, UserManagement } from './modules/user';
+import { AccountAddress, AccountPurchaseHistory, AccountInfo, AccountLayout, ListUser } from './modules/user';
 import { Overview } from './modules/analysis';
+import PaymentHistory from './modules/user/pages/user-account/payment-history/PaymentHistory';
+import OrderHistoryDetail from './modules/user/pages/user-account/order-history-detail/OrderHistoryDetail';
+import MainLayout from './modules/shared/layout/main-layout/MainLayout';
+import AdminOrderLayout from './modules/shared/layout/admin-order-layout/AdminOrderLayout';
+import ListSystemOrder from './modules/payment/pages/management/list-system-order/ListSystemOrder';
+import ListRequestCancelOrder from './modules/payment/pages/management/list-request-cancel-order/ListRequestCancelOrder';
 
 export const router = createBrowserRouter([{ 
   path: '/',
   element: <App/>, 
   children: [
-
-    { index: true, element: <Home/> },
-    { path: 'search', element: <Search/> },
-    { path: 'book', element: <Detail/> },
-    { path: 'order', element: <Order/> },
-    { path: 'cart', element: <Cart/> },
-    { path: 'account', element: <AccountLayout/>, children: [
-      { index: true, element: <AccountInfo/> },
-      { path: 'address', element: <AccountAddress/> },
-      { path: 'history', element: <AccountHistory/> },
-    ]},
-    
     { path: 'register', element: <Register/> },
     { path: 'login', element: <Login/> },
     { path: 'confirm-email', element: <ConfirmEmail/> },
 
-    { path: 'cart', element: <Cart/> },
+    { path: '', element: <MainLayout/>, children: [
+      { index: true, element: <Home/> },
+      { path: 'search', element: <Search/> },
+      { path: 'book', element: <Detail/> },
+      { path: 'order', element: <Order/> },
+      { path: 'cart', element: <Cart/> }
+    ] },
+
+    { path: 'account', element: <AccountLayout/>, children: [
+      { index: true, element: <AccountInfo/> },
+      { path: 'address', element: <AccountAddress/> },
+      // { path: 'purchase-history', element: <AccountPurchaseHistory/> },
+      { path: 'payment-history', element: <PaymentHistory/> },
+      { path: 'payment-history/detail', element: <OrderHistoryDetail/> },
+    ]},
+    
     { path: 'admin', element: <AdminLayout/>, children: [
       { index: true, path:'overview', element: <Overview/> },
       { path: 'product', element: <ListBook/> },
       { path: 'product/create', element: <CreateBook/> },
-      { path: 'user', element: <UserManagement/> },
+      { path: 'user', element: <ListUser/> },
       { path: 'cate', element: <CateManagement/> },
+      { path: 'order', element: <AdminOrderLayout/>, children: [
+        { index: true, element: <ListSystemOrder/> },
+        { path: 'request-cancel', element: <ListRequestCancelOrder/> },
+      ] },
     ]},
   ] 
 }]);
@@ -63,7 +76,7 @@ function App() {
           {/* Content */}
           <div className="MainLayout">
               <TopBar/>
-              <div className="container-lg page">
+              <div className="col-12">
                   <Outlet context={{ isApiReady }}/>
               </div>
               <Footer/>

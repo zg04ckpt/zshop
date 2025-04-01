@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import './UserManagement.css';
-import { RoleSelectItemDTO, UserItemDTO, useUser } from "../..";
-import { Button, formatDate, Loading, OutletContextProp, Pagination } from "../../../shared";
+import './ListUser.css';
+import { RoleSelectItemDTO, UserItemDTO, useUser } from "../../..";
+import { Button, convertDateToTimeSpan, Loading, OutletContextProp, Pagination } from "../../../../shared";
 import { useOutletContext } from "react-router-dom";
-const UserManagement = () => {
+const ListUser = () => {
     const { apiLoading, getUsersAsList, getRolesOfUser } = useUser();
     const { isApiReady } = useOutletContext<OutletContextProp>();
 
@@ -115,7 +115,7 @@ const UserManagement = () => {
                                 { !e.isActivated && <div className="tag tag-not-activated">Chưa kích hoạt</div> }
                             </td>
                             <td>{e.roles.join(',')}</td>
-                            <td>{formatDate(e.lastLogin)}</td>
+                            <td>{convertDateToTimeSpan(e.lastLogin)}</td>
                             <td>
                                 <div className="d-flex action align-items-center">
                                     <i className='bx bx-message-rounded-dots'></i>
@@ -135,4 +135,4 @@ const UserManagement = () => {
     );
 }
 
-export default UserManagement;
+export default ListUser;

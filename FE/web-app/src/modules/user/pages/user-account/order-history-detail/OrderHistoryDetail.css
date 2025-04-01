@@ -1,0 +1,31 @@
+.order-history-detail .green-tag {
+    border: 2px solid green;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: green;
+    background-color: rgba(85, 207, 85, 0.213);
+}
+
+.order-history-detail .red-tag {
+    border: 2px solid rgb(225, 0, 0);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: rgb(225, 0, 0);
+    background-color: rgba(255, 0, 0, 0.163);
+}
+
+.order-history-detail .gray-tag {
+    border: 2px solid gray;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: gray;
+    background-color: rgba(167, 167, 167, 0.324);
+}
+
+.order-history-detail .table td {
+    border-top: 1px solid #dedede;
+}
+
+.order-history-detail td, .order-history-detail th {
+    padding: 5px 0px;
+}

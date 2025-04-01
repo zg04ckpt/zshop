@@ -7,30 +7,48 @@ const AdminLayout = () => {
     const location = useLocation();
     const outletContext = useOutletContext();
 
-    const isSelected = (path: string) => {
-        return location.pathname.includes(path)? 'selected':''
-    }
-
     return (
-        <div className="admin">
-            <div className="card card-body rounded-0 mt-2 pt-2">
-                {/* Navigation tab */}
-                <div className="d-flex tab mb-2">
-                <div className={`tab-item px-3 py-1 ${isSelected('/admin/overview')}`} 
-                        onClick={() => navigate('/admin/overview')}>Tổng quan</div>
+        <div className="admin-layout mt-2 px-3">
+            <div className="row">
+                <div className="col-2">
+                    <label className="py-1 fw-bold text-secondary"><i className='bx bx-chevrons-right'></i>Quản lý</label>
+                    <div className="d-flex flex-column">
+                        <div 
+                            className={`option ${location.pathname.startsWith('/admin/overview')? 'selected': ''}`} 
+                            onClick={() => navigate('/admin/overview')}>
+                                Tổng quan
+                        </div>
 
-                    <div className={`tab-item px-3 py-1 ${isSelected('/admin/product')}`} 
-                        onClick={() => navigate('/admin/product')}>Sản phẩm (32)</div>
+                        <div 
+                            className={`option ${location.pathname.startsWith('/admin/product')? 'selected': ''}`} 
+                            onClick={() => navigate('/admin/product')}>
+                                Kho sách
+                        </div>
 
-                    <div className={`tab-item px-3 py-1 ${isSelected('/admin/user')}`} 
-                        onClick={() => navigate('/admin/user')}>Người dùng (10)</div>
+                        <div 
+                            className={`option ${location.pathname.startsWith('/admin/user')? 'selected': ''}`} 
+                            onClick={() => navigate('/admin/user')}>
+                                Tài khoản người dùng
+                        </div>
 
-                    <div className={`tab-item px-3 py-1 ${isSelected('/admin/cate')}`} 
-                        onClick={() => navigate('/admin/cate')}>Thể loại (10)</div>
+                        <div 
+                            className={`option ${location.pathname.startsWith('admin/cate')? 'selected': ''}`} 
+                            onClick={() => navigate('/admin/cate')}>
+                                Danh mục sách
+                        </div>
+
+                        <div 
+                            className={`option ${location.pathname.startsWith('/admin/order')? 'selected': ''}`} 
+                            onClick={() => navigate('/admin/order')}>
+                                Đơn hàng
+                        </div>
+                    </div>
                 </div>
 
-                {/* Content */}
-                <Outlet context={outletContext}/>
+                {/* Right - Content */}
+                <div className="col-10">
+                    <Outlet context={outletContext}/>
+                </div>
             </div>
         </div>
     );

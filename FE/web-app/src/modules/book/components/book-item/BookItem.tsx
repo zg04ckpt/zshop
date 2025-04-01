@@ -18,7 +18,7 @@ export const BookItem = (prop: BookItemProp) => {
                 <img className="prod-img" src={prop.data.cover ?? defaultImageUrl} alt="" />
                 <p className="prod-cate text-center mb-0 mt-1 max-1-line">{prop.data.categories.join(',')}</p>
                 <div className="d-flex align-items-center">
-                    <div className="prod-price">{prop.data.price}</div>
+                    <div className="prod-price">{prop.data.price.toLocaleString('vn')}</div>
                     <b className="currency ms-1 text-secondary">{prop.data.currency}</b>
                 </div>
                 <div className="prod-name mb-0">{prop.data.name}</div>

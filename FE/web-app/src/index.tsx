@@ -7,17 +7,20 @@ import { Provider } from 'react-redux';
 import { AppContextProvider } from './modules/shared/stores/appContext';
 import { store } from './modules/shared';
 
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3'
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
     <Provider store={store}>
       <AppContextProvider>
-        <RouterProvider router={router}>
-          <App />
-        </RouterProvider>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <RouterProvider router={router}>
+              <App />
+          </RouterProvider>
+        </LocalizationProvider>
       </AppContextProvider>
     </Provider>
-  // <ErrorBoundary>
-  // </ErrorBoundary>
 );

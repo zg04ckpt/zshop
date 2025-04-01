@@ -75,7 +75,7 @@ export const deleteBookApi = async (id: string): Promise<ApiResult> => {
 export const getCategoriesAsListItemApi = async (): Promise<ApiResult<CategoryListItemDTO[]>> => {
     try {
         debugger
-        return (await serverApi.get<ApiResult<CategoryListItemDTO[]>>(`/management/book/categories`)).data;
+        return (await serverApi.get<ApiResult<CategoryListItemDTO[]>>(`books/categories`)).data;
     } catch (err: any) {
         console.log(err);
         return {

@@ -4,6 +4,15 @@ export const saveLocalUser = (data: LocalUser) => {
     localStorage.setItem('user', JSON.stringify(data));
 }
 
+export const isAdmin = () => {
+    const data = localStorage.getItem('user');
+    if (data) {
+        const user = JSON.parse(data) as LocalUser;
+        return user.roles.includes('Admin');
+    }
+    return false;
+}
+
 export const getLocalUser = (): LocalUser|null => {
     const data = localStorage.getItem('user');
     return data? JSON.parse(data) as LocalUser : null;

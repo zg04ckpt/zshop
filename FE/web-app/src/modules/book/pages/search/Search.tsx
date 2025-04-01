@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import './Search.css';
 import { BookFilter, BookItem, BookListItemDTO, CategorySelectItemDTO, useBook } from "../..";
 import { Link, useOutletContext } from "react-router-dom";
 import { AppDispatch, Button, endLoadingStatus, OutletContextProp, Pagination, scrollToObject, scrollToTop, startLoadingStatus } from "../../../shared";
 import { Box, FormControlLabel, Radio, RadioGroup, Slider } from "@mui/material";
 import { useDispatch } from "react-redux";
+import { flushSync } from "react-dom";
+import { debounce, throttle } from "lodash";
 
 type CategoryCheckBoxSelectItem = CategorySelectItemDTO & {
     isChecked: boolean
@@ -22,17 +24,14 @@ const Search = () => {
     const [name, setName] = useState<string>('');
     const [sortBy, setSortBy] = useState<string>('Name');
     const [order, setOrder] = useState<string>('asc');
-    const [categoryIds, setCategoryIds] = useState<number[]>([]);
     const [page, setPage] = useState<number>(1);
     const [size, setSize] = useState<number>(20);
     const [totalRecord, setTotalRecord] = useState<number>(0);
     const [totalPage, setTotalPage] = useState<number>(0);
     const [categories, setCategories] = useState<CategoryCheckBoxSelectItem[]>([]);
+    const nameRef = useRef<HTMLInputElement>(null);
 
-    const handleChange = (event: Event, newValue: number | number[]) => {
-        setPriceRange(newValue as number[]);
-    };
-
+    // init cate list
     const initCate = async () => {
         const cateData = await getCategoriesAsListItem()
         setCategories(cateData.map(e => ({
@@ -41,11 +40,7 @@ const Search = () => {
         })));
     }
 
-    useEffect(() => {
-        if (apiLoading) dispatch(startLoadingStatus());
-        else dispatch(endLoadingStatus());
-    }, [apiLoading]);
-
+    // load from api
     const load = async () => {
         const res = await getBooksAsListItem({
             name, maxPrice, 
@@ -62,43 +57,65 @@ const Search = () => {
             if (categories.length == 0) initCate();
         }
     }
-
+    
     const reset = () => {
-        setName('');
-        setMinPrice(null);
-        setMaxPrice(null);
-        setOrder('asc');
-        setSortBy('name');
-        setCategoryIds([]);
-        setOrder('asc');
-        setPage(1);
-        setCategories(prev => prev.map(e => ({... e, isChecked: false})));
-    }
+        flushSync(() => {
+            setName("");
+            setMinPrice(null);
+            setMaxPrice(null);
+            setOrder("asc");
+            setSortBy("name");
+            setPage(1);
+            setPriceRange([0, 100]);
+            setCategories((prev) => prev.map((e) => ({ ...e, isChecked: false })));
+        });
+    };
 
+    // change type of sorting
     const handleChangeSortOption = (opt: string) => {
         var opts = opt.split('-');
         setOrder(opts[1]);
         setSortBy(opts[0])
     }
 
-    const handleOnClickCateItem = (cateId: number) => {
+    // change on select category
+    const handleOnClickCateItem = (cateId: number, isChecked: boolean) => {
         setCategories(prev => prev.map(e => 
-            e.id == cateId? {... e, isChecked: !e.isChecked} : e
+            e.id == cateId? {... e, isChecked: !isChecked} : e
         ));
     }
 
+    const handlePriceRangeChange = (event: Event, newValue: number | number[]) => {
+        setPriceRange(newValue as number[]);
+    };
+
+    // set loading state
+    useEffect(() => {
+        if (apiLoading) dispatch(startLoadingStatus());
+        else dispatch(endLoadingStatus());
+    }, [apiLoading]);
+
+    // auto search
     useEffect(() => {
         if(isApiReady) load();
-    }, [page, isApiReady]);
+    }, [page, isApiReady, name, minPrice, maxPrice, order, sortBy, categories]);
 
+    // delay update for slider
+    const updatePrices = useCallback(
+        debounce(() => {
+            setMinPrice(priceRange[0] / 100.0 * 1000000);
+            setMaxPrice(priceRange[1] / 100.0 * 1000000);
+        }, 500), 
+        [priceRange] 
+    );
     useEffect(() => {
-        setMinPrice(priceRange[0] / 100.0 * 1000000);
-        setMaxPrice(priceRange[1] / 100.0 * 1000000);
-    }, [priceRange])
+        updatePrices();
+        return () => updatePrices.cancel();
+    }, [priceRange]);
 
     return (
         <div className="row mt-3 search">
-            {/* Category */}
+            {/* Filter */}
             <div className="col-3">
                 <div className="d-flex flex-column">
                     <div className="label mb-2">Danh mục</div>
@@ -107,7 +124,7 @@ const Search = () => {
                             {
                                 categories.map(e => (
                                     <div className="d-flex py-1 cate-item align-items-center ps-2">
-                                        <input type="checkbox" className="me-1" checked={e.isChecked} onClick={() => handleOnClickCateItem(e.id)}/>
+                                        <input type="checkbox" className="me-1" checked={e.isChecked} onClick={() => handleOnClickCateItem(e.id, e.isChecked)}/>
                                         <div className="ms-2 max-1-line">{e.name}</div>
                                     </div>
                                 ))
@@ -131,7 +148,7 @@ const Search = () => {
 
                         <Slider
                             value={priceRange}
-                            onChange={handleChange}
+                            onChange={handlePriceRangeChange}
                             valueLabelDisplay="off"
                         />
                     </div>
@@ -150,7 +167,7 @@ const Search = () => {
                     </RadioGroup>
 
                     <div className="d-flex mt-2 justify-content-center">
-                        <Button pxWidth={100} label="Reset" onClick={reset}/>
+                        <Button pxWidth={100} label="Làm mới" className="ms-2" onClick={reset}/>
                         <Button pxWidth={100} label="Lọc" className="ms-2" blackTheme onClick={load}/>
                     </div>
                 </div>
@@ -159,10 +176,16 @@ const Search = () => {
             {/* List */}
             <div className="col-9">
                 <div className="d-flex">
-                <Button label="Bỏ lọc" pxSize={13} icon={<i className='bx bx-x fs-5'></i>} onClick={() => {}}/>
+                    <label className="me-2">Hiển thị {totalRecord} kết quả</label>
+                    { name && <>
+                        <Button label={`Từ khóa: ${name}`} pxSize={13} icon={<i className='bx bx-x fs-5'></i>} onClick={() => setName('')}/>
+                    </> }
                     <div className="flex-fill"></div>
-                    <Button label="Tìm kiếm" pxWidth={80} blackTheme onClick={() => {}}/>
-                    <input type="text" style={{fontSize: '14px', width: '300px'}} className="ms-2 px-2 text-secondary" placeholder="Nhập tên sách ..."/>
+                    <Button label="Tìm kiếm" pxWidth={80} pxSize={14} pxHeight={30} blackTheme onClick={() => {
+                        setName(nameRef.current!.value);
+                        nameRef.current!.value = '';
+                    }}/>
+                    <input ref={nameRef} type="text" style={{fontSize: '14px', width: '300px'}} className="ms-2 px-1 py-1 text-secondary" placeholder="Nhập tên sách ..."/>
                 </div>
                 
                 <div id="list" className="row g-2 mt-1">

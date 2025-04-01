@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
 import './CateManagement.css';
 import { CategoryListItemDTO, useBook } from "../..";
-import { Button, defaultImageUrl, formatDate, Loading, OutletContextProp, scrollToTop,
+import { Button, defaultImageUrl, convertDateToTimeSpan, Loading, OutletContextProp, scrollToTop,
      showErrorToast, showInfoToast, useAppContext, ValidatableInput } from "../../../shared";
 import { useOutletContext } from "react-router-dom";
 
@@ -142,7 +142,7 @@ export const CateManagement = () => {
                                     <td><img src={e.thumbnail} alt="" /></td>
                                     <td>{e.name}</td>
                                     <td><a href="">{e.parentName}</a></td>
-                                    <td>{formatDate(e.updatedAt)}</td>
+                                    <td>{convertDateToTimeSpan(e.updatedAt)}</td>
                                     <td>
                                         <div className="d-flex action mt-2">
                                             { e.parentId && <>

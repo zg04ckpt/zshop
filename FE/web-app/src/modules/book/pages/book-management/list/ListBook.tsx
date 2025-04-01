@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
 import './ListBook.css';
 import { BookDTO, BookListItemDTO, CategorySelectItemDTO, useBook } from "../../..";
-import { Button, dateToInputValue, defaultImageUrl, formatDate, Loading, OutletContextProp, Pagination, scrollToObject, showErrorToast, showInfoToast, useAppContext, ValidatableInput } from "../../../../shared";
+import { Button, dateToInputValue, defaultImageUrl, convertDateToTimeSpan, Loading, OutletContextProp, Pagination, scrollToObject, showErrorToast, showInfoToast, useAppContext, ValidatableInput } from "../../../../shared";
 import { useNavigate, useOutletContext } from "react-router-dom";
 
 type CategoryCheckBoxSelectItem = CategorySelectItemDTO & {
@@ -398,7 +398,7 @@ export const ListBook = () => {
                                     <td>{e.price} {e.currency}</td>
                                     <td>{e.categories.join(', ')}</td>
                                     <td>{e.author}</td>
-                                    <td>{formatDate(e.updatedAt)}</td>
+                                    <td>{convertDateToTimeSpan(e.updatedAt)}</td>
                                     <td>
                                         <div className="d-flex action mt-2">
                                             <i className='bx bxs-hot' title="Đặt là nổi bật"></i>

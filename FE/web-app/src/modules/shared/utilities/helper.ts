@@ -2,6 +2,8 @@ import { NavigateFunction } from "react-router-dom";
 import { ApiResult } from "../types/api";
 import axios, { AxiosResponse } from "axios";
 import QueryString from "qs";
+import { format } from "date-fns"
+import { parseISO } from "date-fns/parseISO";
 
 export function toCamelCase(obj: any): any {
     if (obj === null || typeof obj !== 'object') {
@@ -75,7 +77,7 @@ export const objectToHttpParam = (data: object) => {
     return QueryString.stringify(data);
 }
 
-export const formatDate = (date: Date): string => {
+export const convertDateToTimeSpan = (date: Date): string => {
     const now = Date.now();
     const past = date.getTime();
     const duration = (now - past) / 1000;
@@ -94,6 +96,11 @@ export const formatDate = (date: Date): string => {
         return Math.floor(duration / 31536000) + " năm trước";
     }
 };
+
+export const formatDate = (val: any, pattern: string) => {
+    debugger
+    return format(new Date(val), pattern);
+}
 
 export const scrollToTop = () => {
     window.scrollTo({

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import './AccountHistory.css';
+import './AccountPurchaseHistory.css';
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Pagination } from "../../../../shared";
 import { BookItem } from "../../../../book";
 
-export const AccountHistory = () => {
+export const AccountPurchaseHistory = () => {
     // Test
     const [page, setPage] = useState(1);
     const total = 15;
@@ -23,7 +23,6 @@ export const AccountHistory = () => {
 
     return (
         <div className="history">
-            
             <div className="card card-body rounded-0 pt-1">
                 {/* Navigation tab */}
                 <div className="d-flex tab mb-2">

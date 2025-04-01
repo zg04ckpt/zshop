@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import './AccountInfo.css';
 import { UserProfileDTO, useUser } from "../../..";
-import { Button, dateToInputValue, defaultImageUrl, Loading, showErrorToast, stringToDate, useAppContext, ValidatableInput } from "../../../../shared";
+import { AppDispatch, Button, dateToInputValue, defaultImageUrl, endLoadingStatus, Loading, OutletContextProp, showErrorToast, startLoadingStatus, stringToDate, useAppContext, ValidatableInput } from "../../../../shared";
+import { useOutletContext } from "react-router-dom";
+import { useDispatch } from "react-redux";
 
 export const AccountInfo = () => {
     const { apiLoading, getProfile, updateProfile, updateUserLocalInfo } = useUser();
@@ -64,14 +66,22 @@ export const AccountInfo = () => {
         }
     }
 
+    const dispatch = useDispatch<AppDispatch>();
+    const { isApiReady } = useOutletContext<OutletContextProp>();
+
     useEffect(() => {
-        init();
-    }, []);
+        if(isApiReady) init();
+    }, [isApiReady]);
+
+    useEffect(() => {
+        if (apiLoading) dispatch(startLoadingStatus());
+        else dispatch(endLoadingStatus());
+    }, [apiLoading]);
     
     return (
         <div className="account-info">
-            <div className="card card-body rounded-0">
-                <Loading isShow={apiLoading}/>
+            { profile && <>
+                <h5 className="text-center mb-3">Thông tin tài khoản</h5>
                 <div className="row">
 
                     {/* Image */}
@@ -89,42 +99,26 @@ export const AccountInfo = () => {
                                 {/* Username */}
                                 <tr>
                                     <th>Tên tài khoản:</th>
-                                    <td>{profile?.userName}</td>
+                                    <td>{profile.userName}</td>
                                 </tr>
                                 {/* Last name */}
                                 <tr>
                                     <th>Họ đệm:</th>
                                     <td>
-                                        <ValidatableInput 
-                                            isFormFocus={formFocus}
-                                            type="text" 
-                                            initVal={profile?.lastName || ''}
-                                            valueChange={val => setProfile({
+                                        <input value={profile.lastName} type="text" onChange={e => setProfile({
                                                 ... profile!,
-                                                lastName: val
-                                            })} 
-                                            validator={val => {
-                                                if (!val) return "Họ đệm không được bỏ trống";
-                                                return null;
-                                            }}/>
+                                                lastName: e.target.value
+                                            })}/>
                                     </td>
                                 </tr>
                                 {/* First name */}
                                 <tr>
                                     <th>Tên:</th>
                                     <td>
-                                        <ValidatableInput 
-                                            isFormFocus={formFocus}
-                                            type="text" 
-                                            initVal={profile?.firstName}
-                                            valueChange={val => setProfile({
+                                        <input value={profile.firstName} type="text" onChange={e => setProfile({
                                                 ... profile!,
-                                                firstName: val
-                                            })} 
-                                            validator={val => {
-                                                if (!val) return "Tên không được bỏ trống";
-                                                return null;
-                                            }}/>
+                                                firstName: e.target.value
+                                            })}/>
                                     </td>
                                 </tr>
                                 
@@ -132,40 +126,20 @@ export const AccountInfo = () => {
                                 <tr>
                                     <th>Email:</th>
                                     <td>
-                                        <ValidatableInput 
-                                            isFormFocus={formFocus}
-                                            type="text" 
-                                            initVal={profile?.email}
-                                            valueChange={val => setProfile({
+                                        <input value={profile.email} type="text" onChange={e => setProfile({
                                                 ... profile!,
-                                                email: val
-                                            })} 
-                                            validator={val => {
-                                                if (!val) return `Email không được bỏ trống.`;
-                                                if (!/^[a-zA-Z0-9._]+@[a-zA-Z0-9.]+\.[a-zA-Z]{2,4}$/.test(val))
-                                                    return `Email không hợp lệ`;
-                                                return null;
-                                            }}/>
+                                                email: e.target.value
+                                            })}/>
                                     </td>
                                 </tr>
                                 {/* PhoneNumber */}
                                 <tr>
                                     <th>Số điện thoại:</th>
                                     <td>
-                                        <ValidatableInput 
-                                            isFormFocus={formFocus}
-                                            type="text" 
-                                            initVal={profile?.phoneNumber}
-                                            valueChange={val => setProfile({
+                                        <input value={profile.phoneNumber} type="text" onChange={e => setProfile({
                                                 ... profile!,
-                                                phoneNumber: val
-                                            })} 
-                                            validator={val => {
-                                                if (!val) return `Số điện thoại không được bỏ trống.`;
-                                                if (!/^[0-9]+$/.test(val))
-                                                    return `Số điện thoại chỉ chứa chữ số`;
-                                                return null;
-                                            }}/>
+                                                phoneNumber: e.target.value
+                                            })}/>
                                     </td>
                                 </tr>
                                 {/* Sex */}
@@ -209,7 +183,7 @@ export const AccountInfo = () => {
                 <div className="d-flex justify-content-center">
                     <Button pxWidth={100} blackTheme label="Lưu thay đổi" onClick={() => handleUpdateAction()}></Button>
                 </div>
-            </div>
+            </> }
         </div>
     );
 }

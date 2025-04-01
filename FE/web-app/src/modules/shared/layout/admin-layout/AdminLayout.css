@@ -1,9 +1,15 @@
-.admin .tab .tab-item:hover {
-    color: #c80808;
-    cursor: pointer;
+.admin-layout .option {
+    padding: 4px 8px;
+    border-top: 1px solid #dedede;
 }
 
-.admin .tab .tab-item.selected {
-    color: #c80808;
-    border-bottom: 2px solid #c80808;
+.admin-layout .option.selected {
+    background-color: black;
+    color: white;
+}
+
+.admin-layout .option:not(.option.selected):hover {
+    color: rgb(255, 255, 255);
+    cursor: pointer;
+    background-color: rgba(142, 132, 132, 0.47);
 }

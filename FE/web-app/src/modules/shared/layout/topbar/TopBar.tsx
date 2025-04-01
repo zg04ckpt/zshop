@@ -30,7 +30,7 @@ const TopBar = () => {
     }
     
     return (
-        <div>
+        <div className="position-relative">
             <div className="w-100" style={{height: '50px'}}></div>
             <div className="topbar">
                 <div className="d-flex align-items-center">
@@ -64,7 +64,9 @@ const TopBar = () => {
                     </div>
                 </div>
             </div>
-            { isLoading && <LinearProgress /> }
+            <div className="position-absolute top-100 start-0 w-100">
+                { isLoading && <LinearProgress /> }
+            </div>
         </div>
     );
 }

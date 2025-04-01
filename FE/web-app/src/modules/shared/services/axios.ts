@@ -3,7 +3,7 @@ import { NavigateFunction } from "react-router-dom";
 import { toast } from "react-toastify";
 import { clearAuth, getToken, refreshTokenApi, saveToken } from "../../auth";
 import { setUser } from "../stores/authSlice";
-import { ApiResult, AppDispatch, showErrorToast } from "..";
+import { ApiResult, AppDispatch, endLoadingStatus, showErrorToast } from "..";
 import { toCamelCase } from "../utilities/helper";
 
 // instance for other api providers
@@ -54,6 +54,7 @@ export const setupInterceptors = (navigate: NavigateFunction, location: any, dis
                 showErrorToast("Vui lòng đăng nhập để tiếp tục.");
                 clearAuth();
                 dispatch(setUser(null));
+                dispatch(endLoadingStatus());
                 navigate(`/login?return_url=${location.pathname.substring(1)}`);
             } else {
                 // console.log(apiError);

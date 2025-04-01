@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import './Order.css'
-import { AppDispatch, Button, defaultImageUrl, endLoadingStatus, OutletContextProp, showErrorToast, startLoadingStatus } from "../../../shared";
+import { AppDispatch, Button, defaultImageUrl, endLoadingStatus, OutletContextProp, showErrorToast, startLoadingStatus, useAppContext } from "../../../shared";
 import { OrderDTO, useOrder } from "../..";
 import { useDispatch } from "react-redux";
 import { useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
@@ -11,10 +11,11 @@ import { AddressDTO, AddressItemDTO, useUser } from "../../../user";
 const Order = () => {
     const { orderApiLoading, confirmOrder, payOrder } = useOrder();
     const { getAddresses } = useUser();
-    const dispatch = useDispatch<AppDispatch>();
     const [ param ] = useSearchParams();
     const [ order, setOrder ] = useState<OrderDTO|null>(null);
+    const dispatch = useDispatch<AppDispatch>();
     const { isApiReady } = useOutletContext<OutletContextProp>();
+    const appContext = useAppContext();
     const navigate = useNavigate();
 
     const [ total, setTotal ] = useState<number>(0);
@@ -50,6 +51,18 @@ const Order = () => {
         const item = order!.items.find(e => e.bookId == bookId);
         setTotal(prev => prev + value * item!.price);
     } 
+
+    const checkIfUserAddedAddress = () => {
+        if (listAddress.length == 0) {
+            appContext!.showConfirmDialog({
+                message: "Danh sách địa chỉ trống, bạn có muốn thiết lập địa chỉ không?",
+                onReject: () => {},
+                onConfirm: () => navigate('/account/address')
+            });
+            return
+        }
+        setShowChangeAddressDialog(true);
+    };
 
     const pay = async () => {
         const redirectUrl = await payOrder(order!.id, order!);
@@ -150,7 +163,7 @@ const Order = () => {
 
                             { !previewAddress && <>
                                 <label className="mb-1">Bạn chưa thiết lập địa chỉ nhận hàng mặc định.</label>
-                                <Button label="Thiết lập địa chỉ ngay" onClick={() => setShowChangeAddressDialog(true)}/>    
+                                <Button label="Thiết lập địa chỉ ngay" onClick={() => checkIfUserAddedAddress()}/>    
                             </> } 
                         </div>
                     </div>
@@ -246,9 +259,9 @@ const Order = () => {
 
                         </RadioGroup>
 
-                        <div className="d-flex justify-content-center mb-2">
+                        {/* <div className="d-flex justify-content-center mb-2">
                             <Button className="mt-3" label="Xác nhận" pxWidth={120} pxSize={14} blackTheme onClick={() => {}}/>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </> }
