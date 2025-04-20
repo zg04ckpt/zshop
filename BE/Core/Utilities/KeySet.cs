@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Core.Utilities
+﻿namespace Core.Utilities
 {
     public class KeySet
     {
@@ -15,6 +9,7 @@ namespace Core.Utilities
             public const string CONFIRM_EMAIL = "authentication_email_code";
             public const string REFRESH_TOKEN = "valid_refresh_token";
             public const string REVOKED_ACCESS_TOKEN = "revoked_access_token";
+            public const string GOOGLE_LOGIN_RESULT = "google_login_result";
         }
     }
 }

@@ -8,7 +8,7 @@ import { AdminLayout, AppDispatch, ConfirmDialog, Footer, setupInterceptors, set
 import { ConfirmEmail, getLocalUser, Login, Register } from './modules/auth';
 import { CateManagement, CreateBook, Detail, Home, ListBook, Search } from './modules/book';
 import { Cart, Order } from './modules/payment';
-import { AccountAddress, AccountPurchaseHistory, AccountInfo, AccountLayout, ListUser } from './modules/user';
+import { AccountAddress, AccountPurchaseHistory, AccountInfo, AccountLayout, ListUser, ReviewBook } from './modules/user';
 import { Overview } from './modules/analysis';
 import PaymentHistory from './modules/user/pages/user-account/payment-history/PaymentHistory';
 import OrderHistoryDetail from './modules/user/pages/user-account/order-history-detail/OrderHistoryDetail';
@@ -16,6 +16,7 @@ import MainLayout from './modules/shared/layout/main-layout/MainLayout';
 import AdminOrderLayout from './modules/shared/layout/admin-order-layout/AdminOrderLayout';
 import ListSystemOrder from './modules/payment/pages/management/list-system-order/ListSystemOrder';
 import ListRequestCancelOrder from './modules/payment/pages/management/list-request-cancel-order/ListRequestCancelOrder';
+import HandleGoogleLoginCallback from './modules/auth/pages/HandleGoogleLoginCallback';
 
 export const router = createBrowserRouter([{ 
   path: '/',
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([{
     { path: 'register', element: <Register/> },
     { path: 'login', element: <Login/> },
     { path: 'confirm-email', element: <ConfirmEmail/> },
+    { path: 'google-login-callback', element: <HandleGoogleLoginCallback/> },
 
     { path: '', element: <MainLayout/>, children: [
       { index: true, element: <Home/> },
@@ -36,7 +38,7 @@ export const router = createBrowserRouter([{
     { path: 'account', element: <AccountLayout/>, children: [
       { index: true, element: <AccountInfo/> },
       { path: 'address', element: <AccountAddress/> },
-      // { path: 'purchase-history', element: <AccountPurchaseHistory/> },
+      { path: 'review-book', element: <ReviewBook/> },
       { path: 'payment-history', element: <PaymentHistory/> },
       { path: 'payment-history/detail', element: <OrderHistoryDetail/> },
     ]},
@@ -74,13 +76,13 @@ function App() {
   return (
       <>
           {/* Content */}
-          <div className="MainLayout">
-              <TopBar/>
+            <TopBar/>
+          <div style={{minHeight: '100vh'}}>
               <div className="col-12">
                   <Outlet context={{ isApiReady }}/>
               </div>
-              <Footer/>
           </div>        
+          <Footer/>
           <ScrollRestoration/>
           
           {/* Toast */}

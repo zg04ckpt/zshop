@@ -1,8 +1,6 @@
-﻿
-using Core.DTOs.Common;
+﻿using Core.DTOs.Common;
 using Core.Exceptions;
 using Newtonsoft.Json;
-using System.Net;
 
 namespace API.Middlewares
 {

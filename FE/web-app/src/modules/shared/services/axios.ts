@@ -60,7 +60,7 @@ export const setupInterceptors = (navigate: NavigateFunction, location: any, dis
                 // console.log(apiError);
                 if (apiError.response?.data) {
                     const res = toCamelCase(error.response.data) as ApiResult;
-                    showErrorToast(res.message!);
+                    // showErrorToast(res.message!);
                 } else {
                     showErrorToast("Lỗi không xác định");
                 }

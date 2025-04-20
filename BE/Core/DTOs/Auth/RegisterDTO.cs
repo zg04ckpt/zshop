@@ -20,7 +20,7 @@ namespace Core.DTOs.Auth
         public string UserName { get; set; }
 
         [Required(ErrorMessage = "Vui lòng điền email.")]
-        [EmailAddress(ErrorMessage = "Sai định dạng email.")]
+        [RegularExpression("^[a-zA-Z0-9._]+@[a-zA-Z0-9.]+\\.[a-zA-Z]{2,4}$", ErrorMessage = "Sai định dạng email.")]
         public string Email { get; set; }
 
         [Required(ErrorMessage = "Vui lòng điền số điện thoại.")]

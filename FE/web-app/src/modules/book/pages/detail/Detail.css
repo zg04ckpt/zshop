@@ -48,3 +48,28 @@
     max-width: 90px;
 }
 
+.image-item:hover {
+    border: 1px solid #06a1d5;
+}
+
+.detail .view-more {
+    color: white;
+}
+
+.detail .view-more .cover {
+    height: 80px;
+    width: 80px;
+    background-color: rgba(7, 1, 1, 0.481);
+    
+}
+
+.detail .view-more:hover {
+    color: #06a1d5;
+    cursor: pointer;
+}
+
+.detail .book-item:hover {
+    background-color: rgba(207, 207, 207, 0.409);
+    cursor: pointer;
+}
+

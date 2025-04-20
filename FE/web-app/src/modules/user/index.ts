@@ -6,4 +6,5 @@ export * from '../shared/layout/account-layout/AccountLayout';
 export * from './pages/user-account/account-address/AccountAddress';
 export * from './pages/user-account/account-purchase-history/AccountPurchaseHistory';
 export * from './pages/user-account/account-info/AccountInfo';
+export * from './pages/user-account/review-book/ReviewBook';
 export { default as ListUser } from './pages/user-management/list-user/ListUser';

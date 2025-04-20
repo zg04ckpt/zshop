@@ -1,54 +1,59 @@
-import React from "react";
+import React, { useState } from "react";
 import './ReviewComment.css';
-import { BaseProp, defaultImageUrl } from "../../../shared";
+import { BaseProp, convertDateToTimeSpan, defaultImageUrl } from "../../../shared";
+import { BookReviewListItemDTO } from "../../types/book";
+import { Rating } from "@mui/material";
+import { PhotoSlider } from "react-photo-view";
 
 type ReviewCommentProp = BaseProp & {
-
+    data: BookReviewListItemDTO
 }
 
 const ReviewComment = (prop: ReviewCommentProp) => {
+    const [showImages, setShowImages] = useState<boolean>(false);
+
     return (
-        <div className={prop.className}>
+        <div className={`${prop.className} review-comment`}>
             <div className="d-flex">
                 {/* Reviewer avt */}
                 <div className="">
-                    <img className="user-img" src={defaultImageUrl} alt="" />
+                    <img className="user-img rounded-pill border border-1 border-info p-1" src={prop.data.userAvatarUrl} alt="" />
                 </div>
                 <div className="d-flex flex-column ms-2">
                     {/* Header */}
                     <div className="d-flex header">
-                        <div className="fw-bold action-text">nguyencao142</div>
-                        <div className="text-secondary ms-2">• 3 ngày trước</div>
+                        <div className="fw-bold action-text">{prop.data.userName}</div>
+                        <div className="text-secondary ms-2">• {convertDateToTimeSpan(prop.data.createdAt)}</div>
                     </div>
 
                     {/* Rate */}
-                    <div className="d-flex rate align-items-center">
-                        <i className='bx bxs-star me-1'></i>
-                        <i className='bx bxs-star me-1'></i>
-                        <i className='bx bxs-star me-1'></i>
-                        <i className='bx bxs-star me-1'></i>
-                        <i className='bx bxs-star me-1'></i>
-                        <div className="rate-float">(4.5)</div>
-                    </div>
+                    <Rating name="half-rating-read" defaultValue={prop.data.rate} precision={0.5} readOnly />
 
                     {/* Comment */}
-                    <p className="max-3-lines">Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia aliquid dolor, optio nisi suscipit, deleniti molestiae sit vel nam voluptas a? Quia inventore alias doloribus molestiae fugit eveniet quas itaque?</p>
+                    <p className="max-3-lines">{prop.data.content}</p>
 
                     {/* Review images / video */}
                     <div className="d-flex">
 
-                        <div className="review-video me-2 position-relative pointer-hover">
+                        {/* <div className="review-video me-2 position-relative pointer-hover">
                             <img src={defaultImageUrl} alt="" />
                             <div className="review-video-tag align-items-center justify-content-between d-flex position-absolute">
                                 <i className='bx bxs-video-recording'></i>
                                 <div className="duration me-1">00:23</div>
                             </div>
-                        </div>
+                        </div> */}
 
-                        <img className="review-image me-2 pointer-hover" src={defaultImageUrl} alt="" />
+                        {prop.data.imageUrls.map(e => <>
+                            <img className="review-image me-2 pointer-hover" onClick={() => setShowImages(true)} src={e} alt="" />
+                        </>)}
                     </div>
                 </div>
             </div>
+
+            <PhotoSlider 
+                visible={showImages}
+                onClose={() => setShowImages(false)}
+                images={prop.data.imageUrls.map(e => ({key: e, src: e}))}/>
         </div>
         
     );

@@ -1,12 +1,17 @@
 ﻿using API.Middlewares;
 using Core.Configurations;
 using Core.DTOs.Common;
-using Core.Repositories;
+using Core.Interfaces.Repositories;
+using Core.Interfaces.Services;
+using Core.Interfaces.Services.External;
 using Core.Repositories.Impl;
 using Core.Services;
-using Core.Services.Impl;
+using Core.Services.External;
 using Core.Utilities;
 using Data;
+using Data.Repositories;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,10 +23,14 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 
+builder.Services.AddHttpContextAccessor();
+
 // Add config mapping
 builder.Services.Configure<JwtConfig>(config.GetSection("JwtConfig"));
 builder.Services.Configure<AuthConfig>(config.GetSection("AuthConfig"));
 builder.Services.Configure<MailConfig>(config.GetSection("MailConfig"));
+builder.Services.Configure<VNPayConfig>(config.GetSection("VNPayConfig"));
+builder.Services.Configure<PaymentConfig>(config.GetSection("PaymentConfig"));
 
 // Add sqlserver service to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -36,13 +45,14 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     return ConnectionMultiplexer.Connect(redisConfig);
 });
 
+
+
 // Add authentication jwt
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-    .AddJwtBearer(option =>
+.AddJwtBearer(option =>
 {
     option.TokenValidationParameters = new()
     {
@@ -58,7 +68,20 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("SecretKey")!))
     };
+})
+.AddCookie(options =>
+{
+    options.Cookie.SameSite = SameSiteMode.Lax;
+})
+.AddGoogle("Google", options =>
+{
+    options.ClientId = EnvHelper.GetGoogleClientId();
+    options.ClientSecret = EnvHelper.GetGoogleClientSecret();
+    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.ClaimActions.MapJsonKey("image", "picture");
 });
+
+
 
 // Add authorization
 builder.Services.AddAuthorization(options =>
@@ -72,30 +95,49 @@ builder.Services.AddCors(options =>
     options.AddPolicy(
         "AllowWebClient",
         builder => builder
-        .WithOrigins(config.GetSection("AllowedHosts")["Web"])
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials());
+            .WithOrigins(config.GetSection("AllowedHosts")["Web"])
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
 });
 
+// Add repo
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IAddressRepository, AddressRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IBookRepository, BookRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<ICancelOrderRequestRespository, CancelOrderRequestRepository>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 
-
-builder.Services.AddTransient<IUserRepository, UserRepository>();
-builder.Services.AddTransient<IRoleRepository, RoleRepository>();
-builder.Services.AddTransient<IGenderRepository, GenderRepository>();
-
+// Add services
 builder.Services.AddTransient<IAuthService, AuthService>();
-
-builder.Services.AddSingleton<ExceptionMiddleware>();
-builder.Services.AddSingleton<ValidationMiddleware>();
-builder.Services.AddSingleton<JwtMiddleware>();
+builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IBookService, BookService>();
+builder.Services.AddTransient<IPaymentService, PaymentService>();
+builder.Services.AddTransient<ICartService, CartService>();
 
 builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddSingleton<IRedisService, RedisService>();
 builder.Services.AddSingleton<IStorageService, StorageService>();
 builder.Services.AddSingleton<IMailService, MailService>();
+builder.Services.AddSingleton<IVNAddressDataService, VNAddressDataService>();
 
-builder.Services.AddControllers();
+// Add middleware
+builder.Services.AddSingleton<ExceptionMiddleware>();
+builder.Services.AddSingleton<ValidationMiddleware>();
+builder.Services.AddSingleton<JwtMiddleware>();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -116,7 +158,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
         {
             IsSuccess = false,
             Errors = errors,
-            Message = "Định dạng không hợp lệ."
+            Message = errors.First().Value[0]
         }));
     };
 });
@@ -145,8 +187,8 @@ app.MapControllers();
 using var scope = app.Services.CreateScope();
 await SeedData.Init(
         scope.ServiceProvider.GetRequiredService<IRoleRepository>(),
-        scope.ServiceProvider.GetRequiredService<IGenderRepository>(),
-        scope.ServiceProvider.GetRequiredService<IUserRepository>()
+        scope.ServiceProvider.GetRequiredService<IUserRepository>(),
+        scope.ServiceProvider.GetRequiredService<ICategoryRepository>()
     );
 
 app.Run();

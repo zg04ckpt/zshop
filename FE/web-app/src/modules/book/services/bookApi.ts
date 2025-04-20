@@ -1,5 +1,5 @@
 import qs from "qs";
-import { BookDetailDTO, BookDTO, BookListItemDTO, BookSearchDTO, CategoryDTO, CategoryListItemDTO } from "..";
+import { BookDetailDTO, BookDTO, BookListItemDTO, BookReviewListItemDTO, BookSearchDTO, CategoryDTO, CategoryListItemDTO, CreateBookReviewDTO } from "..";
 import { serverApi, ApiResult, convertToFormData, Paginated } from "../../shared";
 
 //#region Book
@@ -9,6 +9,54 @@ export const getBooksAsListApi = async (data: BookSearchDTO): Promise<ApiResult<
             `/books`, 
             { params: data, paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat' })}
         )).data;
+    } catch {
+        return {
+            isSuccess: false,
+            message: 'Yêu cầu thất bại.',
+        }
+    }
+}
+
+export const getBooksAsListManagementApi = async (data: BookSearchDTO): Promise<ApiResult<Paginated<BookDetailDTO>>> => {
+    try {
+        return (await serverApi.get<ApiResult<Paginated<BookDetailDTO>>>(
+            `/management/book`, 
+            { params: data, paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat' })}
+        )).data;
+    } catch {
+        return {
+            isSuccess: false,
+            message: 'Yêu cầu thất bại.',
+        }
+    }
+}
+
+export const createBookReviewApi = async (data: CreateBookReviewDTO) => {
+    try {
+        // const formData = new FormData();
+        // formData.append('bookId', data.bookId);
+        // formData.append('content', data.content);
+        // formData.append('rate', data.rate.toString());
+        // data.images.forEach(e => {
+        //     formData.append('images', e);
+        // })
+        return (await serverApi.post<ApiResult>(
+            `/books/review`,
+            convertToFormData(data)
+        )).data;
+    } catch (err) {
+        return {
+            isSuccess: false,
+            message: 'Yêu cầu thất bại.',
+        }
+    }
+}
+
+export const getBookReviewsApi = async (id: string, page: number, size: number): Promise<ApiResult<BookReviewListItemDTO[]>> => {
+    try {
+        return (await serverApi.get<ApiResult<BookReviewListItemDTO[]>>(
+            `/books/${id}/reviews?page=${page}&size=${size}`)
+        ).data;
     } catch {
         return {
             isSuccess: false,
@@ -67,6 +115,27 @@ export const deleteBookApi = async (id: string): Promise<ApiResult> => {
     }
 }
 
+export const getTopSellBook = async (): Promise<ApiResult<BookListItemDTO[]>> => {
+    try {
+        return (await serverApi.get<ApiResult<BookListItemDTO[]>>(`/books/top-sell`)).data;
+    } catch {
+        return {
+            isSuccess: false,
+            message: 'Yêu cầu thất bại.',
+        }
+    }
+}
+
+export const getNewestBook = async (): Promise<ApiResult<BookListItemDTO[]>> => {
+    try {
+        return (await serverApi.get<ApiResult<BookListItemDTO[]>>(`/books/newest`)).data;
+    } catch {
+        return {
+            isSuccess: false,
+            message: 'Yêu cầu thất bại.',
+        }
+    }
+}
 
 //#endregion
 
@@ -74,8 +143,19 @@ export const deleteBookApi = async (id: string): Promise<ApiResult> => {
 //#region Category
 export const getCategoriesAsListItemApi = async (): Promise<ApiResult<CategoryListItemDTO[]>> => {
     try {
-        debugger
         return (await serverApi.get<ApiResult<CategoryListItemDTO[]>>(`books/categories`)).data;
+    } catch (err: any) {
+        console.log(err);
+        return {
+            isSuccess: false,
+            message: 'Yêu cầu thất bại.',
+        }
+    }
+}
+
+export const getTopCateApi = async (): Promise<ApiResult<CategoryListItemDTO[]>> => {
+    try {
+        return (await serverApi.get<ApiResult<CategoryListItemDTO[]>>(`books/categories/top-sell`)).data;
     } catch (err: any) {
         console.log(err);
         return {

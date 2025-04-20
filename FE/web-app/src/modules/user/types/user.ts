@@ -1,12 +1,14 @@
 import { BasePaging } from "../../shared";
 
+export type Gender = 'Male'|'Female'|'Other'
+
 export interface UserProfileDTO {
     firstName: string;
     lastName: string;
     userName: string;
     email: string;
     phoneNumber: string;
-    genderId: number;
+    gender: Gender;
     dateOfBirth: Date|null;
     avatarUrl: string|null;
 }
@@ -16,7 +18,7 @@ export interface UpdateUserProfileDTO {
     lastName: string;
     email: string;
     phoneNumber: string;
-    genderId: number;
+    gender: Gender;
     dateOfBirth: Date|null;
     newAvatar: File|null;
 }

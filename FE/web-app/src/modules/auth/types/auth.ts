@@ -20,6 +20,11 @@ export interface LoginResponseDTO {
     token: JwtTokenDTO;
 }
 
+export interface GoogleLoginResponseDTO extends LoginResponseDTO {
+    returnUrl: string;
+}
+
+
 export interface LocalUser {
     userId: string;
     firstName: string;

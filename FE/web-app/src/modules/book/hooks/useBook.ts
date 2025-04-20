@@ -39,7 +39,7 @@ export const useBook = (): BookContextType => {
             showSuccessToast(res.message ?? "Thành công.");
             return true;
         } else {
-            // showErrorToast(res.message ?? 'Lỗi không xác định');
+            showErrorToast(res.message ?? 'Lỗi không xác định');
             return false;
         }
     }
@@ -52,7 +52,7 @@ export const useBook = (): BookContextType => {
             showSuccessToast(res.message ?? "Thành công.");
             return true;
         } else {
-            // showErrorToast(res.message ?? 'Lỗi không xác định');
+            showErrorToast(res.message ?? 'Lỗi không xác định');
             return false;
         }
     }
@@ -65,7 +65,7 @@ export const useBook = (): BookContextType => {
             showSuccessToast(res.message ?? "Thành công.");
             return true;
         } else {
-            // showErrorToast(res.message ?? 'Lỗi không xác định');
+            showErrorToast(res.message ?? 'Lỗi không xác định');
             return false;
         }
     }
@@ -75,7 +75,6 @@ export const useBook = (): BookContextType => {
         const res = await getBooksAsListApi(data);
         setApiLoading(false);
         if (res.isSuccess) {
-            // showSuccessToast(res.message ?? "Thành công.");
             return res.data!;
         } else {
             showErrorToast(res.message ?? 'Lỗi không xác định');
@@ -103,7 +102,7 @@ export const useBook = (): BookContextType => {
             showSuccessToast(res.message ?? "Thành công.");
             return true;
         } else {
-            // showErrorToast(res.message ?? 'Lỗi không xác định');
+            showErrorToast(res.message ?? 'Lỗi không xác định');
             return false;
         }
     }
@@ -116,7 +115,7 @@ export const useBook = (): BookContextType => {
             showSuccessToast(res.message ?? "Thành công.");
             return true;
         } else {
-            // showErrorToast(res.message ?? 'Lỗi không xác định');
+            showErrorToast(res.message ?? 'Lỗi không xác định');
             return false;
         }
     }
@@ -129,7 +128,7 @@ export const useBook = (): BookContextType => {
             showSuccessToast(res.message ?? "Thành công.");
             return true;
         } else {
-            // showErrorToast(res.message ?? 'Lỗi không xác định');
+            showErrorToast(res.message ?? 'Lỗi không xác định');
             return false;
         }
     }

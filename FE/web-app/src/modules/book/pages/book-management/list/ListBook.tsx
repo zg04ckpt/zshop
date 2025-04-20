@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
 import './ListBook.css';
-import { BookDTO, BookListItemDTO, CategorySelectItemDTO, useBook } from "../../..";
+import { BookDetailDTO, BookDTO, BookListItemDTO, CategorySelectItemDTO, getBooksAsListManagementApi, useBook } from "../../..";
 import { Button, dateToInputValue, defaultImageUrl, convertDateToTimeSpan, Loading, OutletContextProp, Pagination, scrollToObject, showErrorToast, showInfoToast, useAppContext, ValidatableInput } from "../../../../shared";
 import { useNavigate, useOutletContext } from "react-router-dom";
 
@@ -26,6 +26,7 @@ export const ListBook = () => {
     const [totalRecord, setTotalRecord] = useState<number>(0);
     const [totalPage, setTotalPage] = useState<number>(0);
     const [categories, setCategories] = useState<CategoryCheckBoxSelectItem[]>([]);
+    const [stock, setStock] = useState<number>(0);
 
     const init = async () => {
         const cateData = await getCategoriesAsListItem()
@@ -36,16 +37,16 @@ export const ListBook = () => {
     }
 
     const load = async () => {
-        const res = await getBooksAsListItem({
+        const res = await getBooksAsListManagementApi({
             name, maxPrice, minPrice, page, size, sortBy, order,
             categoryIds: categories
                 .filter(e => e.isChecked)
                 .map(e => e.id)
         });
-        if (res) {
-            setTotalPage(res.totalPage);
-            setTotalRecord(res.totalRecord);
-            setBooks(res.data)
+        if (res.isSuccess) {
+            setTotalPage(res.data!.totalPage);
+            setTotalRecord(res.data!.totalRecord);
+            setBooks(res.data!.data)
         }
     }
 
@@ -140,7 +141,7 @@ export const ListBook = () => {
     }
 
     return (
-        <div className="product-management">
+        <div className="list-book">
             <div className="d-flex flex-column w-100">
                 {/* Top action */}
                 <div className="d-flex align-items-center">
@@ -224,7 +225,7 @@ export const ListBook = () => {
                         <label className="label">Cập nhật</label>
                         <Loading isShow={apiLoading}/>
                         <div className="row">
-                            <div className="col-md-4 offset-1">
+                            <div className="col-md-6">
                                 {/* Name */}
                                 <label >Tên sách</label>
                                 <ValidatableInput 
@@ -240,8 +241,8 @@ export const ListBook = () => {
                                         return null;
                                     }}/>
 
-                                <div className="row g-3">
-                                    <div className="col-md-4">
+                                <div className="d-flex">
+                                    <div className="d-flex flex-column">
                                         {/* Cover */}
                                         <label className="">Bìa sách</label>
                                         <div className="d-flex flex-column">
@@ -252,7 +253,7 @@ export const ListBook = () => {
                                             </label>
                                         </div>
                                     </div>
-                                    <div className="col-md-8">
+                                    <div className="d-flex flex-column ms-2 flex-fill">
                                         {/* Author */}
                                         <label className="">Tên tác giả</label>
                                         <ValidatableInput
@@ -267,6 +268,18 @@ export const ListBook = () => {
                                                 if (!val) return "Tên tác giả không được bỏ trống";
                                                 return null;
                                             }}/>
+                                        
+                                        {/* Stock */}
+                                        <label className="">Số lượng</label>
+                                        <ValidatableInput
+                                            isFormFocus={formFocus}
+                                            type="number"
+                                            initVal={updatingBook!.stock.toString()}
+                                            valueChange={val => setUpdatingBook(prev => ({
+                                                ... prev!,
+                                                stock: Number(val)
+                                            }))}
+                                            validator={val => null}/>
 
                                         {/* Categories */}
                                         <div className="d-flex">
@@ -384,7 +397,7 @@ export const ListBook = () => {
                                 <th>Tên</th>
                                 <th>Giá</th>
                                 <th>Thể loại</th>
-                                <th>Tác giả</th>
+                                <th>Đã bán</th>
                                 <th>Cập nhật</th>
                                 <th style={{width: '150px'}}>Tùy chọn</th>
                             </tr>
@@ -397,24 +410,25 @@ export const ListBook = () => {
                                     <td>{e.name}</td>
                                     <td>{e.price} {e.currency}</td>
                                     <td>{e.categories.join(', ')}</td>
-                                    <td>{e.author}</td>
+                                    <td>{e.soldCount}</td>
                                     <td>{convertDateToTimeSpan(e.updatedAt)}</td>
                                     <td>
                                         <div className="d-flex action mt-2">
-                                            <i className='bx bxs-hot' title="Đặt là nổi bật"></i>
+                                            <i className="fas fa-info-circle" title="Xem thông tin chi tiết"></i>
                                             <i className='bx bx-bar-chart-alt-2' title="Thông số bán hàng"></i>
                                             <i className='bx bx-pencil' onClick={() => {
                                                 setUpdatingId(e.id);
-                                                setUpdatingBook({
-                                                    name: e.name,
-                                                    author: e.name,
-                                                    categoryIds: [],
-                                                    cover: null,
-                                                    description: e.description,
-                                                    language: e.language,
-                                                    price: e.price,
-                                                    publishDate: e.publishDate
-                                                })
+                                                // setUpdatingBook({
+                                                //     name: e.name,
+                                                //     author: e.name,
+                                                //     categoryIds: [],
+                                                //     cover: null,
+                                                //     stock: e.stockCount,
+                                                //     description: e.description,
+                                                //     language: e.language,
+                                                //     price: e.price,
+                                                //     publishDate: e.publishDate
+                                                // });
                                                 setPreviewImageUrl(e.cover)
                                                 setSelectedCates(e.categories.map(name => ({
                                                     id: categories.find(c => c.name == name)!.id,

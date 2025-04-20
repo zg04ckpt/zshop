@@ -5,7 +5,7 @@ import { Outlet, useOutletContext } from "react-router-dom";
 const MainLayout = () => {
     const outletContext = useOutletContext();
     return (
-        <div className="px-3 container-lg">
+        <div className="">
             <Outlet context={outletContext}/>
         </div>
     );

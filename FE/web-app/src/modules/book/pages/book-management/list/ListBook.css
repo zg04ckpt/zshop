@@ -1,25 +1,26 @@
-.product-management table thead th {
+.list-book table thead th {
     border-bottom: 1px solid #dedede;
 }
 
-.product-management table {
+.list-book table {
     min-height: 200px;
 }
 
-.product-management table * {
-    font-size: 12px;
+.list-book table * {
+    font-size: 14px;
 }
  
-.product-management table tbody tr:hover {
+.list-book table tbody tr:hover {
     background-color: #dedede70;
 }
 
-.product-management table td, th {
+.list-book table td, th {
+    padding: 10px;
     align-content: start;
     border: 1px solid #dedede;
 }
 
-.product-management table .action i {
+.list-book table .action i {
     border: 1px #dedede solid;
     width: 20px;
     height: 20px;
@@ -28,63 +29,63 @@
     margin: 0px 2px;
 }
 
-.product-management table .action i:hover {
+.list-book table .action i:hover {
     color: white;
     background-color: black;
     cursor: pointer;
 }
 
-.product-management img {
-    height: 160px;
-    width: 120px;
+.list-book img {
+    height: 240px;
+    width: 180px;
     object-fit: cover;
-    padding: 5px;
+    border: 1px solid #dedede;
 }
 
-.product-management .search-btn {
+.list-book .search-btn {
     border: 1px solid #dedede;
     padding: 5px;
 }
 
-.product-management .search-btn:hover {
+.list-book .search-btn:hover {
     color: white;
     background-color: black;
     cursor: pointer;
 }
 
-.product-management .filter-dialog .filter {
+.list-book .filter-dialog .filter {
     width: 400px;
     margin-top: 80px;
 }
 
-.product-management label {
+.list-book label {
     font-weight: 300;
     font-size: 18px;
 }
 
-.product-management .upload-img {
+.list-book .upload-img {
     font-size: 14px;
     border: 1px solid #dedede;
     padding: 1px 4px;
 }
 
-.product-management .cate-list .cate-item {
+.list-book .cate-list .cate-item {
     font-weight: 600;
     border: 1px solid #dedede;
 }
 
-.product-management .cate-list .cate-item:hover {
+.list-book .cate-list .cate-item:hover {
     background-color: rgba(198, 198, 198, 0.258);
 }
 
-.product-management .cate-list .cate-item i {
+.list-book .cate-list .cate-item i {
     font-size: 24px;
 }
 
-.product-management .filter label  {
+.list-book .filter label  {
     font-size: 16px;
 }
 
-.product-management .updating label {
+.list-book .updating label {
     font-size: 16px;
 }

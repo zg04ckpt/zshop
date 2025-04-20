@@ -1,0 +1,17 @@
+.next-or-prev-btn {
+    background-color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #dedede;
+    align-items: center;
+}
+
+.next-or-prev-btn:hover {
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    i {
+        font-size: 20px;
+    }
+}

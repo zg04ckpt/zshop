@@ -1,6 +1,6 @@
 ﻿
 using Core.Exceptions;
-using Core.Services;
+using Core.Interfaces.Services;
 
 namespace API.Middlewares
 {

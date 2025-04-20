@@ -12,5 +12,6 @@ namespace Core.Configurations
         public int ConfirmEmailAuthCodeTTL { get; set; }
         public int ResetPassAuthCodeTTL { get; set; }
         public int LoginLockFlagTTL { get; set; }
+        public int OAuthLoginDataMinutesTTL { get; set; }
     }
 }

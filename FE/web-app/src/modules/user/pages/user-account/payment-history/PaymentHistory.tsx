@@ -10,6 +10,7 @@ import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Dialog, DialogContent, DialogTitle, FormControlLabel, Radio, RadioGroup } from '@mui/material';
+import { SelectBookFromOrderToReviewDialog } from '../../../../book';
 
 const cancelOrderReasons = [
     { value: 'Muốn thay đổi thông tin đặt hàng', label: 'Muốn thay đổi thông tin đặt hàng' },
@@ -24,6 +25,9 @@ export default function PaymentHistory() {
     const dispatch = useDispatch<AppDispatch>();
     const { isApiReady } = useOutletContext<OutletContextProp>();
     const navigate = useNavigate();
+
+    const [reviewOrderId, setReviewOrderId] = useState<string|null>(null);
+    const [showSelectBookToReview, setShowSelectBookToReview] = useState<boolean>(false);
     
     const columns: GridColDef[] = [
         { 
@@ -145,6 +149,13 @@ export default function PaymentHistory() {
                     actions.push(<Button label='Thanh toán ngay' className='me-2' blackTheme pxHeight={20} onClick={() => {}}/>);
                 }
 
+                if (orderStatus == 'Delivered') {
+                    actions.push(<Button label='Đánh giá đơn hàng' className='me-2' pxHeight={20} onClick={() => {
+                        setReviewOrderId(params.row.id);
+                        setShowSelectBookToReview(true);
+                    }}/>);
+                }
+
                 return (
                     <div className='d-flex h-100 align-items-center'>
                         {actions}
@@ -249,6 +260,12 @@ export default function PaymentHistory() {
                 </Dialog>
             </> }
 
+            { reviewOrderId && <>
+                <SelectBookFromOrderToReviewDialog 
+                    orderId={reviewOrderId} 
+                    open={showSelectBookToReview} 
+                    onClose={() => setShowSelectBookToReview(false)}/>
+            </> }
         </div>
     );
 }

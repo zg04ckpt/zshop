@@ -12,3 +12,4 @@
 # Common
 **/Web
 .github
+**/*.sql

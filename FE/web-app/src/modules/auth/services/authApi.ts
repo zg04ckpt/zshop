@@ -48,6 +48,26 @@ export const loginApi = async (data: LoginDTO): Promise<ApiResult<LoginResponseD
     }
 }
 
+export const loginWithGoogleApi = async () => {
+    const returnUrl = `${window.location.origin}/google-login-callback`;
+    window.location.href = 
+        `${process.env.REACT_APP_API_BASE_URL}/auth/google/login?returnUrl=${encodeURIComponent(returnUrl)}`;
+};
+
+export const getGoogleLoginResultApi = async (): Promise<ApiResult<LoginResponseDTO>> => {
+    try {
+        return (await serverApi.get<ApiResult<LoginResponseDTO>>(
+            "/auth/google/login/result", { withCredentials: true })
+        ).data;
+    } catch {
+        return {
+            isSuccess: false,
+            message: 'Yêu cầu thất bại.',
+        }
+    }
+}
+
+
 export const logoutApi = async (): Promise<ApiResult> => {
     try {
         return (await serverApi.post<ApiResult>(`/auth/logout`)).data;

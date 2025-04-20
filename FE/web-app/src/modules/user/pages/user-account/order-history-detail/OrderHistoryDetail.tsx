@@ -8,6 +8,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { isAdmin, useAuth } from "../../../../auth";
 import { useUser } from "../../../hooks/useUser";
 import { Dialog, DialogContent, DialogTitle, FormControlLabel, Radio, RadioGroup, Step, StepLabel, Stepper } from "@mui/material";
+import { SelectBookFromOrderToReviewDialog } from "../../../../book";
 
 const orderSteps = [
     'Đã tạo', 
@@ -38,6 +39,8 @@ const OrderHistoryDetail = () => {
     const [currentOrderStep, setCurrentOrderStep] = useState<number>(0);
     const [cancelData, setCancelData] = useState<CancelOrderRequest|null>(null);
     const otherReasonRef = React.useRef<HTMLTextAreaElement>(null);
+    const [reviewOrderId, setReviewOrderId] = useState<string|null>(null);
+    const [showSelectBookToReview, setShowSelectBookToReview] = useState<boolean>(false);
 
     const init = async () => {
         const id = param.get('id');
@@ -67,9 +70,11 @@ const OrderHistoryDetail = () => {
         if (status == 'CashOnDelivery') return <>Thanh toán khi nhận hàng</>
         if (status == 'VNPay') return <>Thanh toán qua VNPay</>
     }
+
     const getAction =  () => {
         const orderStatus = detail!.orderStatus;
         const paymentMethod = detail!.paymentMethod;
+        const paymentStatus = detail!.paymentStatus;
         const actions = [];
 
         if (orderStatus == 'Created' || orderStatus == 'Placed' || orderStatus == 'Accepted' || orderStatus == 'InProgress') {
@@ -82,9 +87,15 @@ const OrderHistoryDetail = () => {
             actions.push(<Button label='Tiếp tục thiết lập' className='me-2' pxHeight={20} onClick={() => navigate('/order?id=' + detail!.id)}/>);
         }
 
-        const paymentStatus = detail!.paymentStatus;
         if (paymentMethod == 'VNPay' && orderStatus != 'Created' && orderStatus != 'Cancelled' &&  paymentStatus == 'Unpaid') {
             actions.push(<Button label='Thanh toán ngay' className='me-2' blackTheme pxHeight={20} onClick={() => {}}/>);
+        }
+
+        if (orderStatus == 'Delivered') {
+            actions.push(<Button label='Đánh giá đơn hàng' className='me-2' pxHeight={20} onClick={() => {
+                setReviewOrderId(detail!.id);
+                setShowSelectBookToReview(true);
+            }}/>);
         }
 
         return (
@@ -254,7 +265,6 @@ const OrderHistoryDetail = () => {
                             {cancelOrderReasons.map((e) => (
                                 <FormControlLabel
                                     value={e.value}
-                                    key={e.value}
                                     control={<Radio />}
                                     label={e.label}
                                 />
@@ -270,6 +280,14 @@ const OrderHistoryDetail = () => {
                         </div>
                     </DialogContent>
                 </Dialog>
+            </> }
+
+
+            { reviewOrderId && <>
+                <SelectBookFromOrderToReviewDialog 
+                    orderId={reviewOrderId} 
+                    open={showSelectBookToReview} 
+                    onClose={() => setShowSelectBookToReview(false)}/>
             </> }
         </div>
     );

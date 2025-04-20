@@ -1,23 +1,16 @@
-.header * {
+.review-comment .header * {
     font-size: 14px;
 }
 
-.rate i {
-    color: #f7d80b;
-    font-size: 12px;
-}
-
-.rate .rate-float {
-    font-size: 12px;
-}
-
-.review-video img, img.review-image {
+.review-comment .review-video img, img.review-image {
     width: 50px;
     height: 50px;
     object-fit: cover;
+    border: 1px solid #dedede;
+    border-radius: 3;
 }
 
-.review-video .review-video-tag {
+.review-comment .review-video .review-video-tag {
     content: '';
     display: block;
     width: 100%;
@@ -27,13 +20,13 @@
     bottom: 0px;
 }
 
-.review-video .review-video-tag i {
+.review-comment .review-video .review-video-tag i {
     font-size: 12px;
     color: white;
     margin-left: 2px;
 }
 
-.review-video .review-video-tag .duration {
+.review-comment .review-video .review-video-tag .duration {
     font-size: 12px;
     color: white;
 }

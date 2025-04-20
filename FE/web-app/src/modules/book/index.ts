@@ -10,3 +10,4 @@ export { CateManagement } from './pages/cate-management/CateManagement';
 export { BookItem } from './components/book-item/BookItem';
 export { default as BookFilter } from './components/book-filter/BookFilter';
 export { default as ReviewComment } from './components/review-comment/ReviewComment';
+export { default as SelectBookFromOrderToReviewDialog } from './components/select-book-from-order-to-review-dialog/SelectBookFromOrderToReviewDialog';

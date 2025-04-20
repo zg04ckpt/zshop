@@ -42,7 +42,7 @@ export const convertToFormData = (data: any): FormData => {
         if(value) {
             if (value instanceof Array) {
                 value.forEach((e, i) => {
-                    addPropToFormData(formData, `${key}[${i}]`, e);
+                    addPropToFormData(formData, `${key}`, e);
                 });
             } else {
                 addPropToFormData(formData, key, value);
@@ -98,7 +98,7 @@ export const convertDateToTimeSpan = (date: Date): string => {
 };
 
 export const formatDate = (val: any, pattern: string) => {
-    debugger
+    if (!val) return null;
     return format(new Date(val), pattern);
 }
 

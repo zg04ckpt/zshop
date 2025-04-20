@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import './AccountInfo.css';
-import { UserProfileDTO, useUser } from "../../..";
+import { Gender, UserProfileDTO, useUser } from "../../..";
 import { AppDispatch, Button, dateToInputValue, defaultImageUrl, endLoadingStatus, Loading, OutletContextProp, showErrorToast, startLoadingStatus, stringToDate, useAppContext, ValidatableInput } from "../../../../shared";
 import { useOutletContext } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -33,7 +33,7 @@ export const AccountInfo = () => {
                     firstName: profile!.firstName,
                     dateOfBirth: profile!.dateOfBirth,
                     email: profile!.email,
-                    genderId: profile!.genderId,
+                    gender: profile!.gender,
                     phoneNumber: profile!.phoneNumber,
                     newAvatar: avatarImage
                 })) {
@@ -148,11 +148,11 @@ export const AccountInfo = () => {
                                     <td>
                                         <select onChange={e => setProfile({
                                             ... profile!,
-                                            genderId: Number(e.target.value)
+                                            gender: e.target.value as Gender
                                         })}>
-                                            <option value="1" selected={profile?.genderId == 1}>Nam</option>
-                                            <option value="2" selected={profile?.genderId == 2}>Nữ</option>
-                                            <option value="3" selected={profile?.genderId == 3}>Khác</option>
+                                            <option value="Male" selected={profile?.gender == 'Male'}>Nam</option>
+                                            <option value="Female" selected={profile?.gender == 'Female'}>Nữ</option>
+                                            <option value="Other" selected={profile?.gender == 'Other'}>Khác</option>
                                         </select>
                                     </td>
                                 </tr>

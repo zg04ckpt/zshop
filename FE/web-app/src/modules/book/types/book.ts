@@ -4,7 +4,7 @@ export interface CategoryDTO
 {
     name: string;
     thumbnail: File|null;
-    parentId: number;
+    parentId: number|null;
 }
 
 export interface CategoryListItemDTO
@@ -32,6 +32,7 @@ export interface BookDTO
     publishDate: Date|null;
     language: string;
     price: number;
+    stock: number;
     description: string;
     categoryIds: number[];
 }
@@ -41,17 +42,40 @@ export interface BookListItemDTO
     id: string;
     cover: string;
     name: string;
-    author: string;
-    language: string;
     price: number;
     currency: string;
-    avgRate: number;
-    description: string;
-    soldCount: number;
-    publishDate: Date;
-    createdAt: Date;
     updatedAt: Date;
+    avgRate: number;
+    soldCount: number;
     categories: string[];
+}
+
+export interface BookToReviewListItemDTO 
+{
+    bookId: string;
+    bookName: string;
+    price: number;
+    quantity: number;
+    cover: string;
+}
+
+export interface BookReviewListItemDTO
+{
+    userId: string;
+    userName: string;
+    userAvatarUrl: string;
+    createdAt: Date;
+    rate: number;
+    content: string;
+    imageUrls: string[];
+}
+
+export interface CreateBookReviewDTO
+{
+    bookId: string;
+    content: string;
+    images: File[];
+    rate: number;
 }
 
 export interface BookSearchDTO extends BasePaging
@@ -73,9 +97,12 @@ export interface BookDetailDTO
     categories: string[];
     publishDate: string;
     language: string;
+    stockCount: number;
     currency: string;
     description: string;
     soldCount: number;
     price: number;
     avgRate: number;
+    createdAt: Date;
+    updatedAt: Date;
 }

@@ -3,6 +3,20 @@ import { CancelOrderRequest, CancelOrderRequestListItemDTO, OrderDTO, OrderHisto
     OrderHistoryListItemDTO, OrderStatus, SystemOrdersDTO, SystemOrderSearchDTO } from "..";
 import { ApiResult, convertToFormData, objectToHttpParam, Paginated, serverApi } from "../../shared";
 import QueryString from "qs";
+import { BookToReviewListItemDTO } from "../../book";
+
+export const getBooksInOrderApi = async (orderId: string) => {
+    try {
+        return (await serverApi.get<ApiResult<BookToReviewListItemDTO[]>>(
+            `/payment/orders/${orderId}/books`
+        )).data;
+    } catch {
+        return {
+            isSuccess: false,
+            message: 'Yêu cầu thất bại.',
+        }
+    }
+}
 
 export const getOrderHistoryApi = async (page: number , size: number) => {
     try {

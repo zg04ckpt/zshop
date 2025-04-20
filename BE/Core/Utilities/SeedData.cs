@@ -1,16 +1,16 @@
-﻿using Core.Repositories;
-using Data.Entities.System;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Core.Entities.BookFeature;
+using Core.Entities.System;
+using Core.Enums;
+using Core.Interfaces.Repositories;
 
 namespace Core.Utilities
 {
     public class SeedData
     {
-        public static async Task Init(IRoleRepository roleRepository, IGenderRepository genderRepository, IUserRepository userRepository)
+        public static async Task Init(
+            IRoleRepository roleRepository, 
+            IUserRepository userRepository, 
+            ICategoryRepository categoryRepository)
         {
             // Init default roles
             string[] roles = new[] { "Admin", "User", "Seller" };
@@ -20,15 +20,6 @@ namespace Core.Utilities
                     await roleRepository.Add(new Role { Name = role });
             }
             await roleRepository.Save();
-
-            // Init default genders
-            string[] genders = new[] { "UnSet", "Male", "Female" };
-            foreach (string gender in genders)
-            {
-                if (!await genderRepository.IsExists(e => e.Value.ToLower() == gender.ToLower()))
-                    await genderRepository.Add(new Gender { Value = gender });
-            }
-            await genderRepository.Save();
 
             // Init admin 
             if(!await userRepository.AnyInRole("Admin"))
@@ -40,7 +31,7 @@ namespace Core.Utilities
                     LastName = "Hoàng",
                     Email = EnvHelper.GetAdminEmail(),
                     UserName = EnvHelper.GetAdminUserName(),
-                    GenderId = (await genderRepository.Get(e => e.Value.ToLower() == "unset"))!.Id,
+                    Gender = Gender.Male,
                     Password = Helper.HashPassword(EnvHelper.GetAdminPassword()),
                     PhoneNumber = "0000000000",
                     IsEmailComfirmed = true,
