@@ -1,0 +1,8 @@
+node_modules
+src
+*.tsx
+*.ts
+*.map
+.env
+.git
+.gitignore

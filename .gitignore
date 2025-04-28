@@ -1,0 +1,21 @@
+# React
+**/node_modules
+**/.vscode
+**/.env.development
+docker-compose.prod.yaml
+.env.development
+.env
+build
+
+# .NET
+.vs
+**/bin
+**/obj
+**/appsettings.Development.json
+**/appsettings.Production.json
+
+# Common
+**/Web
+.github
+**/*.sql
+zshop.conf
