@@ -134,43 +134,46 @@ export const CateManagement = () => {
 
                 {/* List */}
                 <div className="col-md-8 position-relative">
-                    <table className="w-100 mt-3 ">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th style={{width: '140px'}}>Bìa</th>
-                                <th>Tên danh mục</th>
-                                <th>Danh mục cha</th>
-                                <th>Cập nhật</th>
-                                <th>Tùy chọn</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            { categories.map((e, i) => <>
+                    <div className="card card-body rounded-0 mt-3 pt-0">
+                        <table className="w-100">
+                            <thead>
                                 <tr>
-                                    <td>{i + 1}</td>
-                                    <td><img src={e.thumbnail} alt=""/></td>
-                                    <td>{e.name}</td>
-                                    <td><a href="">{e.parentName ?? <>Danh mục gốc</>}</a></td>
-                                    <td>{convertDateToTimeSpan(e.updatedAt)}</td>
-                                    <td>
-                                        <div className="d-flex action mt-2">
-                                            <i className='bx bx-pencil' onClick={() => {
-                                                setFormFocus(false);
-                                                setUpdatingId(e.id);
-                                                setName(e.name);
-                                                setParentId(e.parentId);
-                                                setPreviewImg(e.thumbnail);
-                                                scrollToTop()
-                                            }}></i>
-                                            
-                                            <i className='bx bx-trash-alt' onClick={() => handleRemoveCategory(e.id)}></i>
-                                        </div>
-                                    </td>
-                                </tr> 
-                            </>) }
-                        </tbody>
-                    </table>
+                                    <th>#</th>
+                                    <th style={{width: '140px'}}>Bìa</th>
+                                    <th>Tên danh mục</th>
+                                    <th>Danh mục cha</th>
+                                    <th>Cập nhật</th>
+                                    <th>Tùy chọn</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                { categories.map((e, i) => <>
+                                    <tr>
+                                        <td>{i + 1}</td>
+                                        <td><img src={e.thumbnail} alt=""/></td>
+                                        <td>{e.name}</td>
+                                        <td><a href="">{e.parentName ?? <>Danh mục gốc</>}</a></td>
+                                        <td>{convertDateToTimeSpan(e.updatedAt)}</td>
+                                        <td>
+                                            <div className="d-flex action mt-2">
+                                                <i className='bx bx-pencil' onClick={() => {
+                                                    setFormFocus(false);
+                                                    setUpdatingId(e.id);
+                                                    setName(e.name);
+                                                    setParentId(e.parentId);
+                                                    setPreviewImg(e.thumbnail);
+                                                    scrollToTop()
+                                                }}></i>
+                                                
+                                                <i className='bx bx-trash-alt' onClick={() => handleRemoveCategory(e.id)}></i>
+                                            </div>
+                                        </td>
+                                    </tr> 
+                                </>) }
+                            </tbody>
+                        </table>
+
+                    </div>
                 </div>
 
                 {/* Update */}

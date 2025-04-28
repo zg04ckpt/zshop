@@ -53,6 +53,10 @@ export const Footer = () => {
                             </div>
                         </div>
                     </div>
+
+                    <div className="d-flex justify-content-center">
+                        <p className="mb-0 mt-1 text-secondary">Phiên bản thử nghiệm 1.0 - 25/04/2025</p>
+                    </div>
                 </div>
             </div>
         </footer>

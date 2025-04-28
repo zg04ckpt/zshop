@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Detail.css"
 import { Await, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
-import { BookDetailDTO, BookItem, BookReviewListItemDTO, getBookReviewsApi, ReviewComment, useBook } from "../..";
+import { BookDetailDTO, BookItem, BookListItemDTO, BookReviewListItemDTO, getBookReviewsApi, getBooksAsListApi, getRandomBookApi, getTopSellBookApi, ReviewComment, useBook } from "../..";
 import { AppDispatch, Button, defaultImageUrl, endLoadingStatus, formatDate, OutletContextProp, showErrorToast, showSuccessToast, startLoadingStatus } from "../../../shared";
 import { Rating } from "@mui/material";
 import { useDispatch } from "react-redux";
@@ -26,6 +26,8 @@ const Detail = () => {
         'https://res.cloudinary.com/dvk5yt0oi/image/upload/v1744183129/zshop/images/vu4haxvcwvqriqjlbyea.jpg'
     ];
     const [reviews, setReviews] = useState<BookReviewListItemDTO[]>([]);
+    const [topSellBooks, setTopSellBooks] = useState<BookListItemDTO[]>([]);
+    const [randomBooks, setRandomBooks] = useState<BookListItemDTO[]>([]);
 
     const init = async () => {
         const id = param.get('id');
@@ -33,6 +35,20 @@ const Detail = () => {
             setBook(await getBookDetail(id));
         } else {
             showErrorToast("Giá trị không hợp lệ");
+        }
+    }
+
+    const initTopSell = async () => {
+        const res = await getTopSellBookApi();
+        if (res.isSuccess) {
+            setTopSellBooks(res.data!);
+        }
+    }
+
+    const initRandom = async () => {
+        const res = await getRandomBookApi();
+        if (res.isSuccess) {
+            setRandomBooks(res.data!);
         }
     }
 
@@ -62,7 +78,11 @@ const Detail = () => {
     }
 
     useEffect(() => {
-        if(isApiReady) init();
+        if(isApiReady) {
+            init();
+            initRandom();
+            initTopSell();
+        }
     }, [isApiReady]);
 
     useEffect(() => {
@@ -119,8 +139,18 @@ const Detail = () => {
                                         </div>
                                         {/* PD */}
                                         <div className="d-flex">
-                                            <label>Ngày xuất bản:</label>
-                                            <div className="ms-2">{book.publishDate}</div>
+                                            <label>Năm xuất bản:</label>
+                                            <div className="ms-2">{book.publishYear}</div>
+                                        </div>
+                                        {/* Publisher */}
+                                        <div className="d-flex">
+                                            <label>Nhà xuất bản:</label>
+                                            <div className="ms-2">{book.publisher}</div>
+                                        </div>
+                                        {/* PageCount */}
+                                        <div className="d-flex">
+                                            <label>Số trang:</label>
+                                            <div className="ms-2">{book.pageCount}</div>
                                         </div>
                                         {/* lang */}
                                         <div className="d-flex">
@@ -165,11 +195,14 @@ const Detail = () => {
                             <div className="d-flex align-items-center mb-2 mt-3">
                                 <h5 className="label">Đánh giá</h5>
                                 <div className="flex-fill"></div>
-                                <a className="action-text fst-italic text-decoration-underline" style={{fontSize: '14px'}}>Xem tất cả (560)</a>
+                                <a className="action-text fst-italic text-decoration-underline" style={{fontSize: '14px'}}>Xem tất cả</a>
                             </div>
                             {reviews.map(e => <>
                                 <ReviewComment data={e} className="mb-3"/>
                             </>)}
+                            {reviews.length == 0 && <>
+                                <p className="fst-italic text-center text-secondary">Chưa có nhận xét nào</p>
+                            </>}
                         </div>
                         
 
@@ -180,10 +213,15 @@ const Detail = () => {
                         <div className="card card-body shadow-sm p-0 vh-100">
                             <h6 className="label m-2">Cùng thể loại</h6>
                             <div className="d-flex flex-column px-1">
-                                <div className="d-flex book-item p-1">
-                                    <img src="" width={50} height={50} alt="" />
-                                    <small className="ms-2">Ai Toàn Năng: Chinh Phục Thời Đại Số</small>
-                                </div>
+                                {topSellBooks.map(e => <>
+                                    <div className="d-flex book-item p-2">
+                                        <img src={e.cover} width={50} height={50} alt="" />
+                                        <div className="d-flex flex-column ms-2 ">
+                                            <small className="max-1-line">{e.name}</small>
+                                            <b>{e.price.toLocaleString('vn')} VNĐ</b>
+                                        </div>
+                                    </div>
+                                </>)}
                             </div>  
                         </div>
                     </div>
@@ -196,12 +234,10 @@ const Detail = () => {
                             <a className="action-text fst-italic text-decoration-underline" style={{fontSize: '14px'}}>Xem tất cả (560)</a>
                         </div>
                         <div className="scrollable horizontal-scrollable" style={{maxWidth: '100%'}}>
-                            <div className="d-flex py-2">
-                                {/* <BookItem className="col-3 me-1"/>
-                                <BookItem className="col-3 me-1"/>
-                                <BookItem className="col-3 me-1"/>
-                                <BookItem className="col-3 me-1"/>
-                                <BookItem className="col-3 me-1"/> */}
+                            <div className="row g-2 py-2">
+                                {randomBooks.map(e => <>
+                                    <BookItem className="col-2" data={e}/>
+                                </>)}
                             </div>
                         </div>
                     </div>

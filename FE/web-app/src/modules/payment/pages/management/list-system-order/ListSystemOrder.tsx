@@ -177,6 +177,11 @@ const ListSystemOrder = () => {
                         pxHeight={24} onClick={() => setOrderStatus(params.row.id, 'Shipping')}/>);
                 }
 
+                if (orderStatus == 'Shipping') {
+                    actions.push(<Button label='Giao hàng thành công' blackTheme className='me-2' 
+                        pxHeight={24} onClick={() => setOrderStatus(params.row.id, 'Delivered')}/>);
+                }
+
                 return (
                     <div className='d-flex h-100 align-items-center'>
                         {actions}

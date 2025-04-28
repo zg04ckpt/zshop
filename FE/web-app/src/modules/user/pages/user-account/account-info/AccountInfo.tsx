@@ -80,108 +80,109 @@ export const AccountInfo = () => {
     
     return (
         <div className="account-info">
+            <h5>Thông tin tài khoản</h5>
             { profile && <>
-                <h5 className="text-center mb-3">Thông tin tài khoản</h5>
-                <div className="row">
+                <div className="card card-body">
+                    <div className="row">
 
-                    {/* Image */}
-                    <div className="col-2 text-center">
-                        <img src={previewAvatar || profile?.avatarUrl || defaultImageUrl } alt="" />
-                        <label className="upload-img mt-2 pointer-hover">
-                            Tải ảnh lên
-                            <input type="file" accept=".PNG, .JPG" hidden onChange={e => handleUploadImage(e)}/>
-                        </label>
+                        {/* Image */}
+                        <div className="col-2 text-center">
+                            <img src={previewAvatar || profile?.avatarUrl || defaultImageUrl } alt="" />
+                            <label className="upload-img mt-2 pointer-hover">
+                                Tải ảnh lên
+                                <input type="file" accept=".PNG, .JPG" hidden onChange={e => handleUploadImage(e)}/>
+                            </label>
+                        </div>
+
+                        <div className="col-10">
+                            <table className="table">
+                                <tbody>
+                                    {/* Username */}
+                                    <tr>
+                                        <th>Tên tài khoản:</th>
+                                        <td>{profile.userName}</td>
+                                    </tr>
+                                    {/* Last name */}
+                                    <tr>
+                                        <th>Họ đệm:</th>
+                                        <td>
+                                            <input value={profile.lastName} type="text" onChange={e => setProfile({
+                                                    ... profile!,
+                                                    lastName: e.target.value
+                                                })}/>
+                                        </td>
+                                    </tr>
+                                    {/* First name */}
+                                    <tr>
+                                        <th>Tên:</th>
+                                        <td>
+                                            <input value={profile.firstName} type="text" onChange={e => setProfile({
+                                                    ... profile!,
+                                                    firstName: e.target.value
+                                                })}/>
+                                        </td>
+                                    </tr>
+                                    
+                                    {/* Email */}
+                                    <tr>
+                                        <th>Email:</th>
+                                        <td>
+                                            <input value={profile.email} type="text" onChange={e => setProfile({
+                                                    ... profile!,
+                                                    email: e.target.value
+                                                })}/>
+                                        </td>
+                                    </tr>
+                                    {/* PhoneNumber */}
+                                    <tr>
+                                        <th>Số điện thoại:</th>
+                                        <td>
+                                            <input value={profile.phoneNumber} type="text" onChange={e => setProfile({
+                                                    ... profile!,
+                                                    phoneNumber: e.target.value
+                                                })}/>
+                                        </td>
+                                    </tr>
+                                    {/* Sex */}
+                                    <tr>
+                                        <th>Giới tính:</th>
+                                        <td>
+                                            <select onChange={e => setProfile({
+                                                ... profile!,
+                                                gender: e.target.value as Gender
+                                            })}>
+                                                <option value="Male" selected={profile?.gender == 'Male'}>Nam</option>
+                                                <option value="Female" selected={profile?.gender == 'Female'}>Nữ</option>
+                                                <option value="Other" selected={profile?.gender == 'Other'}>Khác</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    {/* DOB */}
+                                    <tr>
+                                        <th>Ngày sinh:</th>
+                                        <td>
+                                            <input 
+                                                onChange={e => setProfile({ ... profile!, dateOfBirth: stringToDate(e.target.value) })} 
+                                                type="date" 
+                                                value={dateToInputValue(profile?.dateOfBirth)}/>
+                                            {/* <ValidatableInput 
+                                                isFormFocus={formFocus}
+                                                type="date" 
+                                                initVal={profile?.dateOfBirth?  profile.dateOfBirth.toISOString().split('T')[0]:''}
+                                                valueChange={val => setProfile({
+                                                    ... profile!,
+                                                    dateOfBirth: new Date(val)
+                                                })} 
+                                                validator={val => null}/> */}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-
-                    <div className="col-10">
-                        <table className="table ">
-                            <tbody>
-                                {/* Username */}
-                                <tr>
-                                    <th>Tên tài khoản:</th>
-                                    <td>{profile.userName}</td>
-                                </tr>
-                                {/* Last name */}
-                                <tr>
-                                    <th>Họ đệm:</th>
-                                    <td>
-                                        <input value={profile.lastName} type="text" onChange={e => setProfile({
-                                                ... profile!,
-                                                lastName: e.target.value
-                                            })}/>
-                                    </td>
-                                </tr>
-                                {/* First name */}
-                                <tr>
-                                    <th>Tên:</th>
-                                    <td>
-                                        <input value={profile.firstName} type="text" onChange={e => setProfile({
-                                                ... profile!,
-                                                firstName: e.target.value
-                                            })}/>
-                                    </td>
-                                </tr>
-                                
-                                {/* Email */}
-                                <tr>
-                                    <th>Email:</th>
-                                    <td>
-                                        <input value={profile.email} type="text" onChange={e => setProfile({
-                                                ... profile!,
-                                                email: e.target.value
-                                            })}/>
-                                    </td>
-                                </tr>
-                                {/* PhoneNumber */}
-                                <tr>
-                                    <th>Số điện thoại:</th>
-                                    <td>
-                                        <input value={profile.phoneNumber} type="text" onChange={e => setProfile({
-                                                ... profile!,
-                                                phoneNumber: e.target.value
-                                            })}/>
-                                    </td>
-                                </tr>
-                                {/* Sex */}
-                                <tr>
-                                    <th>Giới tính:</th>
-                                    <td>
-                                        <select onChange={e => setProfile({
-                                            ... profile!,
-                                            gender: e.target.value as Gender
-                                        })}>
-                                            <option value="Male" selected={profile?.gender == 'Male'}>Nam</option>
-                                            <option value="Female" selected={profile?.gender == 'Female'}>Nữ</option>
-                                            <option value="Other" selected={profile?.gender == 'Other'}>Khác</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                {/* DOB */}
-                                <tr>
-                                    <th>Ngày sinh:</th>
-                                    <td>
-                                        <input 
-                                            onChange={e => setProfile({ ... profile!, dateOfBirth: stringToDate(e.target.value) })} 
-                                            type="date" 
-                                            value={dateToInputValue(profile?.dateOfBirth)}/>
-                                        {/* <ValidatableInput 
-                                            isFormFocus={formFocus}
-                                            type="date" 
-                                            initVal={profile?.dateOfBirth?  profile.dateOfBirth.toISOString().split('T')[0]:''}
-                                            valueChange={val => setProfile({
-                                                ... profile!,
-                                                dateOfBirth: new Date(val)
-                                            })} 
-                                            validator={val => null}/> */}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-
+                    <div className="d-flex justify-content-center">
+                        <Button pxWidth={100} blackTheme label="Lưu thay đổi" onClick={() => handleUpdateAction()}></Button>
                     </div>
-                </div>
-                <div className="d-flex justify-content-center">
-                    <Button pxWidth={100} blackTheme label="Lưu thay đổi" onClick={() => handleUpdateAction()}></Button>
                 </div>
             </> }
         </div>

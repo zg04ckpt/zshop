@@ -3,6 +3,7 @@ export * from './services/bookApi';
 export * from './hooks/useBook';
 export { ListBook }  from './pages/book-management/list/ListBook';
 export { CreateBook } from './pages/book-management/create/CreateBook';
+export { UpdateBook } from './pages/book-management/update/UpdateBook';
 export { default as Detail } from './pages/detail/Detail';
 export { default as Search } from './pages/search/Search';
 export { default as Home } from './pages/home/Home';

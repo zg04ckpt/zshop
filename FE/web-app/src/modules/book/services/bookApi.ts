@@ -1,5 +1,5 @@
 import qs from "qs";
-import { BookDetailDTO, BookDTO, BookListItemDTO, BookReviewListItemDTO, BookSearchDTO, CategoryDTO, CategoryListItemDTO, CreateBookReviewDTO } from "..";
+import { BookDetailDTO, BookDTO, BookListItemDTO, BookReviewListItemDTO, BookSearchDTO, BoughtBookListItemDTO, CategoryDTO, CategoryListItemDTO, CreateBookReviewDTO } from "..";
 import { serverApi, ApiResult, convertToFormData, Paginated } from "../../shared";
 
 //#region Book
@@ -115,7 +115,7 @@ export const deleteBookApi = async (id: string): Promise<ApiResult> => {
     }
 }
 
-export const getTopSellBook = async (): Promise<ApiResult<BookListItemDTO[]>> => {
+export const getTopSellBookApi = async (): Promise<ApiResult<BookListItemDTO[]>> => {
     try {
         return (await serverApi.get<ApiResult<BookListItemDTO[]>>(`/books/top-sell`)).data;
     } catch {
@@ -126,9 +126,31 @@ export const getTopSellBook = async (): Promise<ApiResult<BookListItemDTO[]>> =>
     }
 }
 
-export const getNewestBook = async (): Promise<ApiResult<BookListItemDTO[]>> => {
+export const getRandomBookApi = async (): Promise<ApiResult<BookListItemDTO[]>> => {
+    try {
+        return (await serverApi.get<ApiResult<BookListItemDTO[]>>(`/books/explorer`)).data;
+    } catch {
+        return {
+            isSuccess: false,
+            message: 'Yêu cầu thất bại.',
+        }
+    }
+}
+
+export const getNewestBookApi = async (): Promise<ApiResult<BookListItemDTO[]>> => {
     try {
         return (await serverApi.get<ApiResult<BookListItemDTO[]>>(`/books/newest`)).data;
+    } catch {
+        return {
+            isSuccess: false,
+            message: 'Yêu cầu thất bại.',
+        }
+    }
+}
+
+export const getBoughtBooksApi = async (): Promise<ApiResult<BoughtBookListItemDTO[]>> => {
+    try {
+        return (await serverApi.get<ApiResult<BoughtBookListItemDTO[]>>(`/books/purchased`)).data;
     } catch {
         return {
             isSuccess: false,

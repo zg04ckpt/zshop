@@ -137,7 +137,7 @@ const Search = () => {
     }, [priceRange]);
 
     return (
-        <div className="search mt-3 px-4">
+        <div className="search mt-3 px-2">
             <div className="row ">
                 {/* Filter */}
                 <div className="col-3">

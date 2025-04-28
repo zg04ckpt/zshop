@@ -12,29 +12,41 @@ const Overview = () => {
                 <option value="customer">Tùy chỉnh</option>
             </select>
 
-            <div className="row">
-                {/* Left */}
-                <div className="col-6">
-                    <table>
-                        <tbody>
-                            <tr>
-                                <th>Lượt truy cập:</th>
-                                <td>23000</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div className="mt-2">
+                <h5>Thông tin chung</h5>
+                <div className="d-flex flex-row">
 
-                {/* Right */}
-                <div className="col-6">
-                    <table>
-                        <tbody>
-                            <tr>
-                                <th>Lượt mua:</th>
-                                <td>230</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div className="card px-3 py-2 me-3 shadow-sm">
+                        <div className="d-flex flex-column">
+                            <h5 className="mb-0" >Lượng truy cập</h5>
+                            <hr className="my-2"/>
+                            <h3 className="fw-bolder mb-0 text-center">18/120</h3>
+                        </div>
+                    </div>
+
+                    <div className="card px-3 py-2 me-3 shadow-sm">
+                        <div className="d-flex flex-column">
+                            <h5 className="mb-0" >Đơn hàng phát sinh</h5>
+                            <hr className="my-2"/>
+                            <h3 className="fw-bolder mb-0 text-center">12/13</h3>
+                        </div>
+                    </div>
+
+                    <div className="card px-3 py-2 me-3 shadow-sm">
+                        <div className="d-flex flex-column">
+                            <h5 className="mb-0" >Doanh thu</h5>
+                            <hr className="my-2"/>
+                            <h3 className="fw-bolder mb-0 text-center">12</h3>
+                        </div>
+                    </div>
+
+                    <div className="card px-3 py-2 me-3 shadow-sm">
+                        <div className="d-flex flex-column">
+                            <h5 className="mb-0" >Lợi nhuận</h5>
+                            <hr className="my-2"/>
+                            <h3 className="fw-bolder mb-0 text-center">2</h3>
+                        </div>
+                    </div>
                 </div>
             </div>
 

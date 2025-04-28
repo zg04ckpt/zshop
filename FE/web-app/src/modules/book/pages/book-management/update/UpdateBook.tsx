@@ -1,18 +1,19 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
-import './CreateBook.css';
-import { useNavigate, useOutletContext } from "react-router-dom";
-import { CategorySelectItemDTO, useBook } from "../../..";
-import { AppDispatch, Button, dateToInputValue, defaultImageUrl, deleteFromLocal, endLoadingStatus, formatDate, getFromLocal, Loading, OutletContextProp, saveToLocal, showErrorToast, startLoadingStatus, useAppContext, ValidatableInput, ValidatableInput2 } from "../../../../shared";
+import './UpdateBook.css';
+import { useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
+import { CategorySelectItemDTO, getBookDetailApi, updateBookApi, useBook } from "../../..";
+import { AppDispatch, Button, dateToInputValue, defaultImageUrl, deleteFromLocal, endLoadingStatus, formatDate, getFromLocal, Loading, OutletContextProp, saveToLocal, showErrorToast, showSuccessToast, startLoadingStatus, stringToDate, useAppContext, ValidatableInput, ValidatableInput2 } from "../../../../shared";
 import { useDispatch } from "react-redux";
 import { FormControl, TextField } from "@mui/material";
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
-export const CreateBook = () => {
+export const UpdateBook = () => {
     const { apiLoading, createNewBook, getCategoriesAsListItem } = useBook();
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
     const appContext = useAppContext();
     const { isApiReady } = useOutletContext<OutletContextProp>();
+    const [params, setParams] = useSearchParams();
 
     const [formFocus, setFormFocus] = useState<boolean>(false);
     const [cover, setCover] = useState<File|null>(null);
@@ -26,6 +27,7 @@ export const CreateBook = () => {
     const [stock, setStock] = useState<number|null>(null);
     const [description, setDescription] = useState<string>('');
     const [previewImageUrl, setPreviewImageUrl] = useState<string|null>(null);
+    const [bookId, setBookId] = useState<string|null>(null);
     const [categories, setCategories] = useState<CategorySelectItemDTO[]>([]);
 
     const [selectedCates, setSelectedCates] = useState<CategorySelectItemDTO[]>([]);
@@ -42,7 +44,39 @@ export const CreateBook = () => {
         }
     }
 
-    const init = async () => {
+    const initBookInfo = async () => {
+        const bookId = params.get('id');
+        if (bookId) {
+            dispatch(startLoadingStatus());
+            setBookId(bookId);
+            const res = await getBookDetailApi(bookId);
+            if (res.isSuccess) {
+                setName(res.data!.name);
+                setPreviewImageUrl(res.data!.cover);
+                setAuthor(res.data!.author);
+                setPublishYear(res.data!.publishYear);
+                setPageCount(res.data!.pageCount);
+                setPublisher(res.data!.publisher);
+                setLanguage(res.data!.language);
+                setPrice(res.data!.price);
+                setStock(res.data!.stockCount);
+                setDescription(res.data!.description);
+                setSelectedCates(res.data!.categories.map(name => ({
+                    id: categories.find(c => c.name == name)!.id,
+                    name
+                })));
+            } else {
+                navigate(-1);
+                showErrorToast(res.message!);
+            }
+            dispatch(endLoadingStatus());
+            return;
+        }
+        navigate(-1);
+        showErrorToast("ID sách không hợp lệ");
+    }
+
+    const initCate = async () => {
         setCategories(await getCategoriesAsListItem());
     }
 
@@ -59,65 +93,28 @@ export const CreateBook = () => {
     };
 
     useEffect(() => {
-        if(isApiReady) init()
+        if(isApiReady) initCate()
     }, [isApiReady])
 
-    // Check unsend data
     useEffect(() => {
-        const unsendData = getFromLocal('CreateBookTempData');
-        if (!unsendData) return;
-        if (unsendData.name || unsendData.author || unsendData.publishDate || unsendData.language || 
-            unsendData.price || 
-            unsendData.stock || unsendData.description || unsendData.selectedCates) {
-            appContext?.showConfirmDialog({
-                message: "Bạn có thông tin sách chưa hoàn thành, có muốn khôi phục?",
-                onConfirm: () => {
-                    console.log(unsendData)
-                    setName(unsendData.name);
-                    setAuthor(unsendData.author);
-                    setPublishYear(unsendData.publishYear);
-                    setPageCount(unsendData.pageCount);
-                    setPublisher(unsendData.publisher);
-                    setLanguage(unsendData.language);
-                    setPrice(unsendData.price);
-                    setStock(unsendData.stock);
-                    setDescription(unsendData.description);
-                    setSelectedCates(unsendData.selectedCates);
-                },
-                onReject: () => {
-                    deleteFromLocal('CreateBookTempData');
-                }
-            });
-        }
-    }, [])
+        if (categories.length > 0) initBookInfo();
+    }, [categories])
 
-    // Save form when happen any change
-    useEffect(() => {
-        if (name || author || publishYear || language || price || 
-            stock || description || selectedCates) 
-        {
-            saveToLocal('CreateBookTempData', {
-                name, author, publishDate: publishYear, language, price, 
-                stock, description, selectedCates
-            });
-        } else {
-            deleteFromLocal('CreateBookTempData');
-        }
-    }, [
-        name, author, publishYear, language, price, 
-        stock, description, selectedCates
-    ]);
-
-    const handleCreateBook = async () => {
+    const handleUpdateBook = async () => {
         setFormFocus(true);
-        if (await createNewBook({
-            name, cover, author, description, language, price: price ?? 0, publishYear,
-            pageCount, publisher,
+        dispatch(startLoadingStatus());
+        const res = await updateBookApi(bookId!, {
+            name, cover, author, description, language, price: price ?? 0,
+            publisher, publishYear, pageCount,
             categoryIds: selectedCates.map(e => e.id), stock: stock ?? 0
-        })) {
-            deleteFromLocal('CreateBookTempData');
-            navigate('/admin/product')
+        });
+        if (res.isSuccess) {
+            showSuccessToast('Cập nhật thành công.');
+            navigate(-1);
+        } else {
+            showErrorToast(res.message!);
         }
+        dispatch(endLoadingStatus());
     }
 
     return (
@@ -127,10 +124,9 @@ export const CreateBook = () => {
                         icon={<i className='bx bx-chevron-left'></i>} 
                         onClick={() => navigate('/admin/product')}></Button>
                 </div>
-                <h5 className="label mb-2">Thêm sách mới</h5>
+                <h5 className="label mb-2">Cập nhật thông tin sách</h5>
                 <div className="card card-body py-4">
                     <div className="row position-relative mx-1">
-                        <Loading isShow={apiLoading}/>
                         <div className="col-md-6">
                             {/* Name */}
                             <ValidatableInput2
@@ -291,19 +287,6 @@ export const CreateBook = () => {
                                     if (!val) return "Ngôn ngữ không được bỏ trống";
                                     return null;
                                 }}/>
-
-                            {/* Publisher */}
-                            <ValidatableInput2
-                                className="mb-3"
-                                label="Nhập tên NXB"
-                                initVal={publisher}
-                                isFormFocus={formFocus}
-                                type="text"
-                                valueChange={val => setPublisher(val)} 
-                                validator={val => {
-                                    if (!val) return "Nhà xuất bản không được bỏ trống";
-                                    return null;
-                                }}/>
                         
                             {/* Price */}
                             {/* <label>Giá bán</label>
@@ -332,6 +315,19 @@ export const CreateBook = () => {
                                     if (Number(val) < 0) return "Giá không hợp lệ";
                                     return null;
                                 }}/>
+                            
+                            {/* Publish date */}
+                            {/* <label>Ngày xuất bản</label>
+                            <ValidatableInput 
+                                pxWidth={300}
+                                type="date"
+                                initVal={dateToInputValue(publishDate)}
+                                isFormFocus={formFocus}
+                                valueChange={v => setPublishDate(new Date(v))}
+                                validator={v => {
+                                    if (!v) return "Vui lòng chọn ngày xuất bản";
+                                    return null
+                                }}/> */}
 
                             {/* Page Count */}
                             <ValidatableInput2
@@ -362,36 +358,23 @@ export const CreateBook = () => {
                                     return null;
                                 }}/>
                             
-                            {/* Publish date */}
-                            {/* <label>Ngày xuất bản</label>
-                            <ValidatableInput 
-                                pxWidth={300}
-                                type="date"
-                                initVal={dateToInputValue(publishDate)}
-                                isFormFocus={formFocus}
-                                valueChange={v => setPublishDate(new Date(v))}
-                                validator={v => {
-                                    if (!v) return "Vui lòng chọn ngày xuất bản";
-                                    return null
-                                }}/> */}
-                            
-                            {/* Publish date */}
-                            {/* <FormControl className="me-2">
-                                <DatePicker
-                                    defaultValue={new Date()}
-                                    label="Ngày xuất bản"
-                                    value={publishYear}
-                                    onChange={d => {
-                                        setPublishYear(d);
-                                    }}
-                                    slotProps={{ textField: { size: 'small' } }}
-                                />
-                            </FormControl> */}
+                            {/* Publisher */}
+                                <ValidatableInput2
+                                    className="mb-3"
+                                    label="Nhập tên NXB"
+                                    initVal={publisher}
+                                    isFormFocus={formFocus}
+                                    type="text"
+                                    valueChange={val => setPublisher(val)} 
+                                    validator={val => {
+                                        if (!val) return "Nhà xuất bản không được bỏ trống";
+                                        return null;
+                                    }}/>
                             
                         </div>
                     </div>
                     <div className="d-flex justify-content-center mt-3">
-                        <Button label="Lưu" pxSize={16} pxWidth={100} blackTheme className="" onClick={() => handleCreateBook()}></Button>
+                        <Button label="Lưu" pxSize={16} pxWidth={100} blackTheme className="" onClick={() => handleUpdateBook()}></Button>
                     </div>
                 </div>
         </div>

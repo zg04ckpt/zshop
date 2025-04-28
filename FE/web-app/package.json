@@ -58,6 +58,7 @@
     "@types/lodash": "^4.17.15",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
-    "@types/react-toastify": "^4.0.2"
+    "@types/react-toastify": "^4.0.2",
+    "javascript-obfuscator": "^4.1.1"
   }
 }

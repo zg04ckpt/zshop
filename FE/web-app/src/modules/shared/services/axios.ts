@@ -55,7 +55,7 @@ export const setupInterceptors = (navigate: NavigateFunction, location: any, dis
                 clearAuth();
                 dispatch(setUser(null));
                 dispatch(endLoadingStatus());
-                navigate(`/login?return_url=${location.pathname.substring(1)}`);
+                navigate(`/login?return_url=${encodeURIComponent(location.pathname)}`);
             } else {
                 // console.log(apiError);
                 if (apiError.response?.data) {

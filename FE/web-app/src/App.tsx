@@ -4,9 +4,9 @@ import { createBrowserRouter, Outlet, ScrollRestoration, useLocation, useNavigat
 import { useDispatch } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
 
-import { AdminLayout, AppDispatch, ConfirmDialog, Footer, setupInterceptors, setUser, TopBar } from './modules/shared';
+import { About, AdminLayout, AppDispatch, ConfirmDialog, DynamicTitle, Footer, setupInterceptors, setUser, TopBar } from './modules/shared';
 import { ConfirmEmail, getLocalUser, Login, Register } from './modules/auth';
-import { CateManagement, CreateBook, Detail, Home, ListBook, Search } from './modules/book';
+import { CateManagement, CreateBook, Detail, Home, ListBook, Search, UpdateBook } from './modules/book';
 import { Cart, Order } from './modules/payment';
 import { AccountAddress, AccountPurchaseHistory, AccountInfo, AccountLayout, ListUser, ReviewBook } from './modules/user';
 import { Overview } from './modules/analysis';
@@ -26,6 +26,7 @@ export const router = createBrowserRouter([{
     { path: 'login', element: <Login/> },
     { path: 'confirm-email', element: <ConfirmEmail/> },
     { path: 'google-login-callback', element: <HandleGoogleLoginCallback/> },
+    { path: 'about', element: <About/> },
 
     { path: '', element: <MainLayout/>, children: [
       { index: true, element: <Home/> },
@@ -39,14 +40,15 @@ export const router = createBrowserRouter([{
       { index: true, element: <AccountInfo/> },
       { path: 'address', element: <AccountAddress/> },
       { path: 'review-book', element: <ReviewBook/> },
+      { path: 'purchase-history', element: <AccountPurchaseHistory/> },
       { path: 'payment-history', element: <PaymentHistory/> },
       { path: 'payment-history/detail', element: <OrderHistoryDetail/> },
     ]},
     
     { path: 'admin', element: <AdminLayout/>, children: [
-      { index: true, path:'overview', element: <Overview/> },
-      { path: 'product', element: <ListBook/> },
+      { path: 'product', index: true, element: <ListBook/> },
       { path: 'product/create', element: <CreateBook/> },
+      { path: 'product/update', element: <UpdateBook/> },
       { path: 'user', element: <ListUser/> },
       { path: 'cate', element: <CateManagement/> },
       { path: 'order', element: <AdminOrderLayout/>, children: [
@@ -76,7 +78,8 @@ function App() {
   return (
       <>
           {/* Content */}
-            <TopBar/>
+          <TopBar/>
+          <DynamicTitle/>
           <div style={{minHeight: '100vh'}}>
               <div className="col-12">
                   <Outlet context={{ isApiReady }}/>

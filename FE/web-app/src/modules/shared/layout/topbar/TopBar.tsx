@@ -39,41 +39,9 @@ const TopBar = () => {
                         <img src={band} alt="logo" className="img-fluid" />
                     </a>
 
-                    {/* <label className="position-relative h-100 me-3">
-                        <label className="topbar-item">
-                            Danh mục 
-                            <i className="fa-solid fa-chevron-down ms-1"></i>
-                        </label>
+                    <a href="/about" className="mx-3 topbar-item text-decoration-none text-dark">Giới thiệu</a>
 
-                        <div className="cate-list position-absolute mt-3 shadow-sm">
-                            <div className="row g-2">
-                                <div className="col-6">
-                                    <a href="" className="cate-item">Danh mục</a>
-                                </div>
-                                <div className="col-6">
-                                    <a href="" className="cate-item">Danh mục</a>
-                                </div>
-                                <div className="col-6">
-                                    <a href="" className="cate-item">Danh mục</a>
-                                </div>
-                                <div className="col-6">
-                                    <a href="" className="cate-item">Danh mục</a>
-                                </div>
-                                <div className="col-6">
-                                    <a href="" className="cate-item">Danh mục</a>
-                                </div>
-                                <div className="col-6">
-                                    <a href="" className="cate-item">Danh mục</a>
-                                </div>
-                                <div className="col-6">
-                                    <a href="" className="cate-item">Danh mục</a>
-                                </div>
-                                <div className="col-6">
-                                    <a href="" className="cate-item">Danh mục</a>
-                                </div>
-                            </div>
-                        </div>
-                    </label> */}
+                    <div className="flex-fill"></div>
 
                     {/* Search */}
                     <div className="d-flex search">
@@ -106,12 +74,12 @@ const TopBar = () => {
                         </> }
 
                         { user && <>
-                            <div className="me-2">Xin chào {user.firstName}!</div>
+                            {/* <div className="me-2">Xin chào {user.firstName}!</div> */}
                             <img src={user.avatarUrl || defaultImageUrl} alt="" className="avt pointer-hover" data-bs-toggle="dropdown"/>
 
                             {/* Option */}
                             <div className="dropdown-menu rounded-0 py-0">
-                                <div className="dropdown-item" onClick={() => navigate('/admin')}><i className='bx bx-sushi'></i> Quản trị</div>
+                                <div className="dropdown-item" onClick={() => navigate('/admin/product')}><i className='bx bx-sushi'></i> Quản trị</div>
                                 <div className="dropdown-item" onClick={() => navigate('/account')}><i className='bx bx-cog'></i> Tài khoản</div>
                                 <div className="dropdown-item" onClick={handleLogout}><i className='bx bx-log-out'></i> Đăng xuất</div>
                             </div>

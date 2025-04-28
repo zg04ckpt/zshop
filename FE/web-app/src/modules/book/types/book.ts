@@ -29,7 +29,9 @@ export interface BookDTO
     cover: File|null;
     name: string;
     author: string;
-    publishDate: Date|null;
+    publisher: string;
+    publishYear: number;
+    pageCount: number;
     language: string;
     price: number;
     stock: number;
@@ -47,7 +49,13 @@ export interface BookListItemDTO
     updatedAt: Date;
     avgRate: number;
     soldCount: number;
+    stockCount: number;
     categories: string[];
+}
+
+export interface BoughtBookListItemDTO extends BookListItemDTO {
+    purchaseCount: number;
+    lastPurchasedAt: Date;
 }
 
 export interface BookToReviewListItemDTO 
@@ -95,7 +103,9 @@ export interface BookDetailDTO
     cover: string;
     author: string;
     categories: string[];
-    publishDate: string;
+    publisher: string;
+    publishYear: number;
+    pageCount: number;
     language: string;
     stockCount: number;
     currency: string;

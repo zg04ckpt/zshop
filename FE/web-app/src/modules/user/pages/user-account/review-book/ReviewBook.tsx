@@ -100,7 +100,8 @@ export const ReviewBook = () => {
                         <div className="d-flex flex-column ms-3">
                             <h6>{book.name}</h6>
                             <label htmlFor="">Thể loại: <i>{book.categories.join(',')}</i></label>
-                            <label htmlFor="">Xuất bản: <i>{book.publishDate}</i></label>
+                            <label htmlFor="">Nhà xuất bản: <i>{book.publisher}</i></label>
+                            <label htmlFor="">Năm xuất bản: <i>{book.publishYear}</i></label>
                         </div>
                     </div>
                 </div>

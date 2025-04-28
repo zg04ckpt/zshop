@@ -13,11 +13,11 @@ const AdminLayout = () => {
                 <div className="col-2">
                     <label className="py-1 fw-bold text-secondary"><i className='bx bx-chevrons-right'></i>Quản lý</label>
                     <div className="d-flex flex-column">
-                        <div 
+                        {/* <div 
                             className={`option ${location.pathname.startsWith('/admin/overview')? 'selected': ''}`} 
                             onClick={() => navigate('/admin/overview')}>
                                 Tổng quan
-                        </div>
+                        </div> */}
 
                         <div 
                             className={`option ${location.pathname.startsWith('/admin/product')? 'selected': ''}`} 

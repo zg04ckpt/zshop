@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Home.css"
 import { defaultImageUrl, Header } from "../../../shared";
-import { BookItem, BookListItemDTO, CategoryListItemDTO, getNewestBook, getTopCateApi, getTopSellBook } from "../..";
+import { BookItem, BookListItemDTO, CategoryListItemDTO, getNewestBookApi, getTopCateApi, getTopSellBookApi } from "../..";
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
@@ -12,11 +12,6 @@ const Home = () => {
     const [newestBooks, setNewestBooks] = useState<BookListItemDTO[]>([]);
     const [topCategories, setTopCategories] = useState<CategoryListItemDTO[]>([]);
 
-    const testData = []
-    for (let i = 0; i < 12; i++) {
-        testData.push(i)
-    }
-
     const initTopCate = async () => {
         const res = await getTopCateApi();
         if (res.isSuccess) {
@@ -25,14 +20,14 @@ const Home = () => {
     }
 
     const initTopSellBooks = async () => {
-        const res = await getTopSellBook();
+        const res = await getTopSellBookApi();
         if (res.isSuccess) {
             setTrendBooks(res.data!);
         }
     }
 
     const initNewestBooks = async () => {
-        const res = await getNewestBook();
+        const res = await getNewestBookApi();
         if (res.isSuccess) {
             setNewestBooks(res.data!);
         }
@@ -46,7 +41,7 @@ const Home = () => {
 
 
     return (
-        <div className="home container-lg">
+        <div className="home">
             <Header/>
 
             {/* Category */}

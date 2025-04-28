@@ -68,10 +68,12 @@ export const dateToInputValue = (date: Date|null|undefined): string => {
     return date.toISOString().split('T')[0];
 }
 
-export const stringToDate = (date: string): Date|null => {
+export const stringToDate = (date: string): Date | null => {
     if (!date) return null;
-    return new Date(date);
-}
+    const [day, month, year] = date.split('/').map(Number);
+    if (!day || !month || !year) return null;
+    return new Date(year, month - 1, day);
+};
 
 export const objectToHttpParam = (data: object) => {
     return QueryString.stringify(data);

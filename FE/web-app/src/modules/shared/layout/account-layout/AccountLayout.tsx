@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import './AccountLayout.css'
 import { Outlet, useLocation, useNavigate, useOutletContext } from "react-router-dom";
+import Breadcrumb from "../../components/breadcumb/Breadcrumb";
 
 export const AccountLayout = () => {
     const nav = useNavigate();
@@ -25,12 +26,12 @@ export const AccountLayout = () => {
                             onClick={() => nav('address')}>
                                 Địa chỉ mua hàng
                         </div>
-{/* 
+
                         <div 
                             className={`option ${loc.pathname == '/account/purchase-history'? 'selected': ''}`} 
                             onClick={() => nav('purchase-history')}>
                                 Sách đã mua
-                        </div> */}
+                        </div>
 
                         <div 
                             className={`option ${loc.pathname == '/account/payment-history'? 'selected': ''}`} 
@@ -41,7 +42,8 @@ export const AccountLayout = () => {
                 </div>
 
                 {/* Right - Content */}
-                <div className="col-10">
+                <div className="col-10 pt-0">
+                    <Breadcrumb/>
                     <Outlet context={outletContext}/>
                 </div>
             </div>
