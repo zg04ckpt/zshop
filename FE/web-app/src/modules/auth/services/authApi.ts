@@ -1,4 +1,4 @@
-import { ConfirmEmailDTO, getToken, JwtTokenDTO, LoginDTO, LoginResponseDTO, RegisterDTO } from "..";
+import { ConfirmEmailDTO, LocalUser, LoginDTO, RegisterDTO } from "..";
 import { ApiResult, serverApi } from "../../shared";
 
 export const registerApi = async (data: RegisterDTO): Promise<ApiResult> => {
@@ -37,9 +37,11 @@ export const resendConfirmEmailCodeApi = async (email: string): Promise<ApiResul
     }
 }
 
-export const loginApi = async (data: LoginDTO): Promise<ApiResult<LoginResponseDTO>> => {
+export const loginApi = async (data: LoginDTO): Promise<ApiResult<LocalUser>> => {
     try {
-        return (await serverApi.post<ApiResult<LoginResponseDTO>>("/auth/login", data)).data;
+        return (await serverApi.post<ApiResult<LocalUser>>(
+            "/auth/login", data
+        )).data;
     } catch {
         return {
             isSuccess: false,
@@ -54,11 +56,10 @@ export const loginWithGoogleApi = async () => {
         `${process.env.REACT_APP_API_BASE_URL}/auth/google/login?returnUrl=${encodeURIComponent(returnUrl)}`;
 };
 
-export const getGoogleLoginResultApi = async (): Promise<ApiResult<LoginResponseDTO>> => {
+export const getLoginInfo = async (): Promise<ApiResult<LocalUser>> => {
     try {
-        return (await serverApi.get<ApiResult<LoginResponseDTO>>(
-            "/auth/google/login/result", { withCredentials: true })
-        ).data;
+        return (await serverApi.get<ApiResult<LocalUser>>(
+            "/auth/login/info")).data;
     } catch {
         return {
             isSuccess: false,
@@ -79,13 +80,9 @@ export const logoutApi = async (): Promise<ApiResult> => {
     }
 }
 
-export const refreshTokenApi = async (): Promise<ApiResult<JwtTokenDTO>> => {
+export const refreshTokenApi = async (): Promise<ApiResult> => {
     try {
-        const token = getToken();
-        return (await serverApi.post<ApiResult<JwtTokenDTO>>("/auth/refresh", {
-            accessToken: token!.accessToken,
-            refreshToken: token!.refreshToken
-        })).data;
+        return (await serverApi.post<ApiResult>("/auth/refresh")).data;
     } catch {
         return {
             isSuccess: false,

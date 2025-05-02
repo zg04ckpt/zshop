@@ -33,7 +33,7 @@ namespace Core.Services
             _authConfig = config.Value;
         }
 
-        public async Task<ApiResult<LoginResponseDTO>> LogIn(LoginDTO data)
+        public async Task<LoginResponseDTO> LogIn(LoginDTO data)
         {
             // Check valid
             User user = await _userRepository.Get(e => e.Email.Equals(data.Email))
@@ -87,7 +87,7 @@ namespace Core.Services
             List<string> roles = (await _userRepository.GetRolesOfUser(user.Id)).Select(e => e.Name).ToList();
             JwtTokenDTO token = _jwtService.IssueToken(user, roles, isLogin: true);
 
-            return new ApiSuccessResult<LoginResponseDTO>(new LoginResponseDTO
+            return new LoginResponseDTO
             {
 
                 User = new UserDTO
@@ -100,7 +100,7 @@ namespace Core.Services
                     Roles = roles
                 },
                 Token = token,
-            });
+            };
         }
 
         public async Task<ApiResult> LogOut(string? accessToken)
@@ -137,9 +137,9 @@ namespace Core.Services
             return new ApiSuccessResult("Thay đổi mật khẩu thành công");
         }
 
-        public async Task<ApiResult<JwtTokenDTO>> RefreshToken(TokenDTO data)
+        public async Task<JwtTokenDTO> RefreshToken(string accessToken, string refreshToken)
         {
-            ClaimsPrincipal? claim = _jwtService.ValidateAccessToken(data.AccessToken)
+            ClaimsPrincipal? claim = _jwtService.ValidateAccessToken(accessToken)
                 ?? throw new UnauthorizedException("Access token không hợp lệ");
 
             // Get user data to issue new token set
@@ -149,12 +149,12 @@ namespace Core.Services
             List<string> roles = (await _userRepository.GetRolesOfUser(user.Id)).Select(e => e.Name).ToList();
 
             // Check refesh token valid
-            if (!await _jwtService.ValidateRefreshToken(userId, data.RefreshToken))
+            if (!await _jwtService.ValidateRefreshToken(userId, refreshToken))
                 throw new UnauthorizedException("Refresh token không hợp lệ");
 
             JwtTokenDTO token = _jwtService.IssueToken(user, roles, isLogin: false);
 
-            return new ApiSuccessResult<JwtTokenDTO>(token);
+            return token;
         }
 
         public async Task<ApiResult> Register(RegisterDTO data)
@@ -267,7 +267,7 @@ namespace Core.Services
             return await _mailService.SendAuthenticationCodeViaEmail(user.Email, authenticationCode, ttl, "confirm_email.html");
         }
         
-        public async Task<string> GoogleLogIn(AuthenticateResult? data)
+        public async Task<JwtTokenDTO> GoogleLogIn(AuthenticateResult? data)
         {
             if (data is null || !data.Succeeded)
             {
@@ -314,41 +314,35 @@ namespace Core.Services
             // Create JWT token
             List<string> roles = (await _userRepository.GetRolesOfUser(user.Id)).Select(e => e.Name).ToList();
             JwtTokenDTO token = _jwtService.IssueToken(user, roles, isLogin: true);
-            var loginResult = new LoginResponseDTO
-            {
-                User = new UserDTO
-                {
-                    UserId = user.Id.ToString(),
-                    UserName = user.UserName,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    AvatarUrl = user.AvatarUrl,
-                    Roles = roles
-                },
-                Token = token,
-            };
 
             // Save to redis and return key (which to be set in cookie)
-            var key = Guid.NewGuid().ToString();
-            await _redisService.SetObject(
-                KeySet.RedisType.GOOGLE_LOGIN_RESULT,
-                key,
-                loginResult,
-                TimeSpan.FromMinutes(_authConfig.OAuthLoginDataMinutesTTL));
-            return key;
+            //var key = Guid.NewGuid().ToString();
+            //await _redisService.SetObject(
+            //    KeySet.RedisType.GOOGLE_LOGIN_RESULT,
+            //    key,
+            //    loginResult,
+            //    TimeSpan.FromMinutes(_authConfig.OAuthLoginDataMinutesTTL));
+
+            return token;
         }
 
-        public async Task<ApiResult<LoginResponseDTO>> GetGoogleLoginTempData(string key)
+        public async Task<ApiResult<UserDTO>> GetLoginInfo(ClaimsPrincipal claims)
         {
-            var result = await _redisService.GetObject<LoginResponseDTO>(
-                KeySet.RedisType.GOOGLE_LOGIN_RESULT,
-                key
-            ) ?? throw new BadRequestException("Thông tin đăng nhập hết hạn hoặc không tồn tại");
+            var userId = Helper.GetUserIdFromClaims(claims)
+                ?? throw new UnauthorizedException("Phiên hết hạn hoặc token không hợp lệ.");
+            var user = await _userRepository.Get(Guid.Parse(userId))
+                ?? throw new UnauthorizedException("Người dùng không tồn tại.");
 
-            // Immediately remove
-            await _redisService.Delete(KeySet.RedisType.GOOGLE_LOGIN_RESULT, key);
-
-            return new ApiSuccessResult<LoginResponseDTO>(result);
+            return new ApiSuccessResult<UserDTO>(new UserDTO
+            {
+                UserId = user.Id.ToString(),
+                UserName = user.UserName,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                AvatarUrl = user.AvatarUrl,
+                Roles = (await _userRepository.GetRolesOfUser(Guid.Parse(userId)))
+                    .Select(e => e.Name).ToList()
+            });
         }
     }
 }

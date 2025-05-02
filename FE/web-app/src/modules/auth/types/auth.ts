@@ -15,15 +15,6 @@ export interface RefreshTokenDTO {
     refreshToken: string;
 }
 
-export interface LoginResponseDTO {
-    user: LocalUser;
-    token: JwtTokenDTO;
-}
-
-export interface GoogleLoginResponseDTO extends LoginResponseDTO {
-    returnUrl: string;
-}
-
 
 export interface LocalUser {
     userId: string;

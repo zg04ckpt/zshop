@@ -45,6 +45,8 @@ namespace Core.Services
                 throw new BadRequestException("Vui lòng cung cấp ảnh bìa.");
             if (data.CategoryIds.Length == 0)
                 throw new BadRequestException("Vui lòng thêm ít nhất 1 danh mục thể loại.");
+            if (data.Images.Count < 3)
+                throw new BadRequestException("Vui lòng thêm ít nhất 3 ảnh minh họa.");
 
             var book = new Book
             {
@@ -54,7 +56,7 @@ namespace Core.Services
                 Currency = "VNĐ",
                 AvgRate = 0,
                 Cover = await _storageService.SaveImage(data.Cover)
-                ?? throw new InternalServerErrorException("Lưu ảnh bìa thất bại"),
+                        ?? throw new InternalServerErrorException("Lưu ảnh bìa thất bại"),
                 Description = data.Description,
                 Language = data.Language,
                 Price = data.Price,
@@ -69,6 +71,7 @@ namespace Core.Services
 
             await _bookRepository.Add(book);
             await _bookRepository.AddToCategory(book.Id, data.CategoryIds);
+            await _bookRepository.CreateOrUpdateBookImages(book.Id, data.Images, _storageService);
             await _bookRepository.Save();
 
             return new ApiSuccessResult("Tạo sách mới thành công.");
@@ -80,6 +83,8 @@ namespace Core.Services
                 ?? throw new BadRequestException("Sách không tồn tại.");
             if (data.CategoryIds.Length > 3)
                 throw new BadRequestException("Chọn tối đa 3 danh mục.");
+            if (data.Images.Count < 3)
+                throw new BadRequestException("Vui lòng thêm ít nhất 3 ảnh minh họa.");
 
             // Update cover
             if (data.Cover != null)
@@ -104,6 +109,7 @@ namespace Core.Services
 
             _bookRepository.Update(book);
             await _bookRepository.UpdateCategory(book.Id, data.CategoryIds);
+            await _bookRepository.CreateOrUpdateBookImages(book.Id, data.Images, _storageService);
             await _bookRepository.Save();
 
             return new ApiSuccessResult("Cập nhật sách thành công.");
@@ -193,6 +199,10 @@ namespace Core.Services
                     Price = book.Price,
                     StockCount = book.StockCount,
                     Categories = book.BookCategories.Select(e => e.Category.Name).ToArray(),
+                    Images = book.Images.Select(e => new BookDetailImageListItem { 
+                        Id = e.Id, 
+                        ImageUrl = e.ImageUrl }
+                    ).ToArray(),
                     PublishYear = book.PublishYear, 
                     PageCount = book.PageCount, 
                     Publisher = book.Publisher,

@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 
 namespace Core.Entities.BookFeature
 {
-    public class BookImages
+    public class BookImage
     {
         public int Id { get; set; }
         public Guid BookId { get; set; }
-        public string MyProperty { get; set; }
+        public string ImageUrl { get; set; }
+
+        // Rela
+        public Book Book { get; set; }
     }
 }

@@ -1,7 +1,7 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import './UpdateBook.css';
 import { useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
-import { CategorySelectItemDTO, getBookDetailApi, updateBookApi, useBook } from "../../..";
+import { CategorySelectItemDTO, CKeditor, getBookDetailApi, updateBookApi, useBook } from "../../..";
 import { AppDispatch, Button, dateToInputValue, defaultImageUrl, deleteFromLocal, endLoadingStatus, formatDate, getFromLocal, Loading, OutletContextProp, saveToLocal, showErrorToast, showSuccessToast, startLoadingStatus, stringToDate, useAppContext, ValidatableInput, ValidatableInput2 } from "../../../../shared";
 import { useDispatch } from "react-redux";
 import { FormControl, TextField } from "@mui/material";
@@ -29,6 +29,12 @@ export const UpdateBook = () => {
     const [previewImageUrl, setPreviewImageUrl] = useState<string|null>(null);
     const [bookId, setBookId] = useState<string|null>(null);
     const [categories, setCategories] = useState<CategorySelectItemDTO[]>([]);
+    const fileUploadInputRef = useRef<HTMLInputElement>(null);
+        const [images, setImages] = useState<{
+            id: number,
+            file: File | null,
+            previewUrl: string
+        }[]>([]);
 
     const [selectedCates, setSelectedCates] = useState<CategorySelectItemDTO[]>([]);
 
@@ -65,6 +71,11 @@ export const UpdateBook = () => {
                     id: categories.find(c => c.name == name)!.id,
                     name
                 })));
+                setImages(res.data!.images.map(e => ({
+                    id: e.id,
+                    file: null,
+                    previewUrl: e.imageUrl
+                })))
             } else {
                 navigate(-1);
                 showErrorToast(res.message!);
@@ -105,7 +116,10 @@ export const UpdateBook = () => {
         dispatch(startLoadingStatus());
         const res = await updateBookApi(bookId!, {
             name, cover, author, description, language, price: price ?? 0,
-            publisher, publishYear, pageCount,
+            publisher, publishYear, pageCount, images: images.map(e => ({
+                id: e.id,
+                image: e.file
+            })),
             categoryIds: selectedCates.map(e => e.id), stock: stock ?? 0
         });
         if (res.isSuccess) {
@@ -117,8 +131,27 @@ export const UpdateBook = () => {
         dispatch(endLoadingStatus());
     }
 
+    const handleUploadImage = (e: ChangeEvent<HTMLInputElement>) => {
+        try {
+            const fileReader = new FileReader();
+            const file = e.target.files![0];
+            fileReader.onload = () => setImages(prev => [
+                ... prev,
+                {
+                    id: -1,
+                    file: file,
+                    previewUrl: fileReader.result as string
+                }
+            ]);;
+            fileReader.readAsDataURL(e.target.files![0]);
+            e.target.value = '';
+        } catch {
+            showErrorToast('Tải file thất bại')
+        }
+    }
+
     return (
-        <div className="create-book">
+        <div className="update-book">
             <div className="d-flex my-2">
                 <Button label="Quay lại danh sách"
                         icon={<i className='bx bx-chevron-left'></i>} 
@@ -144,19 +177,15 @@ export const UpdateBook = () => {
                             
                             <div className="d-flex">
                                 <div className="d-flex flex-column">
-                                    {/* Cover */}
                                     <label className="">Bìa sách</label>
                                     <div className="d-flex flex-column">
-                                        <img src={previewImageUrl || defaultImageUrl} alt="" />
-                                        <label className="upload-img mt-2 w-auto text-center pointer-hover">
+                                        <img className="upload-img" src={previewImageUrl || defaultImageUrl} alt="" />
+                                        <label className="btn btn-sm btn-outline-dark mt-2 w-auto text-center pointer-hover">
                                             Tải ảnh lên
                                             <input type="file" accept=".PNG, .JPG" hidden onChange={e => handleUploadCover(e)}/>
                                         </label>
                                     </div>
                                 </div>
-
-                                
-
                                 <div className="d-flex flex-column ms-2 flex-fill">
                                     {/* Author */}
                                     {/* <label className="">Tên tác giả</label>
@@ -234,21 +263,31 @@ export const UpdateBook = () => {
                                 </div>
                             </div>
 
+                            {/* Images */}
+                            <label className="mt-3">Ảnh minh họa</label>
+                            <div className="d-flex mt-2">
+                                <input type="file" ref={fileUploadInputRef} onChange={e => handleUploadImage(e)} hidden accept=".png, .jpg"/>
+                                <button className="bg-white rounded-1 border-1 me-2" onClick={() => fileUploadInputRef.current?.click()}>
+                                    <i className="fa-solid fa-image"></i> Thêm ảnh</button>
+                                {/* <button className="bg-white rounded-1 border-1 me-3"><i className="fa-solid fa-video"></i> Thêm video</button> */}
+                                <span><i className="text-secondary">(Tải lên tối thiểu 3 ảnh định dạng PNG/JPG)</i></span>
+                            </div>
+                            <div className="d-flex mt-3">
+                                {images.map(e => <>
+                                    <div className="review-item position-relative me-2">
+                                        <img src={e.previewUrl} className="rounded-2 shadow-sm object-fit-cover"  width={120} height={120} alt="" />
+                                        <i className="fa-solid fa-xmark position-absolute top-0 m-1 end-0" onClick={() => {
+                                            setImages(prev => {
+                                                prev = prev.filter(i => i.id != e.id);
+                                                return prev;
+                                            });
+                                        }}></i>
+                                    </div>
+                                </>)}
+                            </div>
                         </div>
                         <div className="col-md-6">
-                            {/* Description */}
-                            {/* <label>Mô tả sách</label> */}
-                            {/* <ValidatableInput 
-                                isFormFocus={formFocus}
-                                initVal={description}
-                                type="text"
-                                isMultiLine
-                                valueChange={val => setDescription(val)} 
-                                validator={val => {
-                                    if (!val) return "Mô tả không được bỏ trống";
-                                    return null;
-                                }}/> */}
-                            <ValidatableInput2
+                            {/* <ValidatableInput2
                                 isMaxWidth
                                 className="mb-3"
                                 label="Nhập mô tả"
@@ -260,7 +299,7 @@ export const UpdateBook = () => {
                                 validator={val => {
                                     if (!val) return "Mô tả không được bỏ trống";
                                     return null;
-                                }}/>
+                                }}/> */}
                             
                             {/* Language */}
                             {/* <label>Ngôn ngữ</label>
@@ -371,6 +410,12 @@ export const UpdateBook = () => {
                                         return null;
                                     }}/>
                             
+                        </div>
+                        <div className="col-12">
+                            <label htmlFor="">Mô tả sách</label>
+                            <CKeditor data={description} valueChange={v => {
+                                setDescription(v)
+                            }}/>
                         </div>
                     </div>
                     <div className="d-flex justify-content-center mt-3">

@@ -44,8 +44,9 @@ namespace Core.DTOs.Book
 
         [Required(ErrorMessage = "Mô tả không được bỏ trống")]
         public string Description { get; set; }
-
-
         public int[] CategoryIds { get; set; } = Array.Empty<int>();
+
+        [Required(ErrorMessage = "Vui lòng thêm ảnh minh họa")]
+        public List<CreateOrUpdateBookImageListItemDTO> Images { get; set; }
     }
 }

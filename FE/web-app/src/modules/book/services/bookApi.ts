@@ -33,13 +33,6 @@ export const getBooksAsListManagementApi = async (data: BookSearchDTO): Promise<
 
 export const createBookReviewApi = async (data: CreateBookReviewDTO) => {
     try {
-        // const formData = new FormData();
-        // formData.append('bookId', data.bookId);
-        // formData.append('content', data.content);
-        // formData.append('rate', data.rate.toString());
-        // data.images.forEach(e => {
-        //     formData.append('images', e);
-        // })
         return (await serverApi.post<ApiResult>(
             `/books/review`,
             convertToFormData(data)
@@ -78,9 +71,13 @@ export const getBookDetailApi = async (id: string): Promise<ApiResult<BookDetail
 
 export const createBookApi = async (data: BookDTO): Promise<ApiResult> => {
     try {
+        const fData = convertToFormData(data);
+        for (let [key, value] of fData.entries()) {
+            console.log(key, value);
+        }
         return (await serverApi.post<ApiResult>(
             `/management/book`, 
-            convertToFormData(data)
+            fData
         )).data;
     } catch {
         return {

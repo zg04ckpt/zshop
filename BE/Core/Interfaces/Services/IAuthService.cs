@@ -13,13 +13,13 @@ namespace Core.Interfaces.Services
     public interface IAuthService
     {
         Task<ApiResult> Register(RegisterDTO data);
-        Task<ApiResult<LoginResponseDTO>> LogIn(LoginDTO data);
-        Task<string> GoogleLogIn(AuthenticateResult? data);
-        Task<ApiResult<LoginResponseDTO>> GetGoogleLoginTempData(string key);
-        Task<ApiResult> LogOut(string accessToken);
+        Task<LoginResponseDTO> LogIn(LoginDTO data);
+        Task<JwtTokenDTO> GoogleLogIn(AuthenticateResult? data);
+        Task<ApiResult<UserDTO>> GetLoginInfo(ClaimsPrincipal claims);
+        Task<ApiResult> LogOut(string? accessToken);
         Task<ApiResult> ResendConfirmEmailCode(string email);
         Task<ApiResult> ConfirmEmailByCode(ConfirmEmailDTO data);
-        Task<ApiResult<JwtTokenDTO>> RefreshToken(TokenDTO data);
+        Task<JwtTokenDTO> RefreshToken(string accessToken, string refreshToken);
         Task<ApiResult> SendResetPassAuthCode(string email);
         Task<ApiResult> RefreshPassword(ResetPasswordDTO data);
     }

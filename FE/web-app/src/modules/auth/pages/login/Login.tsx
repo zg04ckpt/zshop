@@ -1,14 +1,14 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, {useRef, useState } from "react";
 import './Login.css';
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { loginApi, loginWithGoogleApi, saveLocalUser, saveToken, useAuth } from "../..";
-import { AppDispatch, endLoadingStatus, Loading, setUser, showErrorToast, showSuccessToast, startLoadingStatus, ValidatableInput } from "../../../shared";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { loginApi, loginWithGoogleApi} from "../..";
+import { AppDispatch, endLoadingStatus, setUser, showErrorToast, showSuccessToast, 
+    startLoadingStatus, ValidatableInput } from "../../../shared";
 import { useDispatch } from "react-redux";
 
 const Login = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
-    const { login, apiLoading } = useAuth();
     const [ param ] = useSearchParams();
 
     const [email, setEmail] = useState<string>('');
@@ -30,14 +30,10 @@ const Login = () => {
 
         const res = await loginApi({email, password});
         if (res.isSuccess) {
-            // Save user to local
-            saveLocalUser(res.data!.user);
-            saveToken(res.data!.token);
             // emit user state
-            dispatch(setUser(res.data!.user));
-            
+            dispatch(setUser(res.data!));
             navigate((param.get('return_url') || '/'));
-            showSuccessToast(`Đăng nhập thành công, xin chào ${res.data!.user.firstName}`);
+            showSuccessToast(`Đăng nhập thành công, xin chào ${res.data!.firstName}`);
         } else {
             showErrorToast(res.message!);
         }
@@ -50,7 +46,6 @@ const Login = () => {
                 <div className="col-lg-4 px-0 offset-lg-4 col-md-6 offset-md-3 col-sm-8 offset-sm-2">
 
                     <div className="card card-body mt-3 rounded-0 p-3">
-                        <Loading isShow={apiLoading} />
                         <h2 className="fw-bolder text-center">Đăng nhập ZShop</h2>
                         <p className="fw-light text-center">Chào mừng bạn quay trở lại!</p>
 

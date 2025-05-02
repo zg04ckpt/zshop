@@ -1,7 +1,7 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import './CreateBook.css';
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { CategorySelectItemDTO, useBook } from "../../..";
+import { CategorySelectItemDTO, CKeditor, useBook } from "../../..";
 import { AppDispatch, Button, dateToInputValue, defaultImageUrl, deleteFromLocal, endLoadingStatus, formatDate, getFromLocal, Loading, OutletContextProp, saveToLocal, showErrorToast, startLoadingStatus, useAppContext, ValidatableInput, ValidatableInput2 } from "../../../../shared";
 import { useDispatch } from "react-redux";
 import { FormControl, TextField } from "@mui/material";
@@ -27,7 +27,12 @@ export const CreateBook = () => {
     const [description, setDescription] = useState<string>('');
     const [previewImageUrl, setPreviewImageUrl] = useState<string|null>(null);
     const [categories, setCategories] = useState<CategorySelectItemDTO[]>([]);
-
+    const fileUploadInputRef = useRef<HTMLInputElement>(null);
+    const [images, setImages] = useState<{
+        id: number,
+        file: File,
+        previewUrl: string
+    }[]>([]);
     const [selectedCates, setSelectedCates] = useState<CategorySelectItemDTO[]>([]);
 
     const handleUploadCover = (e: ChangeEvent<HTMLInputElement>) => {
@@ -35,6 +40,25 @@ export const CreateBook = () => {
             setCover(e.target.files![0]);
             const fileReader = new FileReader();
             fileReader.onload = () => setPreviewImageUrl(fileReader.result as string);
+            fileReader.readAsDataURL(e.target.files![0]);
+            e.target.value = '';
+        } catch {
+            showErrorToast('Tải file thất bại')
+        }
+    }
+
+    const handleUploadImage = (e: ChangeEvent<HTMLInputElement>) => {
+        try {
+            const fileReader = new FileReader();
+            const file = e.target.files![0];
+            fileReader.onload = () => setImages(prev => [
+                ... prev,
+                {
+                    id: prev.length + 1,
+                    file: file,
+                    previewUrl: fileReader.result as string
+                }
+            ]);;
             fileReader.readAsDataURL(e.target.files![0]);
             e.target.value = '';
         } catch {
@@ -85,6 +109,7 @@ export const CreateBook = () => {
                     setSelectedCates(unsendData.selectedCates);
                 },
                 onReject: () => {
+                    debugger
                     deleteFromLocal('CreateBookTempData');
                 }
             });
@@ -93,18 +118,20 @@ export const CreateBook = () => {
 
     // Save form when happen any change
     useEffect(() => {
-        if (name || author || publishYear || language || price || 
-            stock || description || selectedCates) 
+        if (name || author || publishYear != 0 || language || price || 
+            stock || description || selectedCates.length > 0) 
         {
             saveToLocal('CreateBookTempData', {
-                name, author, publishDate: publishYear, language, price, 
+                name, author, publishYear, language, price, 
+                publisher, pageCount,
                 stock, description, selectedCates
             });
         } else {
             deleteFromLocal('CreateBookTempData');
         }
     }, [
-        name, author, publishYear, language, price, 
+        name, author, publishYear, language, price, publisher,
+        pageCount,
         stock, description, selectedCates
     ]);
 
@@ -112,7 +139,10 @@ export const CreateBook = () => {
         setFormFocus(true);
         if (await createNewBook({
             name, cover, author, description, language, price: price ?? 0, publishYear,
-            pageCount, publisher,
+            pageCount, publisher, images: images.map(e => ({
+                id: -1,
+                image: e.file
+            })),
             categoryIds: selectedCates.map(e => e.id), stock: stock ?? 0
         })) {
             deleteFromLocal('CreateBookTempData');
@@ -151,8 +181,8 @@ export const CreateBook = () => {
                                     {/* Cover */}
                                     <label className="">Bìa sách</label>
                                     <div className="d-flex flex-column">
-                                        <img src={previewImageUrl || defaultImageUrl} alt="" />
-                                        <label className="upload-img mt-2 w-auto text-center pointer-hover">
+                                        <img className="upload-img" src={previewImageUrl || defaultImageUrl} alt="" />
+                                        <label className="btn btn-sm btn-outline-dark mt-2 w-auto text-center pointer-hover">
                                             Tải ảnh lên
                                             <input type="file" accept=".PNG, .JPG" hidden onChange={e => handleUploadCover(e)}/>
                                         </label>
@@ -237,22 +267,32 @@ export const CreateBook = () => {
                                     </div>
                                 </div>
                             </div>
-
+                            
+                            {/* Images */}
+                            <label className="mt-3">Ảnh minh họa</label>
+                            <div className="d-flex mt-2">
+                                <input type="file" ref={fileUploadInputRef} onChange={e => handleUploadImage(e)} hidden accept=".png, .jpg"/>
+                                <button className="bg-white rounded-1 border-1 me-2" onClick={() => fileUploadInputRef.current?.click()}>
+                                    <i className="fa-solid fa-image"></i> Thêm ảnh</button>
+                                {/* <button className="bg-white rounded-1 border-1 me-3"><i className="fa-solid fa-video"></i> Thêm video</button> */}
+                                <span><i className="text-secondary">(Tải lên tối thiểu 3 ảnh định dạng PNG/JPG)</i></span>
+                            </div>
+                            <div className="d-flex mt-3">
+                                {images.map(e => <>
+                                    <div className="review-item position-relative me-2">
+                                        <img src={e.previewUrl} className="rounded-2 shadow-sm object-fit-cover"  width={120} height={120} alt="" />
+                                        <i className="fa-solid fa-xmark position-absolute top-0 m-1 end-0" onClick={() => {
+                                            setImages(prev => {
+                                                prev = prev.filter(i => i.id != e.id);
+                                                return prev;
+                                            });
+                                        }}></i>
+                                    </div>
+                                </>)}
+                            </div>
                         </div>
                         <div className="col-md-6">
-                            {/* Description */}
-                            {/* <label>Mô tả sách</label> */}
-                            {/* <ValidatableInput 
-                                isFormFocus={formFocus}
-                                initVal={description}
-                                type="text"
-                                isMultiLine
-                                valueChange={val => setDescription(val)} 
-                                validator={val => {
-                                    if (!val) return "Mô tả không được bỏ trống";
-                                    return null;
-                                }}/> */}
-                            <ValidatableInput2
+                            {/* <ValidatableInput2
                                 isMaxWidth
                                 className="mb-3"
                                 label="Nhập mô tả"
@@ -264,7 +304,7 @@ export const CreateBook = () => {
                                 validator={val => {
                                     if (!val) return "Mô tả không được bỏ trống";
                                     return null;
-                                }}/>
+                                }}/> */}
                             
                             {/* Language */}
                             {/* <label>Ngôn ngữ</label>
@@ -388,6 +428,12 @@ export const CreateBook = () => {
                                 />
                             </FormControl> */}
                             
+                        </div>
+                        <div className="col-12">
+                            <label htmlFor="">Mô tả sách</label>
+                            <CKeditor data={description} valueChange={v => {
+                                setDescription(v)
+                            }}/>
                         </div>
                     </div>
                     <div className="d-flex justify-content-center mt-3">

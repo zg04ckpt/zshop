@@ -1,5 +1,6 @@
 ﻿using Core.DTOs.Book;
 using Core.Entities.BookFeature;
+using Core.Interfaces.Services.External;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,5 +18,6 @@ namespace Core.Interfaces.Repositories
         Task<BookListItemDTO[]> GetNewest(int count);
         Task<BookListItemDTO[]> GetRandom(int count);
         Task<BoughtBookListItemDTO[]> GetBoughtBooks(Guid userId);
+        Task CreateOrUpdateBookImages(Guid bookId, List<CreateOrUpdateBookImageListItemDTO> images, IStorageService storageService);
     }
 }

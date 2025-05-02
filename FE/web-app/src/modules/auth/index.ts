@@ -1,6 +1,5 @@
 export * from './types/auth'
 export * from './services/authApi'
-export * from './services/authStore'
 export * from './hooks/useAuth'
 export {default as Login} from './pages/login/Login'
 export {default as Register} from './pages/register/Register'

@@ -13,6 +13,7 @@ namespace Core.DTOs.Book
         public string Cover { get; set; }
         public string Author { get; set; }
         public string[] Categories { get; set; }
+        public BookDetailImageListItem[] Images { get; set; }
         public int PublishYear { get; set; }
         public string Publisher { get; set; }
         public int PageCount { get; set; }
@@ -25,5 +26,11 @@ namespace Core.DTOs.Book
         public decimal AvgRate { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+    }
+
+    public class BookDetailImageListItem
+    {
+        public int Id { get; set; }
+        public string ImageUrl { get; set; }
     }
 }

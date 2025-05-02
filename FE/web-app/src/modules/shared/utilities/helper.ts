@@ -42,7 +42,7 @@ export const convertToFormData = (data: any): FormData => {
         if(value) {
             if (value instanceof Array) {
                 value.forEach((e, i) => {
-                    addPropToFormData(formData, `${key}`, e);
+                    addPropToFormData(formData, `${key}[${i}]`, e);
                 });
             } else {
                 addPropToFormData(formData, key, value);
@@ -57,13 +57,29 @@ const addPropToFormData = (formData: FormData, key: string, value: any) => {
         formData.append(key, value);
     } else if (value instanceof Date) {
         formData.append(key, value.toISOString());
+    } else if (typeof value === 'object') {
+        addObjectToFormData(formData, key, value);
     } else {
         formData.append(key, value.toString());
     }
 }
 
+const addObjectToFormData = (formData: FormData, key: string, data: any) => {
+    Object.keys(data).forEach(childKey => {
+        const value = data[childKey];
+        if(value) {
+            if (value instanceof Array) {
+                value.forEach((e, i)  => {
+                    addPropToFormData(formData, `${key}.${childKey}`, e);
+                });
+            } else {
+                addPropToFormData(formData, `${key}.${childKey}`, value);
+            }
+        }
+    });
+}
+
 export const dateToInputValue = (date: Date|null|undefined): string => {
-    debugger
     if (!date) return '';
     return date.toISOString().split('T')[0];
 }

@@ -145,8 +145,8 @@ builder.Services.AddSingleton<IMailService, MailService>();
 builder.Services.AddSingleton<IVNAddressDataService, VNAddressDataService>();
 
 // Add middleware
+builder.Services.AddSingleton<JwtCookieMiddleware>();
 builder.Services.AddSingleton<ExceptionMiddleware>();
-builder.Services.AddSingleton<ValidationMiddleware>();
 builder.Services.AddSingleton<JwtMiddleware>();
 
 builder.Services.AddControllers()
@@ -157,11 +157,18 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddRouting(options =>
+{
+    options.LowercaseUrls = true;
+});
+
+// Config validation error
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     // Change validation error response
     options.InvalidModelStateResponseFactory = context =>
     {
+
         // Get errors
         var errors = context.ModelState
             .Where(entry => entry.Value.Errors.Count > 0)
@@ -201,7 +208,7 @@ app.UseCors("AllowWebClient");
 app.UseHttpsRedirection();
 
 app.UseMiddleware<ExceptionMiddleware>();
-app.UseMiddleware<JwtMiddleware>();
+app.UseMiddleware<JwtCookieMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

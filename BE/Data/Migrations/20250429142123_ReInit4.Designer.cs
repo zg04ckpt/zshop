@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250420043331_ReInit3")]
-    partial class ReInit3
+    [Migration("20250429142123_ReInit4")]
+    partial class ReInit4
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -62,11 +62,18 @@ namespace Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("PageCount")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("PublishYear")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("PublishYear")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Publisher")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SoldCount")
                         .HasColumnType("int");
@@ -95,6 +102,28 @@ namespace Data.Migrations
                     b.HasIndex("BookId");
 
                     b.ToTable("BookCategories", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Entities.BookFeature.BookImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<Guid>("BookId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookId");
+
+                    b.ToTable("BookImages");
                 });
 
             modelBuilder.Entity("Core.Entities.BookFeature.Category", b =>
@@ -523,6 +552,17 @@ namespace Data.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("Core.Entities.BookFeature.BookImage", b =>
+                {
+                    b.HasOne("Core.Entities.BookFeature.Book", "Book")
+                        .WithMany("Images")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+                });
+
             modelBuilder.Entity("Core.Entities.BookFeature.Category", b =>
                 {
                     b.HasOne("Core.Entities.BookFeature.Category", "Parent")
@@ -687,6 +727,8 @@ namespace Data.Migrations
                     b.Navigation("BookCategories");
 
                     b.Navigation("CartItems");
+
+                    b.Navigation("Images");
 
                     b.Navigation("OrderDetails");
 

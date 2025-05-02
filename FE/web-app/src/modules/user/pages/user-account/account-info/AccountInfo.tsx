@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import './AccountInfo.css';
 import { Gender, UserProfileDTO, useUser } from "../../..";
-import { AppDispatch, Button, dateToInputValue, defaultImageUrl, endLoadingStatus, Loading, OutletContextProp, showErrorToast, startLoadingStatus, stringToDate, useAppContext, ValidatableInput } from "../../../../shared";
+import { AppDispatch, Button, dateToInputValue, defaultImageUrl, endLoadingStatus, Loading, OutletContextProp, RootState, showErrorToast, startLoadingStatus, stringToDate, useAppContext, ValidatableInput } from "../../../../shared";
 import { useOutletContext } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 export const AccountInfo = () => {
-    const { apiLoading, getProfile, updateProfile, updateUserLocalInfo } = useUser();
+    const { apiLoading, getProfile, updateProfile } = useUser();
     const appContext = useAppContext();
 
     const [profile, setProfile] = useState<UserProfileDTO|null>(null);
@@ -14,6 +14,8 @@ export const AccountInfo = () => {
     const [previewAvatar, setPreviewAvatar] = useState<string|null>(null);
     const [formFocus, setFormFocus] = useState<boolean>(false);
     const [backup, setBackup] = useState<UserProfileDTO|null>(null);
+    const user = useSelector((state: RootState) => state.auth.user);
+    const dispatch = useDispatch<AppDispatch>();
     
     const init = async () => {
         const data = await getProfile();
@@ -38,7 +40,9 @@ export const AccountInfo = () => {
                     newAvatar: avatarImage
                 })) {
                     setBackup(profile);
-                    updateUserLocalInfo (profile!.lastName, profile!.firstName, previewAvatar);
+                    user!.firstName = profile!.firstName;
+                    user!.lastName = profile!.lastName;
+                    user!.avatarUrl = previewAvatar;
                 } else {
                     setProfile(backup);
                     setPreviewAvatar(profile?.avatarUrl || null);
@@ -66,7 +70,6 @@ export const AccountInfo = () => {
         }
     }
 
-    const dispatch = useDispatch<AppDispatch>();
     const { isApiReady } = useOutletContext<OutletContextProp>();
 
     useEffect(() => {

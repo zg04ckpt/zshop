@@ -21,10 +21,10 @@ const Detail = () => {
     const [book, setBook] = useState<BookDetailDTO|null>(null);
     const [isShowImagePrevew, setIsShowImagePrevew] = useState<boolean>(false);
     const [imageIndex, setImageIndex] = useState<number>(0);
-    const images = [
-        'https://res.cloudinary.com/dvk5yt0oi/image/upload/v1744183350/zshop/images/deu49cj5m2iwlk450vua.jpg',
-        'https://res.cloudinary.com/dvk5yt0oi/image/upload/v1744183129/zshop/images/vu4haxvcwvqriqjlbyea.jpg'
-    ];
+    // const images = [
+    //     'https://res.cloudinary.com/dvk5yt0oi/image/upload/v1744183350/zshop/images/deu49cj5m2iwlk450vua.jpg',
+    //     'https://res.cloudinary.com/dvk5yt0oi/image/upload/v1744183129/zshop/images/vu4haxvcwvqriqjlbyea.jpg'
+    // ];
     const [reviews, setReviews] = useState<BookReviewListItemDTO[]>([]);
     const [topSellBooks, setTopSellBooks] = useState<BookListItemDTO[]>([]);
     const [randomBooks, setRandomBooks] = useState<BookListItemDTO[]>([]);
@@ -77,6 +77,11 @@ const Detail = () => {
         dispatch(endLoadingStatus());
     }
 
+    const onBookImageClick = (key: number) => {
+        setImageIndex(key);
+        setIsShowImagePrevew(true);
+    }
+
     useEffect(() => {
         if(isApiReady) {
             init();
@@ -105,20 +110,22 @@ const Detail = () => {
                             <div className="row g-3 mb-3">
                                 {/* Images */}
                                 <div className="col-sm-4">
-                                    <img onClick={() => setIsShowImagePrevew(true)} src={book.cover ?? defaultImageUrl} alt="" height={300} className="w-100 object-fit-cover" />
+                                    <img onClick={() => onBookImageClick(0)} src={book.cover ?? defaultImageUrl} alt="" height={300} className="w-100 object-fit-cover" />
                                     
                                     <div className="d-flex flex-row justify-content-around mt-2">
-                                        <img onClick={() => setIsShowImagePrevew(true)} src={book.cover ?? defaultImageUrl} alt="" height={80} width={80} 
-                                            className="image-item object-fit-cover rounded-2" />
-                                        <img onClick={() => setIsShowImagePrevew(true)} src={book.cover ?? defaultImageUrl} alt="" height={80} width={80} 
-                                            className="image-item object-fit-cover rounded-2" />
-                                        <div onClick={() => setIsShowImagePrevew(true)} className="position-relative view-more ">
-                                            <img src={book.cover ?? defaultImageUrl} alt="" height={80} width={80} 
+                                        {book.images.slice(0, 2).map((e, i) => <>
+                                            <img onClick={() => onBookImageClick(i+1)} src={e.imageUrl} alt="" height={80} width={80} 
                                                 className="image-item object-fit-cover rounded-2" />
-                                            <div className="w-100 h-100 cover text-center rounded-2 position-absolute align-content-center top-0 start-0"
-                                                title={`Xem thêm 4 ảnh nữa`}>
-                                                <div className="h3">+4</div>
-                                            </div>
+                                        </>)}
+                                        <div onClick={() => onBookImageClick(3)} className="position-relative view-more ">
+                                            <img src={book.images[2].imageUrl} alt="" height={80} width={80} 
+                                                className="image-item object-fit-cover rounded-2" />
+                                            {book.images.length > 3 && <>
+                                                <div className="w-100 h-100 cover text-center rounded-2 position-absolute align-content-center top-0 start-0"
+                                                    title={`Xem thêm ${book.images.length-3} ảnh nữa`}>
+                                                    <div className="h3">+{book.images.length-3}</div>
+                                                </div>
+                                            </>}
                                         </div>
                                     </div>
                                 </div>
@@ -189,7 +196,7 @@ const Detail = () => {
 
                             {/* Intro */}
                             <h5 className="label mt-3">Mô tả</h5>
-                            <p>{book.description}</p>
+                            <div dangerouslySetInnerHTML={{ __html: book.description }} />
 
                             {/* Review */}
                             <div className="d-flex align-items-center mb-2 mt-3">
@@ -210,8 +217,8 @@ const Detail = () => {
 
                     {/* Top seller */}
                     <div className="col-3 mb-3">
-                        <div className="card card-body shadow-sm p-0 vh-100">
-                            <h6 className="label m-2">Cùng thể loại</h6>
+                        <div className="card card-body shadow-sm p-0 pb-1">
+                            <h6 className="label m-2">Bán chạy</h6>
                             <div className="d-flex flex-column px-1">
                                 {topSellBooks.map(e => <>
                                     <div className="d-flex book-item p-2">
@@ -244,12 +251,17 @@ const Detail = () => {
                 </div>
             </> }
 
-            <PhotoSlider
-                images={images.map((item) => ({ src: item, key: item }))}
-                visible={isShowImagePrevew}
-                onClose={() => setIsShowImagePrevew(false)}
-                index={imageIndex}
-                onIndexChange={setImageIndex}/>
+            {book && <>
+                <PhotoSlider
+                    images={[
+                        { src: book.cover, key: 0 },
+                        ...book.images.map((item, order) => ({ src: item.imageUrl, key: order+1 })),
+                    ]}
+                    visible={isShowImagePrevew}
+                    onClose={() => setIsShowImagePrevew(false)}
+                    index={imageIndex}
+                    onIndexChange={setImageIndex}/>
+            </>}
         </div>
     );
 }

@@ -102,6 +102,28 @@ namespace Data.Migrations
                     b.ToTable("BookCategories", (string)null);
                 });
 
+            modelBuilder.Entity("Core.Entities.BookFeature.BookImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<Guid>("BookId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookId");
+
+                    b.ToTable("BookImages");
+                });
+
             modelBuilder.Entity("Core.Entities.BookFeature.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -528,6 +550,17 @@ namespace Data.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("Core.Entities.BookFeature.BookImage", b =>
+                {
+                    b.HasOne("Core.Entities.BookFeature.Book", "Book")
+                        .WithMany("Images")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+                });
+
             modelBuilder.Entity("Core.Entities.BookFeature.Category", b =>
                 {
                     b.HasOne("Core.Entities.BookFeature.Category", "Parent")
@@ -692,6 +725,8 @@ namespace Data.Migrations
                     b.Navigation("BookCategories");
 
                     b.Navigation("CartItems");
+
+                    b.Navigation("Images");
 
                     b.Navigation("OrderDetails");
 

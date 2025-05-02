@@ -2,11 +2,8 @@ import React, { useEffect, useState } from "react";
 import './OrderHistoryDetail.css';
 import { useNavigate, useOutletContext, useParams, useSearchParams } from "react-router-dom";
 import { CancelOrderRequest, OrderHistoryDetailDTO, OrderStatus, PaymentMethod, PaymentStatus, useOrder } from "../../../../payment";
-import { useDispatch } from "react-redux";
-import { AppDispatch, OutletContextProp, startLoadingStatus, endLoadingStatus, formatDate, Button, showSuccessToast } from "../../../../shared";
-import { DataGrid } from "@mui/x-data-grid";
-import { isAdmin, useAuth } from "../../../../auth";
-import { useUser } from "../../../hooks/useUser";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, OutletContextProp, startLoadingStatus, endLoadingStatus, formatDate, Button, showSuccessToast, RootState } from "../../../../shared";
 import { Dialog, DialogContent, DialogTitle, FormControlLabel, Radio, RadioGroup, Step, StepLabel, Stepper } from "@mui/material";
 import { SelectBookFromOrderToReviewDialog } from "../../../../book";
 
@@ -41,6 +38,7 @@ const OrderHistoryDetail = () => {
     const otherReasonRef = React.useRef<HTMLTextAreaElement>(null);
     const [reviewOrderId, setReviewOrderId] = useState<string|null>(null);
     const [showSelectBookToReview, setShowSelectBookToReview] = useState<boolean>(false);
+    const user = useSelector((state: RootState) => state.auth.user);
 
     const init = async () => {
         const id = param.get('id');
@@ -159,7 +157,7 @@ const OrderHistoryDetail = () => {
                 <div className="card card-body rounded-0">
                     <table>
                         <tbody>
-                            { isAdmin() && <>
+                            { user?.roles.includes('Admin') && <>
                                 <tr>
                                     <th>Tài khoản thanh toán:</th>
                                     <td>{ detail.userId }</td>

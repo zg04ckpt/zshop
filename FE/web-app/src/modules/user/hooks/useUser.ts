@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { addAddressApi, AddressDataDTO, AddressDTO, AddressItemDTO, getAddressDataApi, getAddressesApi, getProfileApi, getRolesOfUserApi, getUsersAsListItemApi, removeAddressApi, RoleSelectItemDTO, SearchUserDTO, setAddressDefaultApi, updateProfileApi, UpdateUserProfileDTO, UserItemDTO, UserProfileDTO } from "..";
 import { AppDispatch, Paginated, setUser, showErrorToast, showSuccessToast } from "../../shared";
-import { getLocalUser, saveLocalUser } from "../../auth";
 import { useDispatch } from "react-redux";
 
 interface UserContextType {
     apiLoading: boolean;
     getProfile: () => Promise<UserProfileDTO|null>;
     updateProfile: (data: UpdateUserProfileDTO) => Promise<boolean>;
-    updateUserLocalInfo: (lastName: string, firstName: string, avatarUrl: string|null) => void;
     getDefaultAddressData: () => Promise<AddressDataDTO|null>;
     getAddresses: () => Promise<AddressItemDTO[]>;
     addAddress: (data: AddressDTO) => Promise<boolean>;
@@ -45,15 +43,6 @@ export const useUser = (): UserContextType => {
             showErrorToast(res.message ?? 'Lỗi không xác định');
             return false;
         }
-    }
-
-    const updateUserLocalInfo = (lastName: string, firstName: string, avatarUrl: string|null) => {
-        const user = getLocalUser()!;
-        user.lastName = lastName;
-        user.firstName = firstName;
-        user.avatarUrl = avatarUrl;
-        saveLocalUser(user);
-        dispatch(setUser(user));
     }
 
     const getDefaultAddressData = async (): Promise<AddressDataDTO|null> => {
@@ -148,6 +137,6 @@ export const useUser = (): UserContextType => {
     return {
         apiLoading,
         addAddress, getAddresses, getDefaultAddressData, removeAddress, setDefaultAddress,
-        getProfile, getRolesOfUser, updateProfile, getUsersAsList, updateUserLocalInfo
+        getProfile, getRolesOfUser, updateProfile, getUsersAsList
     }
 }

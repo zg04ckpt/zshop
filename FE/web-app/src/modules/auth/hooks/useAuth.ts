@@ -1,48 +1,47 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { AppDispatch, RootState, setUser } from "../../shared";
+import { ApiResult, AppDispatch, RootState, setUser } from "../../shared";
 import { useDispatch } from "react-redux";
-import { clearAuth, confirmEmailApi, LocalUser, loginApi, LoginDTO, logoutApi, registerApi, RegisterDTO, resendConfirmEmailCodeApi, saveLocalUser, saveToken } from "..";
+import { confirmEmailApi, logoutApi, registerApi, RegisterDTO, resendConfirmEmailCodeApi } from "..";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { showErrorToast, showSuccessToast } from "../../shared/services/toast";
 
 interface AuthContextType {
     apiLoading: boolean;
-    login: (data: LoginDTO) => Promise<boolean>;
+    // login: (data: LoginDTO) => Promise<boolean>;
     register: (data: RegisterDTO) => Promise<boolean>;
     resendEmailConfirmCode: (email: string) => Promise<boolean>;
     confirmEmail: (email: string, code: string) => Promise<boolean>;
-    logout: () => Promise<boolean>;
+    logout: () => Promise<void>;
 }
 
 export const useAuth = (): AuthContextType => {
     const dispatch = useDispatch<AppDispatch>();
     const [apiLoading, setApiLoading] = useState<boolean>(false);
 
-    const login = async (data: LoginDTO): Promise<boolean> => {
-        setApiLoading(true);
-        clearAuth();
-        const res = await loginApi(data);
-        setApiLoading(false);
+    // const login = async (data: LoginDTO): Promise<boolean> => {
+    //     setApiLoading(true);
+    //     clearAuth();
+    //     const res = await loginApi(data);
+    //     setApiLoading(false);
         
-        if (res.isSuccess) {
-            // Save user to local
-            saveLocalUser(res.data!.user);
-            saveToken(res.data!.token);
-            // emit user state
-            dispatch(setUser(res.data!.user));
+    //     if (res.isSuccess) {
+    //         // Save user to local
+    //         saveLocalUser(res.data!.user);
+    //         saveToken(res.data!.token);
+    //         // emit user state
+    //         dispatch(setUser(res.data!.user));
 
-            showSuccessToast(`Đăng nhập thành công, xin chào ${res.data!.user.firstName}`);
-            return true;
-        } else {
-            showErrorToast(res.message ?? 'Lỗi không xác định');
-            return false;
-        }
-    }
+    //         showSuccessToast(`Đăng nhập thành công, xin chào ${res.data!.user.firstName}`);
+    //         return true;
+    //     } else {
+    //         showErrorToast(res.message ?? 'Lỗi không xác định');
+    //         return false;
+    //     }
+    // }
 
     const register = async (data: RegisterDTO): Promise<boolean> => {
         setApiLoading(true);
-        clearAuth();
         const res = await registerApi(data);
         setApiLoading(false);
         if (res.isSuccess) {
@@ -80,23 +79,20 @@ export const useAuth = (): AuthContextType => {
         }
     }
 
-    const logout = async (): Promise<boolean> => {
+    const logout = async (): Promise<void> => {
         setApiLoading(true);
         const res = await logoutApi();
         setApiLoading(false);
         if (res.isSuccess) {
             showSuccessToast(res.message ?? "Thành công.");
-            clearAuth();
-            dispatch(setUser(null));
-            return true;
         } else {
             showErrorToast(res.message ?? 'Lỗi không xác định');
-            return false;
         }
+        dispatch(setUser(null));
     }
 
     return { 
         apiLoading,
-        login, register, resendEmailConfirmCode, confirmEmail, logout
+        register, resendEmailConfirmCode, confirmEmail, logout
      }
 }

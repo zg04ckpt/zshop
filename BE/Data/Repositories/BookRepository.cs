@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Core.Interfaces.Repositories;
 using Core.DTOs.Book;
 using Data.Repositories;
+using Core.Interfaces.Services.External;
+using Core.Services.External;
 
 namespace Core.Repositories.Impl
 {
@@ -37,6 +39,62 @@ namespace Core.Repositories.Impl
                     CategoryId = id
                 });
             } 
+        }
+
+        public async Task CreateOrUpdateBookImages(Guid bookId,
+            List<CreateOrUpdateBookImageListItemDTO> images, IStorageService storageService)
+        {
+            var map =  await context.BookImages
+                .Where(e => e.BookId == bookId)
+                .ToDictionaryAsync(e => e.Id);
+
+            foreach (var image in images)
+            {
+                if (image.Id == -1)
+                {
+                    // image file must be notnull when create new image
+                    if (image.Image == null)
+                    {
+                        throw new BadRequestException("Dữ liệu ảnh mới trống");
+                    }
+
+                    await context.BookImages.AddAsync(new BookImage
+                    {
+                        BookId = bookId,
+                        ImageUrl = await storageService.SaveImage(image.Image)
+                            ?? throw new InternalServerErrorException("Lưu ảnh minh họa thất bại")
+                    });
+                }
+                else
+                {
+                    // Update existing
+                    if (map.TryGetValue(image.Id, out var oldImage))
+                    {
+                        // If Id != null and Image file != null => Update image
+                        if (image.Image != null)
+                        {
+                            if (!await storageService.RemoveImage(oldImage.ImageUrl))
+                                throw new InternalServerErrorException("Xóa ảnh minh họa cũ thất bại.");
+                            oldImage.ImageUrl = await storageService.SaveImage(image.Image)
+                                ?? throw new InternalServerErrorException("Cập nhật ảnh minh họa thất bại.");
+                            context.BookImages.Update(oldImage);
+                        }
+                        map.Remove(image.Id);
+                    } 
+                    else
+                    {
+                        throw new BadRequestException("Thông tin định danh ảnh không hợp lệ.");
+                    }
+                }
+            }
+
+            // Remaining image => delete
+            foreach (var image in map.Values)
+            {
+                if (!await storageService.RemoveImage(image.ImageUrl))
+                    throw new InternalServerErrorException("Xóa ảnh minh họa cũ thất bại.");
+                context.BookImages.Remove(image);
+            }
         }
 
         public async Task<BoughtBookListItemDTO[]> GetBoughtBooks(Guid userId)

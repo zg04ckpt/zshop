@@ -37,6 +37,10 @@ export interface BookDTO
     stock: number;
     description: string;
     categoryIds: number[];
+    images: {
+        id: number|null,
+        image: File|null
+    }[]
 }
 
 export interface BookListItemDTO
@@ -103,6 +107,10 @@ export interface BookDetailDTO
     cover: string;
     author: string;
     categories: string[];
+    images: {
+        id: number,
+        imageUrl: string
+    }[];
     publisher: string;
     publishYear: number;
     pageCount: number;

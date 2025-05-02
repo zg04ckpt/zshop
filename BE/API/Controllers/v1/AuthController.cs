@@ -1,8 +1,12 @@
-﻿using Core.DTOs.Auth;
+﻿using Core.Configurations;
+using Core.DTOs.Auth;
 using Core.DTOs.Common;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 
 namespace API.Controllers.v1
@@ -12,10 +16,12 @@ namespace API.Controllers.v1
     public class AuthController : ControllerBase
     {
         private readonly IAuthService authService;
+        private readonly JwtConfig _jwtConfig;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IOptions<JwtConfig> config, IAuthService authService)
         {
             this.authService = authService;
+            _jwtConfig = config.Value;
         }
 
         [HttpPost("register")]
@@ -27,19 +33,45 @@ namespace API.Controllers.v1
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO data)
         {
-            return Ok(await authService.LogIn(data));
+            var result = await authService.LogIn(data);
+            SetAuthCookie(result.Token);
+            return Ok(new ApiSuccessResult<UserDTO>(result.User));
+        }
+
+        [HttpGet("login/info")]
+        public async Task<IActionResult> GetLoginInfo()
+        {
+            if (!Request.Headers.ContainsKey("Authorization") 
+                || string.IsNullOrEmpty(Request.Headers["Authorization"]))
+            {
+                return BadRequest(new ApiErrorResult("Người dùng chưa đăng nhập"));
+            }
+            return Ok(await authService.GetLoginInfo(User));
         }
 
         [HttpPost("refresh")]
-        public async Task<IActionResult> RefreshToken([FromBody] TokenDTO data)
+        public async Task<IActionResult> RefreshToken()
         {
-            return Ok(await authService.RefreshToken(data));
+            var accessToken = Request.Cookies["AccessToken"];
+            var refreshToken = Request.Cookies["RefreshToken"];
+            if (accessToken == null && refreshToken == null)
+            {
+                return Unauthorized();
+            }
+            var token = await authService.RefreshToken(accessToken!, refreshToken!);
+            SetAuthCookie(token);
+            return Ok(new ApiSuccessResult());
         }
 
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            var accessToken = Request.Headers.Authorization.ToString().Replace($"Bearer ", "");
+            var accessToken = Request.Cookies["AccessToken"];
+            if (accessToken != null)
+            {
+                Response.Cookies.Delete("AccessToken");
+                Response.Cookies.Delete("RefreshToken");
+            }
             return Ok(await authService.LogOut(accessToken));
         }
 
@@ -89,30 +121,33 @@ namespace API.Controllers.v1
         public async Task<IActionResult> GoogleLoginCallback([FromQuery] string returnUrl)
         {
             var authenticateResult = await HttpContext.AuthenticateAsync("Google");
-            string tempDataKey = await authService.GoogleLogIn(authenticateResult);
-
-            // Return a cookie used to get auth info later
-            Response.Cookies.Append("GoogleLoginResult", tempDataKey, new CookieOptions
-            {
-                Secure = true,
-                SameSite = SameSiteMode.None,
-                HttpOnly = true     
-            });
-                
+            var token = await authService.GoogleLogIn(authenticateResult);
+            SetAuthCookie(token);
             return Redirect(returnUrl);
         }
-
-
-        [HttpGet("google/login/result")]
-        public async Task<IActionResult> GetGoogleLoginResult()
+    
+        private void SetAuthCookie(JwtTokenDTO token)
         {
-            string? tempDataKey = Request.Cookies["GoogleLoginResult"];
-            if (tempDataKey is null)
+            var accessTokenCookieOptions = new CookieOptions
             {
-                return Unauthorized();
-            }
-            Response.Cookies.Delete("GoogleLoginResult");
-            return Ok(await authService.GetGoogleLoginTempData(tempDataKey));
+                Path = "/",
+                HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                Secure = true,
+                // Set longer time to get expired access token
+                MaxAge = TimeSpan.FromMinutes(_jwtConfig.RefreshTokenTTL)
+            };
+            Response.Cookies.Append("AccessToken", token.AccessToken, accessTokenCookieOptions);
+
+            var refreshTokenCookieOptions = new CookieOptions
+            {
+                Path = "/api/v1/auth/refresh",
+                HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                Secure = true,
+                MaxAge = TimeSpan.FromMinutes(_jwtConfig.RefreshTokenTTL)
+            };
+            Response.Cookies.Append("RefreshToken", token.RefreshToken, refreshTokenCookieOptions);
         }
     }
 }

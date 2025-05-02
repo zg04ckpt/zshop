@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
 
 import { About, AdminLayout, AppDispatch, ConfirmDialog, DynamicTitle, Footer, setupInterceptors, setUser, TopBar } from './modules/shared';
-import { ConfirmEmail, getLocalUser, Login, Register } from './modules/auth';
+import { ConfirmEmail, getLoginInfo, Login, Register } from './modules/auth';
 import { CateManagement, CreateBook, Detail, Home, ListBook, Search, UpdateBook } from './modules/book';
 import { Cart, Order } from './modules/payment';
 import { AccountAddress, AccountPurchaseHistory, AccountInfo, AccountLayout, ListUser, ReviewBook } from './modules/user';
@@ -65,13 +65,16 @@ function App() {
   const location = useLocation();
 
   const [isApiReady, setIsApiReady] = useState<boolean>(false);
-    
-  useEffect(() => {
-      dispatch(setUser(getLocalUser()));
-  }, []);
+
+  const reinitUserSession = async () => {
+    const res = await getLoginInfo();
+    debugger
+    if (res.isSuccess) dispatch(setUser(res.data!));
+  }
   
   useEffect(() => {
       setupInterceptors(navigate, location, dispatch);
+      reinitUserSession();
       setIsApiReady(true);
   }, []);
 

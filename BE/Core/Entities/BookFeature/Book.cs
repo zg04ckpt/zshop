@@ -30,5 +30,6 @@ namespace Core.Entities.BookFeature
         public List<BookCategory> BookCategories { get; set; }
         public List<OrderDetail> OrderDetails { get; set; }
         public List<CartItem> CartItems { get; set; }
+        public List<BookImage> Images { get; set; }
     }
 }

@@ -34,13 +34,6 @@
     cursor: pointer;
 }
 
-.create-book img {
-    height: 240px;
-    width: 180px;
-    object-fit: cover;
-    border: 1px solid #dedede;
-}
-
 .create-book .search-btn {
     border: 1px solid #dedede;
     padding: 5px;
@@ -72,9 +65,9 @@
 }
 
 .create-book .upload-img {
-    font-size: 14px;
-    border: 1px solid #dedede;
-    padding: 1px 4px;
+    height: 240px;
+    width: 180px;
+    object-fit: cover;
 }
 
 .create-book .cate-list .cate-item {
@@ -96,4 +89,18 @@
 
 .create-book .updating label {
     font-size: 16px;
+}
+
+.create-book .review-item i {
+    font-size: 28px;
+    height: 30px;
+    width: 30px;
+    color: rgba(6, 6, 6, 0.434);
+    text-align: center;
+    align-content: center;
+}
+
+.create-book .review-item i:hover {
+    background-color: rgba(0, 0, 0, 0.125);
+    cursor: pointer;
 }

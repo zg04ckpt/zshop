@@ -1,8 +1,7 @@
 import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch, endLoadingStatus, setUser, showErrorToast, showSuccessToast, startLoadingStatus } from "../../shared";
-import { getGoogleLoginResultApi } from "../services/authApi";
-import { saveLocalUser, saveToken } from "..";
+import { getLoginInfo } from "../services/authApi";
 import { useNavigate } from "react-router-dom";
 
 const HandleGoogleLoginCallback = () => {
@@ -11,12 +10,10 @@ const HandleGoogleLoginCallback = () => {
 
     const handle = async () => {
         dispatch(startLoadingStatus());
-        const res = await getGoogleLoginResultApi();
+        const res = await getLoginInfo();
         if (res.isSuccess) {
-            saveLocalUser(res.data!.user);
-            saveToken(res.data!.token);
-            dispatch(setUser(res.data!.user));
-            showSuccessToast(`Đăng nhập thành công, xin chào ${res.data!.user.firstName}`);
+            dispatch(setUser(res.data!));
+            showSuccessToast(`Đăng nhập thành công, xin chào ${res.data!.firstName}`);
         }
         else {
             showErrorToast(res.message!);

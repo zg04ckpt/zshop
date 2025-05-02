@@ -21,10 +21,11 @@ const Register = () => {
     const [confirmPassword, setConfirmPassword] = useState<string>('');
 
     const [formFocus, setFormFocus] = useState<boolean>(false);
-    const { register , apiLoading} = useAuth();
+    const { register , apiLoading, logout} = useAuth();
 
     // handle register api
     const handleRegisterAction = async () => {
+        await logout();
         setFormFocus(true);
         if(await register({
             firstName: firstName,

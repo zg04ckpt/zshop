@@ -20,10 +20,8 @@ const TopBar = () => {
         appContext!.showConfirmDialog({
             message:'Xác nhận đăng xuất?',
             onConfirm: async () => {
-                if(await logout()) {
-                    // back to home
-                    navigate('/');
-                }
+                await logout();
+                navigate('/');
             },
             onReject: () => {}
         });
