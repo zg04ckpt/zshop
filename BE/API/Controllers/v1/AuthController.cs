@@ -1,13 +1,11 @@
-﻿using Core.Configurations;
+﻿using API.Middlewares;
+using Core.Configurations;
 using Core.DTOs.Auth;
 using Core.DTOs.Common;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
 
 namespace API.Controllers.v1
 {
@@ -17,11 +15,16 @@ namespace API.Controllers.v1
     {
         private readonly IAuthService authService;
         private readonly JwtConfig _jwtConfig;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IOptions<JwtConfig> config, IAuthService authService)
+        public AuthController(
+            IOptions<JwtConfig> config, 
+            IAuthService authService, 
+            ILogger<AuthController> logger)
         {
             this.authService = authService;
             _jwtConfig = config.Value;
+            _logger = logger;
         }
 
         [HttpPost("register")]
@@ -120,10 +123,20 @@ namespace API.Controllers.v1
         [HttpGet("google/login/callback")]
         public async Task<IActionResult> GoogleLoginCallback([FromQuery] string returnUrl)
         {
-            var authenticateResult = await HttpContext.AuthenticateAsync("Google");
-            var token = await authService.GoogleLogIn(authenticateResult);
-            SetAuthCookie(token);
-            return Redirect(returnUrl);
+            try
+            {
+                var authenticateResult = await HttpContext.AuthenticateAsync("Google");
+                var token = await authService.GoogleLogIn(authenticateResult);
+                SetAuthCookie(token);
+                returnUrl += "?success=true";
+                return Redirect(returnUrl);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Google login error");
+                returnUrl += "?success=false";
+                return Redirect(returnUrl);
+            }
         }
     
         private void SetAuthCookie(JwtTokenDTO token)

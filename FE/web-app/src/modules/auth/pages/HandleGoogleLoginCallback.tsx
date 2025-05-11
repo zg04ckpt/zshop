@@ -1,22 +1,28 @@
 import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch, endLoadingStatus, setUser, showErrorToast, showSuccessToast, startLoadingStatus } from "../../shared";
-import { getLoginInfo } from "../services/authApi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const HandleGoogleLoginCallback = () => {
     const dispatch = useDispatch<AppDispatch>();
+    const [params] = useSearchParams();
     const nav = useNavigate();;
 
     const handle = async () => {
         dispatch(startLoadingStatus());
-        const res = await getLoginInfo();
-        if (res.isSuccess) {
-            dispatch(setUser(res.data!));
-            showSuccessToast(`Đăng nhập thành công, xin chào ${res.data!.firstName}`);
-        }
-        else {
-            showErrorToast(res.message!);
+        // const res = await getLoginInfo();
+        // if (res.isSuccess) {
+        //     dispatch(setUser(res.data!));
+        //     showSuccessToast(`Đăng nhập thành công, xin chào ${res.data!.firstName}`);
+        // }
+        // else {
+        //     showErrorToast(res.message!);
+        // }
+        const isSuccess = params.get('success');
+        if (isSuccess && isSuccess == 'true') {
+            showSuccessToast(`Đăng nhập thành công!`);
+        } else {
+            showErrorToast(`Đăng nhập thất bại!`)
         }
         dispatch(endLoadingStatus());
         nav('/');

@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import './AccountInfo.css';
 import { Gender, UserProfileDTO, useUser } from "../../..";
 import { AppDispatch, Button, dateToInputValue, defaultImageUrl, endLoadingStatus, Loading, OutletContextProp, RootState, showErrorToast, startLoadingStatus, stringToDate, useAppContext, ValidatableInput } from "../../../../shared";
-import { useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
 export const AccountInfo = () => {
     const { apiLoading, getProfile, updateProfile } = useUser();
     const appContext = useAppContext();
+    const navigate = useNavigate();
 
     const [profile, setProfile] = useState<UserProfileDTO|null>(null);
     const [avatarImage, setAvatarImage] = useState<File|null>(null);
@@ -84,6 +85,9 @@ export const AccountInfo = () => {
     return (
         <div className="account-info">
             <h5>Thông tin tài khoản</h5>
+            <div className="d-flex mb-3">
+                <Button pxWidth={100} label="Đổi mật khẩu" onClick={() => navigate('/change-pass')}></Button>
+            </div>
             { profile && <>
                 <div className="card card-body">
                     <div className="row">

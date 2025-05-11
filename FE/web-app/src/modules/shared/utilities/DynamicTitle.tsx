@@ -7,6 +7,8 @@ export const DynamicTitle = () => {
     const titleMap: { [key: string]: string } = {
         '/': 'Trang chủ',
         '/about': 'Giới thiệu',
+        '/change-pass': 'Đổi mật khẩu',
+        '/forbidden': 'Lỗi truy cập',
         '/login': 'Đăng nhập',
         '/register': 'Đăng kí',
         '/search': 'Tìm sách',

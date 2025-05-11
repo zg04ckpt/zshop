@@ -1,4 +1,4 @@
-import { ConfirmEmailDTO, LocalUser, LoginDTO, RegisterDTO } from "..";
+import { ConfirmEmailDTO, LocalUser, LoginDTO, RegisterDTO, ResetPasswordDTO } from "..";
 import { ApiResult, serverApi } from "../../shared";
 
 export const registerApi = async (data: RegisterDTO): Promise<ApiResult> => {
@@ -10,7 +10,7 @@ export const registerApi = async (data: RegisterDTO): Promise<ApiResult> => {
             message: 'Yêu cầu thất bại.',
         }
     }
-}
+};
 
 export const confirmEmailApi = async (data: ConfirmEmailDTO): Promise<ApiResult> => {
     try {
@@ -21,7 +21,7 @@ export const confirmEmailApi = async (data: ConfirmEmailDTO): Promise<ApiResult>
             message: 'Yêu cầu thất bại.',
         }
     }
-}
+};
 
 export const resendConfirmEmailCodeApi = async (email: string): Promise<ApiResult> => {
     try {
@@ -35,7 +35,7 @@ export const resendConfirmEmailCodeApi = async (email: string): Promise<ApiResul
             message: 'Yêu cầu thất bại.',
         }
     }
-}
+};
 
 export const loginApi = async (data: LoginDTO): Promise<ApiResult<LocalUser>> => {
     try {
@@ -48,7 +48,7 @@ export const loginApi = async (data: LoginDTO): Promise<ApiResult<LocalUser>> =>
             message: 'Yêu cầu thất bại.',
         }
     }
-}
+};
 
 export const loginWithGoogleApi = async () => {
     const returnUrl = `${window.location.origin}/google-login-callback`;
@@ -66,8 +66,7 @@ export const getLoginInfo = async (): Promise<ApiResult<LocalUser>> => {
             message: 'Yêu cầu thất bại.',
         }
     }
-}
-
+};
 
 export const logoutApi = async (): Promise<ApiResult> => {
     try {
@@ -78,7 +77,7 @@ export const logoutApi = async (): Promise<ApiResult> => {
             message: 'Yêu cầu thất bại.',
         }
     }
-}
+};
 
 export const refreshTokenApi = async (): Promise<ApiResult> => {
     try {
@@ -89,4 +88,32 @@ export const refreshTokenApi = async (): Promise<ApiResult> => {
             message: 'Yêu cầu thất bại.',
         }
     }
-}
+};
+
+export const sendResetPassCodeApi = async (email: string): Promise<ApiResult> => {
+    try {
+        return (await serverApi.post<ApiResult<void>>(
+            "/auth/send-reset-pass-auth-code", 
+            { email: email }
+        )).data;
+    } catch {
+        return {
+            isSuccess: false,
+            message: 'Yêu cầu thất bại.',
+        }
+    }
+};
+
+export const resetPassApi = async (data: ResetPasswordDTO): Promise<ApiResult> => {
+    try {
+        return (await serverApi.post<ApiResult<void>>(
+            "/auth/reset-password", 
+            data
+        )).data;
+    } catch {
+        return {
+            isSuccess: false,
+            message: 'Yêu cầu thất bại.',
+        }
+    }
+};

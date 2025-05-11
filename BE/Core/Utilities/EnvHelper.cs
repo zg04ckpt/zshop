@@ -2,6 +2,11 @@
 {
     public class EnvHelper
     {
+        public static string GetMySQLConnectionString()
+        {
+            return Environment.GetEnvironmentVariable("ZShopMySQLConnectionString")!;
+        }
+
         public static string GetGoogleClientId()
         {
             return Environment.GetEnvironmentVariable("GoogleClientId")!;

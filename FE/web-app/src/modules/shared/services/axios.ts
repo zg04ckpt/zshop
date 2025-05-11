@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { NavigateFunction } from "react-router-dom";
 import { refreshTokenApi } from "../../auth";
 import { setUser } from "../stores/authSlice";
-import { ApiResult, AppDispatch, endLoadingStatus, showErrorToast } from "..";
+import { ApiResult, AppDispatch, endLoadingStatus, showErrorToast, showInfoToast } from "..";
 import { toCamelCase } from "../utilities/helper";
 
 // instance for server api
@@ -27,27 +27,26 @@ export const setupInterceptors = (navigate: NavigateFunction, location: any, dis
         async (error) => {
             const apiError = error as AxiosError;
             const originalRequest = apiError.config!;
-            
-            if (
-                // originalRequest.url != '/auth/login/info' && 
-                apiError.response?.status === 401
-            ) {
+            if (apiError.response?.status === 401) {
                 if (originalRequest.url != '/auth/refresh') { 
                     // => this isn't a refresh token req => try refresh access token
                     const res = await refreshTokenApi();
                     if (res.isSuccess) {
                         return serverApi(originalRequest);
                     }
+                } else {
+                    // => refresh access token failure => require login
+                    showInfoToast("Vui lòng đăng nhập để tiếp tục.");
+                    dispatch(setUser(null));
+                    dispatch(endLoadingStatus());
+                    navigate(`/login?return_url=${encodeURIComponent(location.pathname)}`);
+                    return null
                 }
-
-                // => refresh access token failure => require login
-                showErrorToast("Vui lòng đăng nhập để tiếp tục.");
-                dispatch(setUser(null));
-                dispatch(endLoadingStatus());
-                navigate(`/login?return_url=${encodeURIComponent(location.pathname)}`);
-            } 
+            } else if (apiError.response?.status === 403) {
+                navigate(`/forbidden`);
+            }
             // return ApiError object
-            return Promise.reject<AxiosResponse>(toCamelCase(error.response));
+            return Promise.resolve<AxiosResponse>(toCamelCase(error.response));
         }
     );
 }

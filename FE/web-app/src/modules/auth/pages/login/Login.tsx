@@ -50,7 +50,7 @@ const Login = () => {
                         <p className="fw-light text-center">Chào mừng bạn quay trở lại!</p>
 
                         <div className="px-2 mt-3">
-                            <label className="text-end"><a href="" className="text-end mb-0 mt-3">Quên mật khẩu?</a></label>
+                            <label className="text-end"><a href="/change-pass" className="text-end mb-0 mt-3">Quên mật khẩu?</a></label>
                             
                             {/* Email */}
                             <label className="mb-1 required">Email</label>

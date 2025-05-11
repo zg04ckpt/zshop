@@ -537,7 +537,8 @@ namespace Core.Services
             }
         }
 
-        public async Task<ApiResult<Paginated<OrderHistoryListItemDTO>>> GetOrderHistory(OrderHistorySearchDTO data, ClaimsPrincipal claims)
+        public async Task<ApiResult<Paginated<OrderHistoryListItemDTO>>> 
+            GetOrderHistory(OrderHistorySearchDTO data, ClaimsPrincipal claims)
         {
             var userId = Guid.Parse(Helper.GetUserIdFromClaims(claims)!);
             var orders = await _orderRepository.GetQuery().AsNoTracking()
@@ -808,8 +809,11 @@ namespace Core.Services
             // Update book info
             if (data.Status == OrderStatus.Delivered)
             {
-                order.OrderDetails.ForEach(async e =>
-                    await _bookRepository.SetRemainingBooksInStock(e.BookId, e.Quantity));
+                order.PaymentStatus = PayStatus.Paid;
+                foreach (var e in order.OrderDetails)
+                {
+                    await _bookRepository.SetRemainingBooksInStock(e.BookId, e.Quantity);
+                }
             }
 
             order.OrderStatus = data.Status;
@@ -853,7 +857,5 @@ namespace Core.Services
             // return order id
             return order.Id;
         }
-
-        
     }
 }

@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
 
 import { About, AdminLayout, AppDispatch, ConfirmDialog, DynamicTitle, Footer, setupInterceptors, setUser, TopBar } from './modules/shared';
-import { ConfirmEmail, getLoginInfo, Login, Register } from './modules/auth';
+import { ChangePass, ConfirmEmail, getLoginInfo, Login, Register } from './modules/auth';
 import { CateManagement, CreateBook, Detail, Home, ListBook, Search, UpdateBook } from './modules/book';
 import { Cart, Order } from './modules/payment';
 import { AccountAddress, AccountPurchaseHistory, AccountInfo, AccountLayout, ListUser, ReviewBook } from './modules/user';
@@ -17,6 +17,7 @@ import AdminOrderLayout from './modules/shared/layout/admin-order-layout/AdminOr
 import ListSystemOrder from './modules/payment/pages/management/list-system-order/ListSystemOrder';
 import ListRequestCancelOrder from './modules/payment/pages/management/list-request-cancel-order/ListRequestCancelOrder';
 import HandleGoogleLoginCallback from './modules/auth/pages/HandleGoogleLoginCallback';
+import Forbidden from './modules/shared/static-pages/Forbidden';
 
 export const router = createBrowserRouter([{ 
   path: '/',
@@ -25,8 +26,10 @@ export const router = createBrowserRouter([{
     { path: 'register', element: <Register/> },
     { path: 'login', element: <Login/> },
     { path: 'confirm-email', element: <ConfirmEmail/> },
+    { path: 'change-pass', element: <ChangePass/> },
     { path: 'google-login-callback', element: <HandleGoogleLoginCallback/> },
     { path: 'about', element: <About/> },
+    { path: 'forbidden', element: <Forbidden/> },
 
     { path: '', element: <MainLayout/>, children: [
       { index: true, element: <Home/> },
@@ -68,7 +71,6 @@ function App() {
 
   const reinitUserSession = async () => {
     const res = await getLoginInfo();
-    debugger
     if (res.isSuccess) dispatch(setUser(res.data!));
   }
   

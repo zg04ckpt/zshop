@@ -1,7 +1,6 @@
 ﻿using Core.DTOs.Book;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers.v1.Management
@@ -41,7 +40,6 @@ namespace API.Controllers.v1.Management
         {
             return Ok(await _bookService.DeleteBook(id));
         }
-
         #region Category
 
         [HttpGet("categories")]

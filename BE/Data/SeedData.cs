@@ -46,8 +46,28 @@ namespace Data
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
                 };
+
+                User testAdmin = new()
+                {
+                    Id = Guid.NewGuid(),
+                    FirstName = "Nguyễn",
+                    LastName = "Hoàng",
+                    Email = "admin@zshop.com",
+                    UserName = "testadmin",
+                    Gender = Gender.Male,
+                    Password = Helper.HashPassword("admin.zshop@312"),
+                    PhoneNumber = "0000000000",
+                    IsEmailComfirmed = true,
+                    IsActivated = true,
+                    AccessFailedCount = 0,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
+                };
+
                 await userRepository.AddUserRoles(admin, "Admin");
+                await userRepository.AddUserRoles(testAdmin, "Admin");
                 await userRepository.Add(admin);
+                await userRepository.Add(testAdmin);
                 await userRepository.Save();
             }
         }

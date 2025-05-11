@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Core.Utilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using System;
 using System.Collections.Generic;
@@ -12,9 +13,12 @@ namespace Data
     {
         public AppDbContext CreateDbContext(string[] args)
         {
-            DbContextOptionsBuilder<AppDbContext> builder = new();
-            builder.UseSqlServer(Environment.GetEnvironmentVariable("ConnectionString")!);
-            return new AppDbContext(builder.Options);
+            var optionBuilder = new DbContextOptionsBuilder<AppDbContext>();
+            optionBuilder.UseMySql(
+                EnvHelper.GetMySQLConnectionString(),
+                new MySqlServerVersion(new Version(8, 0, 37)));
+
+            return new AppDbContext(optionBuilder.Options);
         }
     }
 }

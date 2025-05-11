@@ -79,10 +79,6 @@ namespace API.Controllers.v1
         }
 
         // Auto
-        [HttpPost("auto-create")]
-        public async Task<IActionResult> CreateBook([FromForm] BookDTO data)
-        {
-            return Ok(await _bookService.CreateBook(data));
-        }
+        
     }
 }

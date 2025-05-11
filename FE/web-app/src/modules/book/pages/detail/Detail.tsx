@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./Detail.css"
-import { Await, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
+import { Await, useLocation, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 import { BookDetailDTO, BookItem, BookListItemDTO, BookReviewListItemDTO, getBookReviewsApi, getBooksAsListApi, getRandomBookApi, getTopSellBookApi, ReviewComment, useBook } from "../..";
 import { AppDispatch, Button, defaultImageUrl, endLoadingStatus, formatDate, OutletContextProp, showErrorToast, showSuccessToast, startLoadingStatus } from "../../../shared";
 import { Rating } from "@mui/material";
@@ -17,25 +17,17 @@ const Detail = () => {
     const { isApiReady } = useOutletContext<OutletContextProp>();
     const [param] = useSearchParams();
     const dispatch = useDispatch<AppDispatch>();
+    const bookId = param.get('id');
 
     const [book, setBook] = useState<BookDetailDTO|null>(null);
     const [isShowImagePrevew, setIsShowImagePrevew] = useState<boolean>(false);
     const [imageIndex, setImageIndex] = useState<number>(0);
-    // const images = [
-    //     'https://res.cloudinary.com/dvk5yt0oi/image/upload/v1744183350/zshop/images/deu49cj5m2iwlk450vua.jpg',
-    //     'https://res.cloudinary.com/dvk5yt0oi/image/upload/v1744183129/zshop/images/vu4haxvcwvqriqjlbyea.jpg'
-    // ];
     const [reviews, setReviews] = useState<BookReviewListItemDTO[]>([]);
     const [topSellBooks, setTopSellBooks] = useState<BookListItemDTO[]>([]);
     const [randomBooks, setRandomBooks] = useState<BookListItemDTO[]>([]);
 
     const init = async () => {
-        const id = param.get('id');
-        if (id) {
-            setBook(await getBookDetail(id));
-        } else {
-            showErrorToast("Giá trị không hợp lệ");
-        }
+        setBook(await getBookDetail(bookId!));
     }
 
     const initTopSell = async () => {
@@ -83,17 +75,17 @@ const Detail = () => {
     }
 
     useEffect(() => {
-        if(isApiReady) {
+        if(isApiReady && bookId) {
             init();
             initRandom();
             initTopSell();
         }
-    }, [isApiReady]);
+    }, [isApiReady, bookId]);
 
     useEffect(() => {
         if (apiLoading || orderApiLoading) dispatch(startLoadingStatus());
         else dispatch(endLoadingStatus());
-    }, [apiLoading, orderApiLoading]);
+    }, [apiLoading]);
 
     useEffect(() => {
         if (book) initReviews();
@@ -221,7 +213,7 @@ const Detail = () => {
                             <h6 className="label m-2">Bán chạy</h6>
                             <div className="d-flex flex-column px-1">
                                 {topSellBooks.map(e => <>
-                                    <div className="d-flex book-item p-2">
+                                    <div className="d-flex book-item p-2" onClick={() => navigate(`/book?id=${e.id}`)}>
                                         <img src={e.cover} width={50} height={50} alt="" />
                                         <div className="d-flex flex-column ms-2 ">
                                             <small className="max-1-line">{e.name}</small>

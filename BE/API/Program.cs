@@ -36,11 +36,12 @@ builder.Services.Configure<MailConfig>(config.GetSection("MailConfig"));
 builder.Services.Configure<VNPayConfig>(config.GetSection("VNPayConfig"));
 builder.Services.Configure<PaymentConfig>(config.GetSection("PaymentConfig"));
 
-// Add sqlserver service to the container.
+// Add myserver service to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseSqlServer(config.GetConnectionString("SqlServer"),
-        sqlOptions => sqlOptions.EnableRetryOnFailure());
+    options.UseMySql(
+        EnvHelper.GetMySQLConnectionString(),
+        new MySqlServerVersion(new Version(8, 0, 37)));
 });
 
 // Add file logging

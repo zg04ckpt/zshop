@@ -39,3 +39,10 @@ export interface ConfirmEmailDTO {
     email: string;
     code: string;
 }
+
+export interface ResetPasswordDTO {
+    email: string;
+    password: string;
+    confirmPassword: string;
+    code: string;
+}
