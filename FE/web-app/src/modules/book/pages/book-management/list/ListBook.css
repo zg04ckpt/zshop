@@ -1,0 +1,95 @@
+.list-book table thead th {
+    border-bottom: 1px solid #dedede;
+}
+
+.list-book table {
+    min-height: 200px;
+}
+
+.list-book table * {
+    font-size: 14px;
+}
+ 
+.list-book table tbody tr:hover {
+    background-color: #dedede70;
+}
+
+.list-book table td, th {
+    padding: 10px;
+    align-content: start;
+    border: 1px solid #dedede;
+}
+
+.list-book table .action i {
+    border: 1px #dedede solid;
+    width: 20px;
+    height: 20px;
+    align-content: center;
+    text-align: center;
+    margin: 0px 2px;
+}
+
+.list-book table .action i:hover {
+    color: white;
+    background-color: black;
+    cursor: pointer;
+}
+
+.list-book img {
+    height: 240px;
+    width: 180px;
+    object-fit: cover;
+    border: 1px solid #dedede;
+}
+
+.list-book .search-btn {
+    border: 1px solid #dedede;
+    padding: 5px;
+}
+
+.list-book .search-btn:hover {
+    color: white;
+    background-color: black;
+    cursor: pointer;
+}
+
+.list-book .filter-dialog .filter {
+    width: 400px;
+    margin-top: 80px;
+}
+
+.list-book label {
+    font-weight: 300;
+    font-size: 18px;
+}
+
+.list-book .upload-img {
+    font-size: 14px;
+    border: 1px solid #dedede;
+    padding: 1px 4px;
+}
+
+.list-book .cate-list .cate-item {
+    font-weight: 600;
+    border: 1px solid #dedede;
+}
+
+.list-book .cate-list .cate-item:hover {
+    background-color: rgba(198, 198, 198, 0.258);
+}
+
+.list-book .cate-list .cate-item i {
+    font-size: 24px;
+}
+
+.list-book .filter label  {
+    font-size: 16px;
+}
+
+.list-book .updating label {
+    font-size: 16px;
+}
+
+.list-book img {
+    border: none;
+}

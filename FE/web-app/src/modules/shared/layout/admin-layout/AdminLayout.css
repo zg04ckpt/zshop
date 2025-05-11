@@ -1,0 +1,15 @@
+.admin-layout .option {
+    padding: 4px 8px;
+    border-top: 1px solid #dedede;
+}
+
+.admin-layout .option.selected {
+    background-color: black;
+    color: white;
+}
+
+.admin-layout .option:not(.option.selected):hover {
+    color: rgb(255, 255, 255);
+    cursor: pointer;
+    background-color: rgba(142, 132, 132, 0.47);
+}

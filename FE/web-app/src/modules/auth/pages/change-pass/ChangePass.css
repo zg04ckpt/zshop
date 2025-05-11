@@ -1,0 +1,16 @@
+
+.ChangePass button {
+    height: 30px;
+    font-size: 14px;
+    width: 160px;
+}
+
+.ChangePass .act-text {
+    color: rgb(0, 166, 255);
+    cursor: pointer;
+}
+
+.ChangePass label {
+    font-weight: lighter;
+    width: 100%;
+}

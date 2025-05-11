@@ -1,0 +1,16 @@
+.home .cate-item:hover {
+    cursor: pointer;
+    img {
+        border: 1px solid #0bb9e4;
+    }
+    color: #0bb9e4;
+}
+
+.home .cate-item img {
+    height: 120px;
+    width: 120px;
+    border: 1px solid #dedede;
+    border-radius: 50%;
+    object-fit: cover;
+    padding: 5px;
+}

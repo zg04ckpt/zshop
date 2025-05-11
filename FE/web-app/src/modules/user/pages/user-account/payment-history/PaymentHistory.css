@@ -1,0 +1,23 @@
+.payment-history .green-tag {
+    border: 2px solid green;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: green;
+    background-color: rgba(85, 207, 85, 0.213);
+}
+
+.payment-history .red-tag {
+    border: 2px solid rgb(225, 0, 0);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: rgb(225, 0, 0);
+    background-color: rgba(255, 0, 0, 0.163);
+}
+
+.payment-history .gray-tag {
+    border: 2px solid gray;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: gray;
+    background-color: rgba(167, 167, 167, 0.324);
+}

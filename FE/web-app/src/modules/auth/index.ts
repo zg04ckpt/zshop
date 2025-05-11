@@ -1,0 +1,7 @@
+export * from './types/auth'
+export * from './services/authApi'
+export * from './hooks/useAuth'
+export {default as Login} from './pages/login/Login'
+export {default as Register} from './pages/register/Register'
+export {default as ConfirmEmail} from './pages/confirm-email/ConfirmEmail'
+export {default as ChangePass} from './pages/change-pass/ChangePass'

@@ -1,0 +1,10 @@
+.header img {
+    object-fit: cover; 
+    width: 100%; 
+    height: 400px;
+}
+
+.header .carousel {
+    border-radius: 5px;
+    overflow: hidden;
+}

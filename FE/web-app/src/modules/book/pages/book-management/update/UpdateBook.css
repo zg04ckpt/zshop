@@ -1,0 +1,106 @@
+.update-book table thead th {
+    border-bottom: 1px solid #dedede;
+}
+
+.update-book table {
+    min-height: 200px;
+}
+
+.update-book table * {
+    font-size: 14px;
+}
+ 
+.update-book table tbody tr:hover {
+    background-color: #dedede70;
+}
+
+.update-book table td, th {
+    align-content: start;
+    border: 1px solid #dedede;
+}
+
+.update-book table .action i {
+    border: 1px #dedede solid;
+    width: 20px;
+    height: 20px;
+    align-content: center;
+    text-align: center;
+    margin: 0px 2px;
+}
+
+.update-book table .action i:hover {
+    color: white;
+    background-color: black;
+    cursor: pointer;
+}
+
+.update-book .search-btn {
+    border: 1px solid #dedede;
+    padding: 5px;
+}
+
+.update-book .search-btn:hover {
+    color: white;
+    background-color: black;
+    cursor: pointer;
+}
+
+.update-book .filter-dialog .filter {
+    width: 400px;
+    margin-top: 80px;
+}
+
+.update-book label {
+    font-weight: 300;
+    font-size: 18px;
+}
+
+.update-book input {
+    outline: none;
+}
+
+.update-book input:focus {
+    outline: 0;
+    border: 0;
+}
+
+.update-book .upload-img {
+    height: 240px;
+    width: 180px;
+    object-fit: cover;
+}
+
+.update-book .cate-list .cate-item {
+    font-weight: 600;
+    border: 1px solid #dedede;
+}
+
+.update-book .cate-list .cate-item:hover {
+    background-color: rgba(198, 198, 198, 0.258);
+}
+
+.update-book .cate-list .cate-item i {
+    font-size: 24px;
+}
+
+.update-book .filter label  {
+    font-size: 16px;
+}
+
+.update-book .updating label {
+    font-size: 16px;
+}
+
+.update-book .review-item i {
+    font-size: 28px;
+    height: 30px;
+    width: 30px;
+    color: rgba(6, 6, 6, 0.434);
+    text-align: center;
+    align-content: center;
+}
+
+.update-book .review-item i:hover {
+    background-color: rgba(0, 0, 0, 0.125);
+    cursor: pointer;
+}

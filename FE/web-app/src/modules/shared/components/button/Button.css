@@ -1,0 +1,29 @@
+.custom-button button {
+    border-radius: 0px;
+    border: 0;
+    box-shadow: 0 0 2px gray;
+    font-weight: 300;
+    background-color: white;
+    padding: 0px;
+}
+
+.custom-button button .content {
+    padding: 2px 4px;
+}
+
+.custom-button button:hover {
+    opacity: 0.8;
+    background-color: rgba(128, 128, 128, 0.302);
+}
+
+
+.custom-button button .loading {
+    /* background-color: rgba(222, 221, 221, 0.458); */
+    color: #000000;
+    /* pointer-events: none; */
+}
+
+.custom-button button:disabled {
+    pointer-events: none; 
+    opacity: 0.6; 
+}

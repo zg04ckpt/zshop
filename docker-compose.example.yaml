@@ -1,0 +1,41 @@
+services:
+  zshop_api:
+    container_name: zshop_api
+    image: zg04ckpt/listen-e:zshop_api-1.0
+    environment:
+      - AdminEmail=
+      - AdminPassword=
+      - AdminUserName=
+      - SecretKey=
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ZShopVNPayHashSecret=
+      - ZShopCloudinaryCloundName=
+      - ZShopCloudinaryApiKey=
+      - ZShopCloudinaryApiSecret=
+      - SystemEmailAddress=
+      - SystemEmailPassword=
+      - GoogleClientId=
+      - GoogleClientSecret=
+    ports:
+      - "5001:80"
+    networks:
+      - app-network
+    volumes:
+      - zshop-api-resources:/App/Resources
+    restart: always
+
+  zshop_web:
+    container_name: zshop_web
+    image: zg04ckpt/listen-e:zshop_web-1.0
+    ports:
+      - "5173:80"
+    networks:
+      - app-network
+    restart: always
+
+volumes:
+  zshop-api-resources:
+
+networks:
+  app-network:
+    external: true

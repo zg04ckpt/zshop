@@ -1,0 +1,16 @@
+
+.login-dialog button {
+    height: 30px;
+    font-size: 14px;
+    width: 160px;
+}
+
+.login-dialog .act-text {
+    color: rgb(0, 166, 255);
+    cursor: pointer;
+}
+
+.login-dialog label {
+    font-weight: lighter;
+    width: 100%;
+}
