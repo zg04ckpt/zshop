@@ -4,6 +4,7 @@ using Core.DTOs.Auth;
 using Core.DTOs.Common;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 

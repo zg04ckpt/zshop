@@ -7,6 +7,11 @@
             return Environment.GetEnvironmentVariable("ZShopMySQLConnectionString")!;
         }
 
+        public static string GetRedisPassword()
+        {
+            return Environment.GetEnvironmentVariable("REDIS_CONNECTION_PASSWORD")!;
+        }
+
         public static string GetGoogleClientId()
         {
             return Environment.GetEnvironmentVariable("GoogleClientId")!;

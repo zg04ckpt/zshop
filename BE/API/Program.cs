@@ -48,19 +48,30 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Host.UseSerilog((context, config) => {
     config
         .MinimumLevel.Information()
-        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
         .WriteTo.Console()
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
         .WriteTo.File(
             path: "Logs/app-log-.txt",
             rollingInterval: RollingInterval.Day,
             outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message}{NewLine}{Exception}"
         );
 });
+builder.Logging.ClearProviders(); 
+builder.Logging.AddSerilog();
 
 // Add redis
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
-    var redisConfig = ConfigurationOptions.Parse(config.GetConnectionString("Redis"), true);
+    var configs = builder.Configuration.GetSection("Redis").Get<RedisConfig>();
+    var redisConfig = new ConfigurationOptions
+    {
+        EndPoints = { configs.EndPoints.Default },
+        Password = EnvHelper.GetRedisPassword(),
+        Ssl = configs.Ssl,
+        ConnectTimeout = configs.ConnectTimeout,
+        SyncTimeout = configs.SyncTimeout,
+        ConnectRetry = configs.ConnectRetry
+    };
     return ConnectionMultiplexer.Connect(redisConfig);
 });
 

@@ -1,6 +1,7 @@
 ﻿
 using Core.Exceptions;
 using Core.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Middlewares
 {
@@ -17,6 +18,13 @@ namespace API.Middlewares
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
+            // Chỉ kiểm tra access token bị thu hồi với các api cần Authorize
+            if (context.GetEndpoint()?.Metadata?.GetMetadata<AuthorizeAttribute>() == null)
+            {
+                await next(context);
+                return;
+            }
+
             var authorization = context.Request.Headers.Authorization;
             if (!string.IsNullOrEmpty(authorization))
             {
