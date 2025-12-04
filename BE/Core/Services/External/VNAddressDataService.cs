@@ -4,11 +4,6 @@ using Core.DTOs.User;
 using Core.Exceptions;
 using Core.Interfaces.Services.External;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Services.External
 {
@@ -27,48 +22,44 @@ namespace Core.Services.External
         }
         public async Task InitializeAsync()
         {
-            using var httpClient = new HttpClient();
-            var res = await httpClient.GetAsync("https://provinces.open-api.vn/api?depth=3");
-            if (res.IsSuccessStatusCode)
+            //using var httpClient = new HttpClient();
+            //var res = await httpClient.GetAsync("https://provinces.open-api.vn/api?depth=3");
+            string jsonStringData = await File.ReadAllTextAsync("Resources/VNMap.json")
+                ?? throw new Exception("Get address data fail.");
+            CityDTO[] cities = JsonConvert.DeserializeObject<CityDTO[]>(jsonStringData)
+                ?? throw new Exception("Get address data fail.");
+
+            if (cities.Length == 0)
+                throw new InternalServerErrorException("Data is empty.");
+
+            foreach (var city in cities)
             {
-                string jsonStringData = await res.Content.ReadAsStringAsync()
-                    ?? throw new Exception("Get address data fail.");
-                CityDTO[] cities = JsonConvert.DeserializeObject<CityDTO[]>(jsonStringData)
-                    ?? throw new Exception("Get address data fail.");
-
-                if (cities.Length == 0)
-                    throw new InternalServerErrorException("Data is empty.");
-
-                foreach (var city in cities)
+                _cities.Add(city.Code, new AddressSelectItemDTO
                 {
-                    _cities.Add(city.Code, new AddressSelectItemDTO
+                    Name = city.Name,
+                    Code = city.Code,
+                    ParentCode = null
+                });
+
+                foreach (var district in city.Districts)
+                {
+                    _districts.Add(district.Code, new AddressSelectItemDTO
                     {
-                        Name = city.Name,
-                        Code = city.Code,
-                        ParentCode = null
+                        Name = district.Name,
+                        Code = district.Code,
+                        ParentCode = city.Code
                     });
 
-                    foreach (var district in city.Districts)
+                    foreach (var ward in district.Wards)
                     {
-                        _districts.Add(district.Code, new AddressSelectItemDTO
+                        _wards.Add(ward.Code, new AddressSelectItemDTO
                         {
-                            Name = district.Name,
-                            Code = district.Code,
-                            ParentCode = city.Code
+                            Name = ward.Name,
+                            Code = ward.Code,
+                            ParentCode = district.Code
                         });
-
-                        foreach (var ward in district.Wards)
-                        {
-                            _wards.Add(ward.Code, new AddressSelectItemDTO
-                            {
-                                Name = ward.Name,
-                                Code = ward.Code,
-                                ParentCode = district.Code
-                            });
-                        }
                     }
                 }
-
             }
             throw new Exception("Get address data fail.");
         }

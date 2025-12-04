@@ -1,11 +1,13 @@
 ﻿using Core.Entities.BookFeature;
 using Core.Entities.PaymentFeature;
 using Core.Entities.System;
+using Core.Entities.VoucherFeature;
 using Data.Configurations;
 using Data.Configurations.BookFeature;
 using Data.Configurations.Payment;
 using Data.Configurations.PaymentFeature;
 using Data.Configurations.System;
+using Data.Configurations.VoucherFeature;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data
@@ -32,7 +34,11 @@ namespace Data
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<CancelOrderRequest> CancelOrders { get; set; }         
         public DbSet<Cart> Carts { get; set; }         
-        public DbSet<CartItem> CartItems { get; set; }         
+        public DbSet<CartItem> CartItems { get; set; }   
+        
+        // Voucher
+        public DbSet<Voucher> Vouchers { get; set; }
+        public DbSet<VoucherUsage> VoucherUsages { get; set; }
 
         public AppDbContext(DbContextOptions options) : base(options)
         {
@@ -57,6 +63,9 @@ namespace Data
             modelBuilder.ApplyConfiguration(new CancelOrderRequestConfiguration());
             modelBuilder.ApplyConfiguration(new CartConfiguration());
             modelBuilder.ApplyConfiguration(new CartItemConfiguration());
+
+            modelBuilder.ApplyConfiguration(new VoucherConfiguration());
+            modelBuilder.ApplyConfiguration(new VoucherUsageConfiguration());
         }
     }
 }
