@@ -1,0 +1,92 @@
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 50px;
+    width: 100%;
+    background-color: rgb(255, 255, 255);
+    z-index: 5;
+    align-content: center;
+    box-shadow: 1px 1px 2px rgba(128, 128, 128, 0.454);
+}
+
+.topbar .account {
+    text-decoration: none;
+    color: black;
+}
+
+.topbar .avt {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    padding: 2px;
+    border: 1px aqua solid;
+}
+
+.topbar .avt:hover {
+    padding: 0;
+}
+
+.topbar .cart:hover,
+.topbar .account:hover {
+    color: aqua;
+    cursor: pointer;
+}
+
+.topbar .cart-count {
+    position: absolute;
+    color: rgb(255, 255, 255);
+    font-size: 10px;
+    top: 0;
+    right: -2px;
+    background-color: red;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    text-align: center;
+    align-content: center;
+}
+
+.topbar .search {
+    font-size: 14px;
+    input {
+        padding: 4px 8px;
+        outline: 0;
+        border: 1px solid #dedede;
+        border-top-left-radius: 3px;
+        border-bottom-left-radius: 3px;
+        width: 400px;
+    }
+
+    input:hover {
+        border: 1px solid #dedede;
+        box-shadow: 0px 0px 1px;
+        outline: 1px;
+    }
+
+    button {
+        outline: 0;
+        padding: 4px 8px;
+        border: 1px solid #dedede;
+        border-left: 0px;
+        border-top-right-radius: 3px;
+        background-color: #0699ac;
+        color: white;
+        border-bottom-right-radius: 3px;
+    }
+
+    button:hover {
+        opacity: 0.6;
+    }
+}
+
+.topbar .topbar-item:hover {
+    color: #0699ac !important;
+    cursor: pointer;
+}
+
+.topbar .cate-list {
+    width: 200px;
+    background-color: white;
+}

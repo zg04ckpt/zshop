@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers.v1
 {
-    [Route("api/v1/payment")]
+    [Route("api/v1/vouchers")]
     [ApiController]
     public class VouchersController : ControllerBase
     {

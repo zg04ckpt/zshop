@@ -88,7 +88,7 @@ namespace Core.Services
             return new ApiSuccessResult<string>(voucher.Id);
         }
 
-        public async Task<ApiResult<Paginated<VoucherDetailDTO>>> GetAllVouchers(SearchVoucherDTO data)
+        public async Task<ApiResult<Paginated<VoucherDetailDTO>>> GetVouchers(SearchVoucherDTO data)
         {
             var query = _voucherRepo.GetQuery().AsNoTracking();
 

@@ -19,3 +19,5 @@ build
 .github
 **/*.sql
 zshop.conf
+
+**/*.pem

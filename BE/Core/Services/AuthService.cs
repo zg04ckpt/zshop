@@ -214,7 +214,7 @@ namespace Core.Services
             return new ApiSuccessResult("Gửi thành công");
         }
 
-        public async Task<ApiResult> SendResetPassAuthCode(string email)
+        public async Task<ApiResult> RequestSendResetPassAuthCode(string email)
         {
             User user = await _userRepository.Get(e => e.Email == email)
                 ?? throw new BadRequestException("Người dùng không tồn tại");

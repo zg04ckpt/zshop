@@ -92,9 +92,9 @@ namespace API.Controllers.v1
         }
 
         [HttpPost("send-reset-pass-auth-code")]
-        public async Task<IActionResult> SendResetPassAuthenticationCode([FromBody] SendResetPassAuthCodeDTO data)
+        public async Task<IActionResult> RequestSendResetPassAuthenticationCode([FromBody] SendResetPassAuthCodeDTO data)
         {
-            return Ok(await authService.SendResetPassAuthCode(data.Email));
+            return Ok(await authService.RequestSendResetPassAuthCode(data.Email));
         }
 
         [HttpPost("reset-password")]

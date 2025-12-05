@@ -4,7 +4,7 @@
     {
         Created,   
         Active, 
-        Inactive,  
-        Expired 
+        Inactive,
+        Expired
     }
 }

@@ -8,7 +8,8 @@ namespace Core.Interfaces.Services
     {
         Task<ApiResult<string>> CreateVoucher(CreateVoucherDTO data);
         Task<ApiResult<VoucherDetailDTO>> GetVoucherById(string voucherId);
-        Task<ApiResult<Paginated<VoucherDetailDTO>>> GetAllVouchers(SearchVoucherDTO searchVoucher);
+        Task<ApiResult<Paginated<VoucherDetailDTO>>> GetVouchers(SearchVoucherDTO data);
+        Task<ApiResult<VoucherListItemDTO>> GetAllVouchers();
         Task<ApiResult<string>> DeactivateVoucher(string voucherId);
     }
 }
