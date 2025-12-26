@@ -12,7 +12,7 @@ type ReviewCommentProp = BaseProp & {
 
 const ReviewComment = (prop: ReviewCommentProp) => {
     const [showImages, setShowImages] = useState<boolean>(false);
-
+    debugger
     return (
         <div className={`${prop.className} review-comment`}>
             <div className="d-flex">

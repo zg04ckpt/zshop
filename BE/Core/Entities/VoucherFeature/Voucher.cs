@@ -1,4 +1,6 @@
-﻿namespace Core.Entities.VoucherFeature
+﻿using Core.Entities.PaymentFeature;
+
+namespace Core.Entities.VoucherFeature
 {
     public class Voucher
     {
@@ -6,14 +8,13 @@
         public string Name { get; set; }
         public string Code { get; set; }
         public DiscountType DiscountType { get; set; }
-        public VoucherStatus Status { get; set; }
         public decimal Discount { get; set; }
         public decimal MaxDiscount { get; set; }
         public int? Quantity { get; set; }
         public int? RemainingQuantity { get; set; }
         public DateTime ValidFrom { get; set; }
         public DateTime ValidUntil { get; set; }
-
-        public List<VoucherUsage> Usages { get; set; }
+        public bool IsActive { get; set; }
+        public List<Order> AppliedOrders { get; set; }
     }
 }

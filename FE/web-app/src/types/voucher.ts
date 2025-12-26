@@ -1,15 +1,29 @@
+import { BasePaging } from "./api"
+
+export enum DiscountType {
+    Percentage = 'Percentage',
+    Amount = 'Amount'
+}
+
+export enum VoucherStatus {
+    Created = 'Created',   
+    Effective = 'Effective',
+    Expired = 'Expired'
+}
+
 export interface VoucherDetailDTO {
     id: string,
     name: string,
     code: string,
-    discountType: 'Percentage'|'Amount',
-    status: 'Created'|'Active'|'Inactive'|'Expired',
+    discountType: DiscountType,
+    status: VoucherStatus,
     discount: number,
     maxDiscount: number,
     quantity: number|null,
+    isActive: boolean,
     remainingQuantity: number|null,
     validFrom: Date,
-    validUtil: Date
+    validUntil: Date
 }
 
 export interface VoucherListItemDTO {
@@ -19,18 +33,17 @@ export interface VoucherListItemDTO {
 
 export interface CreateVoucherDTO {
     name: string,
-    discountType: 'Percentage'|'Amount',
+    discountType: DiscountType,
     discount: number,
     maxDiscount: number,
     quantity: number|null,
-    remainingQuantity: number|null,
-    validFrom: Date,
+    validFrom: string,
     duration: string
 }
 
-export interface SearchVoucherDTO {
+export interface SearchVoucherDTO extends BasePaging {
     name: string|null,
     code: string|null,
-    start: Date,
-    end: Date
+    start: Date|null,
+    end: Date|null
 }

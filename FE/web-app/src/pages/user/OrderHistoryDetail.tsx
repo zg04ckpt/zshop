@@ -8,9 +8,10 @@ import { OutletContextProp } from "../../types/base";
 import { CancelOrderRequest, OrderHistoryDetailDTO, OrderStatus, PaymentMethod, PaymentStatus } from "../../types/order";
 import { cancelOrder, getOrderHistory, getOrderHistoryDetail } from "../../api";
 import Button from "../../components/Button";
-import { showErrorToast, showSuccessToast } from "../../utils";
+import { showErrorToast, showInfoToast, showSuccessToast } from "../../utils";
 import { formatDate } from "../../utils/helper";
 import SelectBookFromOrderToReviewDialog from "../../components/SelectBookFromOrderToReviewDialog";
+import { DiscountType } from "../../types/voucher";
 
 const orderSteps = [
     'Đã tạo', 
@@ -122,11 +123,6 @@ export const OrderHistoryDetail = () => {
         }
     }
 
-    // useEffect(() => {
-    //     if (orderApiLoading) dispatch(startLoadingStatus());
-    //     else dispatch(endLoadingStatus());
-    // }, [orderApiLoading]);
-
     useEffect(() => {
         if(isApiReady) {
             init()
@@ -224,7 +220,7 @@ export const OrderHistoryDetail = () => {
                     <table className="table">
                         <thead>
                             <tr>
-                                <th>Tên sách</th>
+                                <th className="fst-italic">- Tên sách</th>
                                 <th style={{width: '100px'}}>Số lượng</th>
                                 <th style={{width: '120px'}}>Đơn giá</th>
                             </tr>
@@ -238,6 +234,20 @@ export const OrderHistoryDetail = () => {
                                     <td>{e.price.toLocaleString('vn')} VNĐ</td>
                                 </tr>
                             </>) }
+
+                            { detail.voucher && <>
+                                <tr>
+                                    <th className="fst-italic" colSpan={2}>- Voucher khuyến mại</th>
+                                    <th style={{width: '100px'}}>Mức giảm</th>
+                                </tr>
+                                <tr>
+                                    <td colSpan={2}>{detail.voucher.name}({detail.voucher.code} - {
+                                        detail.voucher.discountType == DiscountType.Percentage?
+                                            `${detail.voucher.discount}%`:`${detail.voucher.discount} VNĐ`
+                                    }) <a href="#" onClick={() => showInfoToast("Chức năng chưa phát triển")}>Xem chi tiết</a></td>
+                                    <td style={{width: '100px'}}>- {detail.totalDiscount.toLocaleString('vn')}</td>
+                                </tr>
+                            </> }
                         </tbody>
                     </table>
                     <div className="d-flex w-100 pe-4">

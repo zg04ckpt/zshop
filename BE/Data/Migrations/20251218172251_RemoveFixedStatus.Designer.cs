@@ -3,6 +3,7 @@ using System;
 using Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251218172251_RemoveFixedStatus")]
+    partial class RemoveFixedStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,6 +30,9 @@ namespace Data.Migrations
                     b.Property<string>("Author")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<decimal>("AvgRate")
+                        .HasColumnType("decimal(1,1)");
 
                     b.Property<string>("Cover")
                         .IsRequired()
@@ -318,16 +323,11 @@ namespace Data.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("VoucherId")
-                        .HasColumnType("varchar(255)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AddressId");
 
                     b.HasIndex("CustomerId");
-
-                    b.HasIndex("VoucherId");
 
                     b.ToTable("Orders", (string)null);
                 });
@@ -547,7 +547,7 @@ namespace Data.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<decimal>("MaxDiscount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -569,6 +569,21 @@ namespace Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Vouchers", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Entities.VoucherFeature.VoucherUsage", b =>
+                {
+                    b.Property<string>("OrderId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("VoucherId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("OrderId", "VoucherId");
+
+                    b.HasIndex("VoucherId");
+
+                    b.ToTable("VoucherUsages", (string)null);
                 });
 
             modelBuilder.Entity("Core.Entities.BookFeature.BookCategory", b =>
@@ -695,16 +710,9 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Core.Entities.VoucherFeature.Voucher", "Voucher")
-                        .WithMany("AppliedOrders")
-                        .HasForeignKey("VoucherId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("Address");
 
                     b.Navigation("Customer");
-
-                    b.Navigation("Voucher");
                 });
 
             modelBuilder.Entity("Core.Entities.PaymentFeature.OrderDetail", b =>
@@ -767,6 +775,25 @@ namespace Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Core.Entities.VoucherFeature.VoucherUsage", b =>
+                {
+                    b.HasOne("Core.Entities.PaymentFeature.Order", "Order")
+                        .WithMany("UsedVouchers")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Core.Entities.VoucherFeature.Voucher", "Voucher")
+                        .WithMany("Usages")
+                        .HasForeignKey("VoucherId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Voucher");
+                });
+
             modelBuilder.Entity("Core.Entities.BookFeature.Book", b =>
                 {
                     b.Navigation("BookCategories");
@@ -804,6 +831,8 @@ namespace Data.Migrations
                     b.Navigation("OrderDetails");
 
                     b.Navigation("Transactions");
+
+                    b.Navigation("UsedVouchers");
                 });
 
             modelBuilder.Entity("Core.Entities.System.Address", b =>
@@ -831,7 +860,7 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Core.Entities.VoucherFeature.Voucher", b =>
                 {
-                    b.Navigation("AppliedOrders");
+                    b.Navigation("Usages");
                 });
 #pragma warning restore 612, 618
         }

@@ -2,29 +2,35 @@ import React, { useEffect, useState } from "react";
 import '../../styles/pages/Order.css'
 import { useDispatch } from "react-redux";
 import { useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
-import { sum } from "lodash";
+import { min, sum } from "lodash";
 import { Radio, RadioGroup } from "@mui/material";
-import { OrderDTO } from "../../types/order";
+import { OrderDTO, PaymentMethod } from "../../types/order";
 import { AppDispatch, endLoadingStatus, startLoadingStatus, useAppContext } from "../../stores";
 import { OutletContextProp } from "../../types/base";
 import { AddressItemDTO } from "../../types/user";
 import { confirmOrder, getAddresses, payOrder } from "../../api";
-import { showErrorToast } from "../../utils";
+import { showErrorToast, showInfoToast } from "../../utils";
 import Button from "../../components/Button";
+import { DiscountType, VoucherDetailDTO, VoucherStatus } from "../../types/voucher";
+import { getVouchers } from "../../api/voucher";
 
 export const Order = () => {
     const [ param ] = useSearchParams();
-    const [ order, setOrder ] = useState<OrderDTO|null>(null);
     const dispatch = useDispatch<AppDispatch>();
     const { isApiReady } = useOutletContext<OutletContextProp>();
     const appContext = useAppContext();
     const navigate = useNavigate();
-
+    
+    const [ order, setOrder ] = useState<OrderDTO|null>(null);
     const [ total, setTotal ] = useState<number>(0);
-    const [ lastAmount, setLastAmount ] = useState<number>(0);
     const [ showChangeAddressDialog, setShowChangeAddressDialog ] = useState<boolean>(false);
     const [ listAddress, setListAddress ] = useState<AddressItemDTO[]>([]);
     const [ previewAddress, setPreviewAddress ] = useState<AddressItemDTO|null>(null);
+
+    const [vouchers, setVouchers] = useState<VoucherDetailDTO[]>([]);
+    const [showPickVoucher, setShowPickVoucher] = useState<boolean>(false);
+    const [appliedVoucher, setAppliedVoucher] = useState<VoucherDetailDTO|null>(null);
+    const [discountAmount, setDiscountAmount] = useState<number>(0);
 
     const init = async () => {
         // Get order detail
@@ -41,6 +47,36 @@ export const Order = () => {
 
         // Get address data
         setListAddress((await getAddresses()).data!);
+
+        initVouchers();
+    }
+
+    const caculateDiscountAmount = () => {
+        if (!appliedVoucher) {
+            setDiscountAmount(0);
+            return;
+        }
+
+        if (appliedVoucher.discountType == DiscountType.Amount) {
+            setDiscountAmount(Math.min(appliedVoucher.discount, total));
+        } else {
+            const d = Math.floor(appliedVoucher.discount / 100.0 * total);
+            setDiscountAmount(Math.min(d, total, appliedVoucher.maxDiscount));
+        }
+    }
+
+    const initVouchers = async () => {
+        const res = await getVouchers({
+            code: null,
+            name: null,
+            start: null,
+            end: null,
+            page: 1,
+            size: 1000
+        });
+        if (res.isSuccess) {
+            setVouchers(res.data!.data);
+        }
     }
 
     const updateQuantity = (bookId: string, value: number) => {
@@ -78,23 +114,16 @@ export const Order = () => {
     }
 
     useEffect(() => {
-        setLastAmount(total);
-    }, [total]);
-
-    useEffect(() => {
         if (order && order.addressId && listAddress.length > 0) {
             setPreviewAddress(listAddress.find(e => e.id == order.addressId) || null);
         }
     }, [order, listAddress]);
 
+    useEffect(() => caculateDiscountAmount(), [appliedVoucher, total]);
+
     useEffect(() => {
         if(isApiReady) init();
     }, [isApiReady]);
-
-    // useEffect(() => {
-    //     if (orderApiLoading) dispatch(startLoadingStatus());
-    //     else dispatch(endLoadingStatus());
-    // }, [orderApiLoading]);
 
     return (
         <div className="order">
@@ -106,7 +135,7 @@ export const Order = () => {
                             <h5 className="mb-3 ps-2">Đặt hàng</h5>
         
                             {/* Product list */}
-                            <label className="label">Danh sách sản phẩm (2)</label>
+                            <label className="label">Danh sách sản phẩm ({order?.items.length || 0})</label>
                             <table className="table">
                                 <thead>
                                     <tr>
@@ -136,14 +165,70 @@ export const Order = () => {
                             </table>
         
                             {/* Voucher */}
-                            <div className="label mt-3">Mã giảm giá <i style={{fontSize: '14px'}}>(* Lưu ý những mã cùng loại sẽ chỉ áp dụng mã cuối cùng được thêm)</i></div>
+                            <div className="label mt-3">Mã giảm giá <i style={{fontSize: '14px'}}></i></div>
                             <div className="d-flex vouchers mt-2">
         
-                                <div className="voucher me-2 d-flex">
-                                    <div>KHUYEN MAI 15/1 </div>
-                                    <i className='bx bx-x'></i></div>
-        
-                                <Button label="Thêm voucher" onClick={() => {}}></Button>
+                                { appliedVoucher && <>
+                                    <div className="voucher me-2 d-flex">
+                                        <div>{appliedVoucher.name} (-{
+                                            appliedVoucher.discountType == DiscountType.Amount? 
+                                                `${appliedVoucher.discount.toLocaleString()} VNĐ`:
+                                                `${appliedVoucher.discount}%`
+                                        })</div>
+                                        <i className='bx bx-x' onClick={() => setAppliedVoucher(null)}></i>
+                                    </div>
+                                </> }
+                                
+                                { !appliedVoucher && <>
+                                    <Button label="Chọn voucher" onClick={() => setShowPickVoucher(true)}></Button>
+                                </> }
+
+                                { showPickVoucher && <>
+                                    <div className="position-fixed top-0 start-0 vh-100 vw-100 bg-secondary"
+                                        style={{ zIndex: 2, opacity: 0.7 }}
+                                    />
+
+                                    <div className="card card-body position-fixed start-50 translate-middle-x"
+                                        style={{ top: 100, width: 500, height: 600, zIndex: 3 }}
+                                    >
+                                        <h5>Chọn voucher</h5>
+                                        <hr className="my-2" />
+
+                                        <div className="vertical-scrollable">
+                                            {vouchers.map(e => (<>
+                                                <div key={e.id} className="d-flex flex-column opacity-hover" onClick={() => {
+                                                    if (e.status != VoucherStatus.Effective) {
+                                                        showInfoToast("Voucher chưa có hiệu lực/đã hết hạn");
+                                                        return;
+                                                    }
+                                                    setOrder(prev => ({... prev!, voucherId: e.id}));
+                                                    setAppliedVoucher(e);
+                                                    setShowPickVoucher(false);
+                                                }}>
+                                                    <div className="fw-bold max-1-line">{e.name}</div>
+                                                    <div className="d-flex justify-content-between">
+                                                        <small className="fst-italic">{
+                                                            e.discountType == DiscountType.Amount? 
+                                                                `${e.discount.toLocaleString()} VNĐ`:
+                                                                `${e.discount}%`
+                                                        }</small>
+
+                                                        <div style={{fontSize: 12}}>{
+                                                            e.status == VoucherStatus.Created? `Còn lại ${e.remainingQuantity}/${e.quantity} - Chưa có hiệu lực`:
+                                                            e.status == VoucherStatus.Effective? `Còn lại ${e.remainingQuantity}/${e.quantity} - Đang diễn ra`:
+                                                            `Đã hết hạn`
+                                                        }</div>
+                                                    </div>
+                                                </div>
+                                                <hr className="my-1"/>
+                                            </>))}
+                                        </div>
+
+                                        <div className="d-flex justify-content-center">
+                                            <Button label="Hủy" onClick={() => setShowPickVoucher(false)} pxWidth={100}></Button>
+                                        </div>
+                                    </div>
+                                </> }
                             </div>
         
                             {/* Receiver Info */}
@@ -191,16 +276,12 @@ export const Order = () => {
                                     <td className="text-end">--</td>
                                 </tr>
                                 <tr>
-                                    <th>Khuyến mại:</th>
-                                    <td className="text-end">--</td>
-                                </tr>
-                                <tr>
-                                    <th>Voucher:</th>
-                                    <td className="text-end">--</td>
+                                    <th>Giảm giá:</th>
+                                    <td className="text-end">- {discountAmount.toLocaleString('vn')}</td>
                                 </tr>
                                 <tr>
                                     <th>Thanh toán:</th>
-                                    <td className="text-end fw-bold fst-italic">{lastAmount.toLocaleString('vn')} VNĐ</td>
+                                    <td className="text-end fw-bold fst-italic">{(total - discountAmount).toLocaleString('vn')} VNĐ</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -208,13 +289,11 @@ export const Order = () => {
                             {/* Payment method */}
                             <label className="label mt-3">Hình thức thanh toán</label>
                             <select 
+                                value={order.paymentMethod}
                                 className="mt-2" 
                                 style={{ width: 'fit-content' }} 
                                 onChange={e => {
-                                    if (e.target.value == 'CashOnDelivery')
-                                        setOrder(prev => ({... prev!, paymentMethod: 'CashOnDelivery'}));
-                                    else
-                                        setOrder(prev => ({... prev!, paymentMethod: 'VNPay'}));
+                                    setOrder(prev => ({... prev!, paymentMethod: e.target.value as PaymentMethod}));
                                 }}>
                                 <option value="CashOnDelivery">(Trực tiếp) Thanh toán khi nhận hàng</option>
                                 <option value="VNPay">(Online) Thanh toán qua VNPay</option>

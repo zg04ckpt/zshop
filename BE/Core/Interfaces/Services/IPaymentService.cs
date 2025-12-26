@@ -2,6 +2,7 @@
 using Core.DTOs.Cart;
 using Core.DTOs.Common;
 using Core.DTOs.Order;
+using Core.Enums;
 using System.Security.Claims;
 
 namespace Core.Interfaces.Services
@@ -12,8 +13,9 @@ namespace Core.Interfaces.Services
         Task<ApiResult<string>> CreateOrderFromBook(string bookId, ClaimsPrincipal claims);
         Task<string> CreateOrderFromCart(List<OrderItemDTO> data, ClaimsPrincipal claims);
         Task<ApiResult<OrderDTO>> GetUnConfirmedOrder(string orderId, ClaimsPrincipal claims);
-        Task<ApiResult<string>> PayByVNPay(string orderId, OrderDTO data, string ip, ClaimsPrincipal claims);
-        Task<ApiResult<string>> CashOnDelivery(string orderId, OrderDTO data, ClaimsPrincipal claims);
+        Task<ApiResult<string>> Pay(string orderId, OrderDTO data, ClaimsPrincipal claims, string? ip);
+        //Task<ApiResult<string>> PayByVNPay(string orderId, OrderDTO data, string ip, ClaimsPrincipal claims);
+        //Task<ApiResult<string>> CashOnDelivery(string orderId, OrderDTO data, ClaimsPrincipal claims);
         Task<string> UpdateVNPayTransactionStatus(Dictionary<string, string> data);
         Task<string> GetVNPayTransactionResult(Dictionary<string, string> data);
         Task<string> GetCashOnDeliveryOrderSuccess(string orderId);

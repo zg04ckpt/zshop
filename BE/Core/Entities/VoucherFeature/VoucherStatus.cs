@@ -3,8 +3,7 @@
     public enum VoucherStatus
     {
         Created,   
-        Active, 
-        Inactive,
+        Effective,
         Expired
     }
 }

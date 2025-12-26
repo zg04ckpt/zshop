@@ -1,6 +1,7 @@
 import { PermPhoneMsg } from "@mui/icons-material";
 import { AddressItemDTO } from "./user";
 import { Paginated } from "./api";
+import { VoucherDetailDTO } from "./voucher";
 
 export interface OrderDTO {
     id: string;
@@ -10,6 +11,7 @@ export interface OrderDTO {
         quantity: number;
         price: number;
     }[];
+    voucherId: string|null;
     addressId: string|null;
     paymentMethod: PaymentMethod;
 }
@@ -38,8 +40,10 @@ export type OrderHistoryDetailDTO = OrderHistoryListItemDTO & {
         price: number;
     }[]
     userId: string;
+    totalDiscount: number;
     address: AddressItemDTO;
     paymentMethod: PaymentMethod;
+    voucher: VoucherDetailDTO|null;
 }
 
 export interface CancelOrderRequest {

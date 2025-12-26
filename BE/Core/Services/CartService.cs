@@ -39,10 +39,10 @@ namespace Core.Services
             {
                 cart = new Cart
                 {
-                    Id = "CART-" + DateTime.Now.ToString("ddMMyyHHmmss"),
+                    Id = "CART-" + DateTime.UtcNow.ToString("ddMMyyHHmmss"),
                     UserId = userId,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
                 };
                 await _cartRepository.Add(cart);
             }
@@ -106,10 +106,10 @@ namespace Core.Services
             {
                 var newCart = new Cart
                 {
-                    Id = "CART-" + DateTime.Now.ToString("ddMMyyHHmmss"),
+                    Id = "CART-" + DateTime.UtcNow.ToString("ddMMyyHHmmss"),
                     UserId = userId,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
                 };
                 await _cartRepository.Add(newCart);
                 await _cartRepository.Save();
@@ -169,7 +169,7 @@ namespace Core.Services
 
             // Wait create order success to update cart and return order id
             var newOrderId = await _paymentService.CreateOrderFromCart(orderItems, claims);
-            cart.UpdatedAt = DateTime.Now;
+            cart.UpdatedAt = DateTime.UtcNow;
             _cartRepository.Update(cart);
             await _cartRepository.Save();
 

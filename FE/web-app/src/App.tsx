@@ -20,6 +20,7 @@ import { DynamicTitle } from './utils/DynamicTitle';
 import { Footer } from './layout/Footer';
 import ConfirmDialog from './components/ConfirmDialog';
 import ManageVoucher from './pages/voucher/ManageVoucher';
+import CreateVoucher from './pages/voucher/CreateVoucher';
 
 
 export const router = createBrowserRouter([{ 
@@ -58,6 +59,7 @@ export const router = createBrowserRouter([{
       { path: 'user', element: <ManageUser/> },
       { path: 'cate', element: <ManageCate/> },
       { path: 'voucher', element: <ManageVoucher/> },
+      { path: 'voucher/create', element: <CreateVoucher/> },
       { path: 'order', element: <AdminOrderLayout/>, children: [
         { index: true, element: <ManageOrder/> },
         { path: 'request-cancel', element: <ManageCancelOrderRequest/> },

@@ -1,8 +1,10 @@
 .home .cate-item:hover {
     cursor: pointer;
+
     img {
         border: 1px solid #0bb9e4;
     }
+
     color: #0bb9e4;
 }
 
@@ -13,4 +15,117 @@
     border-radius: 50%;
     object-fit: cover;
     padding: 5px;
+}
+
+.home .coupon {
+    width: 400px;
+    height: 200px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: auto;
+    filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
+    display: flex;
+    align-items: stretch;
+    position: relative;
+}
+
+.home .coupon.end {
+    opacity: 0.5;
+}
+
+.home .coupon::before,
+.home .coupon::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    z-index: -1;
+}
+
+.home .coupon.active::before {
+    left: 0;
+    background-image: radial-gradient(circle at 0 50%,
+            transparent 25px,
+            gold 26px);
+}
+
+.home .coupon.active::after {
+    right: 0;
+    background-image: radial-gradient(circle at 100% 50%,
+            transparent 25px,
+            gold 26px);
+}
+
+.home .coupon.wait::before {
+    left: 0;
+    background-image: radial-gradient(circle at 0 50%,
+            transparent 25px,
+            rgb(255, 255, 255) 26px);
+}
+
+.home .coupon.wait::after {
+    right: 0;
+    background-image: radial-gradient(circle at 100% 50%,
+            transparent 25px,
+            rgb(255, 255, 255) 26px);
+}
+
+.home .coupon.end::before {
+    left: 0;
+    background-image: radial-gradient(circle at 0 50%,
+            transparent 25px,
+            rgb(210, 210, 210) 26px);
+}
+
+.home .coupon.end::after {
+    right: 0;
+    background-image: radial-gradient(circle at 100% 50%,
+            transparent 25px,
+            rgb(210, 210, 210) 26px);
+}
+
+.home .coupon>div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.home .left {
+    width: 20%;
+    border-right: 2px dashed rgba(0, 0, 0, 0.13);
+}
+
+.home .left div {
+    transform: rotate(-90deg);
+    white-space: nowrap;
+    font-weight: bold;
+}
+
+.home .center {
+    flex-grow: 1;
+    text-align: center;
+}
+
+.home .right {
+    width: 50px;
+    background-image: radial-gradient(circle at 100% 50%,
+            transparent 25px,
+            #fff 26px);
+}
+
+@media screen and (max-width:500px) {
+    .home .coupon {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .home .left div {
+        transform: rotate(0deg);
+    }
+
+    .home .right div {
+        transform: rotate(0deg);
+
+    }
 }

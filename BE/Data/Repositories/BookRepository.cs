@@ -1,19 +1,13 @@
-﻿using Core.Exceptions;
-using Data;
+﻿using Core.DTOs.Book;
 using Core.Entities.BookFeature;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Core.Exceptions;
 using Core.Interfaces.Repositories;
-using Core.DTOs.Book;
-using Data.Repositories;
 using Core.Interfaces.Services.External;
-using Core.Services.External;
+using Core.Repositories.Impl;
+using Data;
+using Microsoft.EntityFrameworkCore;
 
-namespace Core.Repositories.Impl
+namespace Data.Repositories
 {
     public class BookRepository : BaseRepository<Book, Guid>, IBookRepository
     {
@@ -100,6 +94,7 @@ namespace Core.Repositories.Impl
         public async Task<BoughtBookListItemDTO[]> GetBoughtBooks(Guid userId)
         {
             var books = await context.OrderDetails.AsNoTracking()
+                .AsSplitQuery()
                 .Where(e => e.Order.CustomerId == userId)
                 .Select(e => new
                 {
@@ -117,7 +112,7 @@ namespace Core.Repositories.Impl
                 {
                     Id = b.Id,
                     Name = b.Name,
-                    AvgRate = b.AvgRate,
+                    AvgRate = b.Reviews.Average(r => (decimal?)r.Rate) ?? 0,
                     Categories = b.BookCategories.Select(bc => bc.Category.Name).ToArray(),
                     Cover = b.Cover,
                     Currency = b.Currency,
@@ -134,14 +129,14 @@ namespace Core.Repositories.Impl
 
         public async Task<BookListItemDTO[]> GetNewest(int count)
         {
-            var books = await context.Books
+            var books = await context.Books.AsSplitQuery()
                 .OrderByDescending(e => e.CreatedAt)
                 .Take(count)
                 .Select(e => new BookListItemDTO
                 {
                     Id = e.Id,
                     SoldCount = e.SoldCount,
-                    AvgRate = e.AvgRate,
+                    AvgRate = e.Reviews.Average(r => (decimal?)r.Rate) ?? 0,
                     Categories = e.BookCategories.Select(e => e.Category.Name).ToArray(),
                     Currency = e.Currency,
                     Name = e.Name,  
@@ -156,13 +151,14 @@ namespace Core.Repositories.Impl
         public async Task<BookListItemDTO[]> GetRandom(int count)
         {
             var books = await context.Books
+                .AsSplitQuery()
                 .OrderBy(e => Guid.NewGuid())
                 .Take(count)
                 .Select(e => new BookListItemDTO
                 {
                     Id = e.Id,
                     SoldCount = e.SoldCount,
-                    AvgRate = e.AvgRate,
+                    AvgRate =  e.Reviews.Average(r => (decimal?)r.Rate) ?? 0,
                     Categories = e.BookCategories.Select(e => e.Category.Name).ToArray(),
                     Currency = e.Currency,
                     Name = e.Name,
@@ -178,13 +174,14 @@ namespace Core.Repositories.Impl
         public async Task<BookListItemDTO[]> GetTopSell(int count)
         {
             var books = await context.Books
+                .AsSplitQuery()
                 .OrderByDescending(e => e.SoldCount)
                 .Take(count)
                 .Select(e => new BookListItemDTO
                 {
                     Id = e.Id,
                     SoldCount = e.SoldCount,
-                    AvgRate = e.AvgRate,
+                    AvgRate = e.Reviews.Average(r => (decimal?)r.Rate) ?? 0,
                     Categories = e.BookCategories.Select(e => e.Category.Name).ToArray(),
                     Currency = e.Currency,
                     Price = e.Price,

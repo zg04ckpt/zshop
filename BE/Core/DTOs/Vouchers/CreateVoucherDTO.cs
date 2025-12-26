@@ -25,7 +25,6 @@ namespace Core.DTOs.Vouchers
 
 
         public int? Quantity { get; set; }
-        public int? RemainingQuantity { get; set; }
 
 
         [Required(ErrorMessage = "Vui lòng chọn thời điểm có hiệu lực")]

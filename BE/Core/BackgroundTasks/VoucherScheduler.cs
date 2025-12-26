@@ -3,7 +3,6 @@ using Core.Interfaces.Repositories;
 using Hangfire;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel;
-using System.Threading.Tasks;
 
 namespace Core.BackgroundTasks
 {
@@ -20,7 +19,7 @@ namespace Core.BackgroundTasks
             _logger = logger;
         }
 
-        public void ScheduleVoucherActivation(Voucher voucher)
+        public async Task ScheduleVoucherActivation(Voucher voucher)
         {
             var now = DateTime.UtcNow;
 
@@ -31,11 +30,10 @@ namespace Core.BackgroundTasks
                 BackgroundJob.Schedule<VoucherScheduler>(
                     x => x.ActivateVoucherAsync(voucher.Id),
                     delayToActive);
-                return;
             }
             else
             {
-                ActivateVoucherAsync(voucher.Id);
+                await ActivateVoucherAsync(voucher.Id);
             }
 
             // Hết hạn
@@ -45,11 +43,10 @@ namespace Core.BackgroundTasks
                 BackgroundJob.Schedule<VoucherScheduler>(
                     x => x.ExpireVoucherAsync(voucher.Id),
                     delayToExpire);
-                return;
             }
             else
             {
-                ExpireVoucherAsync(voucher.Id);
+                await ExpireVoucherAsync(voucher.Id);
             }
         }
 
@@ -65,13 +62,13 @@ namespace Core.BackgroundTasks
                 return;
             }
 
-            if (voucher.Status != VoucherStatus.Created)
-            {
-                _logger.LogInformation("Voucher {VoucherId} not in created status", voucherId);
-                return;
-            }
+            //if (voucher.Status != VoucherStatus.Created)
+            //{
+            //    _logger.LogInformation("Voucher {VoucherId} not in created status", voucherId);
+            //    return;
+            //}
 
-            voucher.Status = VoucherStatus.Created;
+            //voucher.Status = VoucherStatus.Effective;
             _voucherRepo.Update(voucher);
             await _voucherRepo.Save();
 
@@ -90,13 +87,13 @@ namespace Core.BackgroundTasks
                 return;
             }
 
-            if (voucher.Status != VoucherStatus.Active)
-            {
-                _logger.LogInformation("Voucher {VoucherId} not in active status", voucherId);
-                return;
-            }
+            //if (voucher.Status != VoucherStatus.Effective)
+            //{
+            //    _logger.LogInformation("Voucher {VoucherId} not in active status", voucherId);
+            //    return;
+            //}
 
-            voucher.Status = VoucherStatus.Expired;
+            //voucher.Status = VoucherStatus.Expired;
             _voucherRepo.Update(voucher);
             await _voucherRepo.Save();
 

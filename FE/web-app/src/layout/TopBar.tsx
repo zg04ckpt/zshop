@@ -69,7 +69,7 @@ const TopBar = () => {
                     <div className="d-flex me-4 align-items-center ">
 
                         <i className='position-relative bx bx-cart me-3 fw-bold cart' onClick={() => navigate('cart')} style={{fontSize: '28px'}}>
-                            <div className="cart-count">2</div>
+                            <div className="cart-count"></div>
                         </i>
 
                         { !user && <>
@@ -83,7 +83,7 @@ const TopBar = () => {
 
                             {/* Option */}
                             <div className="dropdown-menu rounded-0 py-0">
-                                <div className="dropdown-item" onClick={() => navigate('/admin/product')}><i className='bx bx-sushi'></i> Quản trị</div>
+                                { user.userName == 'admin' && <div className="dropdown-item" onClick={() => navigate('/admin/product')}><i className='bx bx-sushi'></i> Quản trị</div> }
                                 <div className="dropdown-item" onClick={() => navigate('/account')}><i className='bx bx-cog'></i> Tài khoản</div>
                                 <div className="dropdown-item" onClick={handleLogout}><i className='bx bx-log-out'></i> Đăng xuất</div>
                             </div>

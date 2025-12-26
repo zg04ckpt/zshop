@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import '../../styles/pages/AccountInfo.css';
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState, setUser, startLoadingStatus, useAppContext } from "../../stores";
+import { AppDispatch, endLoadingStatus, RootState, setUser, startLoadingStatus, useAppContext } from "../../stores";
 import { Gender, UserProfileDTO } from "../../types/user";
 import { getProfile, updateProfile } from "../../api";
-import { showErrorToast } from "../../utils";
+import { showErrorToast, showSuccessToast } from "../../utils";
 import { OutletContextProp } from "../../types/base";
 import Button from "../../components/Button";
 import { dateToInputValue, defaultImageUrl, stringToDate } from "../../utils/helper";
@@ -57,10 +57,14 @@ export const AccountInfo = () => {
                             avatarUrl: previewAvatar
                         }));
                     }
+                    showSuccessToast(res.message || "Cập nhật thành công");
                 } else {
                     setProfile(backup);
                     setPreviewAvatar(profile?.avatarUrl || null);
+                    showSuccessToast(res.message || "Cập nhật thất bại");
                 }
+
+                dispatch(endLoadingStatus());
             },
             onReject: () => {
                 setProfile(backup);
@@ -89,11 +93,6 @@ export const AccountInfo = () => {
     useEffect(() => {
         if(isApiReady) init();
     }, [isApiReady]);
-
-    // useEffect(() => {
-    //     if (apiLoading) dispatch(startLoadingStatus());
-    //     else dispatch(endLoadingStatus());
-    // }, [apiLoading]);
     
     return (
         <div className="account-info">
@@ -106,12 +105,14 @@ export const AccountInfo = () => {
                     <div className="row">
 
                         {/* Image */}
-                        <div className="col-2 text-center">
-                            <img src={previewAvatar || profile?.avatarUrl || defaultImageUrl } alt="" />
-                            <label className="upload-img mt-2 pointer-hover">
-                                Tải ảnh lên
-                                <input type="file" accept=".PNG, .JPG" hidden onChange={e => handleUploadImage(e)}/>
-                            </label>
+                        <div className="col-2">
+                            <div className="d-flex flex-column align-items-center">
+                                <img src={previewAvatar || profile?.avatarUrl || defaultImageUrl } alt="" />
+                                <label className="upload-img mt-2 pointer-hover">
+                                    Tải ảnh lên
+                                    <input type="file" accept=".PNG, .JPG" hidden onChange={e => handleUploadImage(e)}/>
+                                </label>
+                            </div>
                         </div>
 
                         <div className="col-10">

@@ -34,10 +34,15 @@ export const backToOrigin = (navigate: NavigateFunction, returnUrl: string | nul
 
 export const convertToFormData = (data: any): FormData => {
     const formData = new FormData();
+
     Object.keys(data).forEach(key => {
         const value = data[key];
-        if(value) {
-            if (value instanceof Array) {
+        if (value !== null && value !== undefined) { 
+            if (Array.isArray(value) && value.length > 0 && value[0] instanceof File) {
+                value.forEach((file: File) => {
+                    formData.append(key, file);
+                });
+            } else if (Array.isArray(value)) {
                 value.forEach((e, i) => {
                     addPropToFormData(formData, `${key}[${i}]`, e);
                 });
@@ -46,6 +51,7 @@ export const convertToFormData = (data: any): FormData => {
             }
         }
     });
+
     return formData;
 }
 
@@ -94,9 +100,9 @@ export const objectToHttpParam = (data: object) => {
 
 export const convertDateToTimeSpan = (date: Date): string => {
     const now = Date.now();
-    const past = date.getTime();
+    const past = new Date(date).getTime();
     const duration = (now - past) / 1000;
-
+    debugger
     if (duration < 60) {
         return Math.floor(duration) + " giây trước";
     } else if (duration < 3600) {
@@ -159,8 +165,6 @@ export const scrollToObject = (selector: string, offset: number = 80) => {
     }
 }
 
-
-
 // Hàm kiểm tra xem chuỗi có phải định dạng ngày giờ không và convert thành Date
 const isDateString = (value: any): boolean => {
     if (typeof value !== 'string') return false;
@@ -189,46 +193,15 @@ export const convertDates = (data: any): any => {
     return data;
 };
 
-// Helper function to convert to FormData
-// export const convertToFormData = (data: any): FormData => {
-//     const formData = new FormData();
-//     for (const key in data) {
-//         if (Object.prototype.hasOwnProperty.call(data, key)) {
-//             const value = data[key];
-//             if (value instanceof File) {
-//                 formData.append(key, value);
-//             } else if (Array.isArray(value)) {
-//                 value.forEach((item, index) => {
-//                     if (item instanceof File) {
-//                         formData.append(`${key}[${index}]`, item);
-//                     } else if (typeof item === "object" && item !== null) {
-//                         for (const subKey in item) {
-//                             if (Object.prototype.hasOwnProperty.call(item, subKey)) {
-//                                 const subValue = item[subKey];
-//                                 if (subValue instanceof File) {
-//                                     formData.append(`${key}[${index}].${subKey}`, subValue);
-//                                 } else if (subValue !== null && subValue !== undefined) {
-//                                     formData.append(`${key}[${index}].${subKey}`, String(subValue));
-//                                 }
-//                             }
-//                         }
-//                     } else {
-//                         formData.append(`${key}[${index}]`, String(item));
-//                     }
-//                 });
-//             } else if (value !== null && value !== undefined) {
-//                 formData.append(key, String(value));
-//             }
-//         }
-//     }
-//     return formData;
-// };
-
 export function toQueryParams(obj: Record<string, any>, prefix = ''): string {
     const query = new URLSearchParams();
 
     const add = (key: string, value: any) => {
         if (value === null || value === undefined) return;
+        if (value instanceof Date) {
+            query.append(key, value.toISOString());
+            return;
+        }
         if (Array.isArray(value)) {
             value.forEach(v => add(key, v)); // flatten array
         } else if (typeof value === 'object') {

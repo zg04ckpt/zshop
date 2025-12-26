@@ -38,7 +38,6 @@ namespace Data
         
         // Voucher
         public DbSet<Voucher> Vouchers { get; set; }
-        public DbSet<VoucherUsage> VoucherUsages { get; set; }
 
         public AppDbContext(DbContextOptions options) : base(options)
         {
@@ -65,7 +64,6 @@ namespace Data
             modelBuilder.ApplyConfiguration(new CartItemConfiguration());
 
             modelBuilder.ApplyConfiguration(new VoucherConfiguration());
-            modelBuilder.ApplyConfiguration(new VoucherUsageConfiguration());
         }
     }
 }

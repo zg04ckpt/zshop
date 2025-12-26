@@ -49,6 +49,7 @@ export const Detail = () => {
 
     const initReviews = async () => {
         const res = await getBookReviews(book!.id, 1, 10);
+        debugger
         if (res.isSuccess) {
             setReviews(res.data!);
         }

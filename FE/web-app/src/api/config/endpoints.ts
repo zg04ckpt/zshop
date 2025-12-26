@@ -68,7 +68,8 @@ export const endpoints = {
 		detail: (id: string) => `/vouchers/${id}`
 	},
 	voucherManagement: {
-		root: "/vouchers",
-		deactivate: (id: string) => `/vouchers/${id}/deactivate`
+		root: "/management/vouchers",
+		delete: (id: string) => "/management/vouchers/" + id,
+		changeActivation: (id: string) => `/management/vouchers/${id}/change-activation`
 	},
 };

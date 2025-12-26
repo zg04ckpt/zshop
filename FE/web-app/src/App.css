@@ -64,6 +64,11 @@ input:focus, select:focus {
   cursor: pointer;
 }
 
+.opacity-hover:hover {
+  opacity: 50%;
+  cursor: pointer;
+}
+
 .action-text {
   text-decoration: none;
   color: black;

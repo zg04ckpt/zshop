@@ -18,7 +18,7 @@ namespace Data.Configurations.BookFeature
             builder.Property(x => x.Name).HasMaxLength(200);
             builder.Property(x => x.Language).HasMaxLength(20);
             builder.Property(x => x.Price).HasColumnType("decimal(18,2)");
-            builder.Property(x => x.AvgRate).HasColumnType("decimal(1,1)");
+            //builder.Property(x => x.AvgRate).HasColumnType("decimal(1,1)");
         }
     }
 }

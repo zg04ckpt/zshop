@@ -1,4 +1,5 @@
-﻿using Core.Interfaces.Services;
+﻿using Core.DTOs.Vouchers;
+using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers.v1
@@ -18,6 +19,12 @@ namespace API.Controllers.v1
         public async Task<IActionResult> GetDetail(string id)
         {
             return Ok(await _voucherService.GetVoucherById(id));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllVouchers([FromQuery] SearchVoucherDTO request)
+        {
+            return Ok(await _voucherService.GetVouchers(request));
         }
     }
 }

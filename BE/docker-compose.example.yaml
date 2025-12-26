@@ -1,0 +1,30 @@
+services:
+  api:
+    container_name: 'api'
+    image: api:latest
+    ports:
+      - "5002:8080"
+    volumes:
+      - temps:/app/temps
+      - logs:/app/logs
+    environment:
+      - HOANGCN_PGDB_CONNECTION_STRING=
+      - HOANGCN_PGDB_FOR_HANGFIRE_CONNECTION_STRING=
+      - HOANGCN_SECRET_KEY=
+      - HOANGCN_ADMIN_EMAIL=
+      - HOANGCN_ADMIN_PASS=
+      - HOANGCN_GOOGLE_CLIENT_ID=
+      - HOANGCN_GOOGLE_CLIENT_SECRET=
+      - HOANGCN_CLOUDINARY_NAME=
+      - HOANGCN_CLOUDINARY_API_KEY=
+      - HOANGCN_CLOUDINARY_API_SECRET=
+    networks:
+      - default_net
+
+volumes:
+  temps:
+  logs:
+
+networks:
+  default_net:
+    external: true

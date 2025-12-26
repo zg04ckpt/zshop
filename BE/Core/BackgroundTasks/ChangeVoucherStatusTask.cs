@@ -35,7 +35,7 @@ namespace Core.BackgroundTasks
                     // Check and update
                     var current = DateTime.Now;
                     var activeVouchers = await _voucherRepo.GetQuery()
-                        .Where(v => v.Status == VoucherStatus.Created)
+                        //.Where(v => v.Status == VoucherStatus.Created)
                         .ToListAsync(stoppingToken);
 
                     _logger.LogInformation($"{activeVouchers.Count} vouchers need to update");
@@ -45,7 +45,7 @@ namespace Core.BackgroundTasks
                     {
                         if (voucher.ValidFrom > current)
                         {
-                            voucher.Status = VoucherStatus.Created;
+                            //voucher.Status = VoucherStatus.Created;
                             toUpdate.Add(voucher);
                         }
                     }

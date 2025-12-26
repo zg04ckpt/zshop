@@ -17,7 +17,7 @@ namespace Core.DTOs.Vouchers
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public VoucherStatus Status { get; set; }
 
-
+        public bool IsActive { get; set; }
         public decimal Discount { get; set; }
         public decimal MaxDiscount { get; set; }
         public int? Quantity { get; set; }

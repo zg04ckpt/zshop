@@ -33,9 +33,9 @@ namespace Core.Services
             // Kiểm tra mức giảm giá hợp lệ
             if (data.DiscountType == DiscountType.Amount)
             {
-                if (data.Discount > data.MaxDiscount)
+                if (data.Discount != data.MaxDiscount)
                 {
-                    throw new BadRequestException("Số tiền giảm giá không thể vượt quá tối đa");
+                    throw new BadRequestException("Số tiền giảm giá không thể khác số tiền tối đa");
                 }
             }
             else
@@ -52,13 +52,13 @@ namespace Core.Services
                 Name = data.Name,
                 Code = Helper.GenerateRandomToken("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 8),
                 Discount = data.Discount,
-                DiscountType = DiscountType.Amount,
+                DiscountType = data.DiscountType,
                 MaxDiscount = data.MaxDiscount,
-                Status = VoucherStatus.Created,
                 Quantity = data.Quantity,
-                RemainingQuantity = data.RemainingQuantity,
+                IsActive = true,
+                RemainingQuantity = data.Quantity,
                 ValidFrom = data.ValidFrom,
-                ValidUntil = data.ValidFrom.Add(data.Duration)
+                ValidUntil = data.ValidFrom.Add(data.Duration),
             }; 
 
             while (await _voucherRepo.IsExists(v => v.Code == voucher.Code))
@@ -69,12 +69,12 @@ namespace Core.Services
             await _voucherRepo.Add(voucher);
             await _voucherRepo.Save();
 
-            _scheduler.ScheduleVoucherActivation(voucher);
+            await _scheduler.ScheduleVoucherActivation(voucher);
 
             return new ApiSuccessResult<string>(voucher.Id);
         }
 
-        public async Task<ApiResult<string>> DeactivateVoucher(string voucherId)
+        public async Task<ApiResult<string>> ChangeVoucherActivation(string voucherId)
         {
             var voucher = await _voucherRepo.Get(voucherId);
             if (voucher == null)
@@ -82,10 +82,14 @@ namespace Core.Services
                 throw new BadRequestException("Voucher không tồn tại");
             }
 
-            _voucherRepo.Delete(voucher);
+            voucher.IsActive = !voucher.IsActive;
+
+            _voucherRepo.Update(voucher);
             await _voucherRepo.Save();
 
-            return new ApiSuccessResult<string>(voucher.Id);
+            return new ApiSuccessResult<string>(
+                voucher.IsActive? "Đã kích hoạt voucher!":"Đã khóa voucher!", 
+                voucher.Id);
         }
 
         public async Task<ApiResult<Paginated<VoucherDetailDTO>>> GetVouchers(SearchVoucherDTO data)
@@ -105,21 +109,26 @@ namespace Core.Services
 
             if (data.Start is not null)
             {
+                // Reset về đầu ngày
+                data.Start = Helper.ConvertVNTimeToUTC(data.Start.Value.Date);
+
                 query = query.Where(v => v.ValidFrom >=  data.Start);
             }
 
             if (data.End is not null)
             {
+                // Reset về cuối ngày
+                data.End = Helper.ConvertVNTimeToUTC(data.End.Value.Date.AddDays(1).AddTicks(-1));
+
                 query = query.Where(v => v.ValidUntil <= data.End);
             }
 
             var totalRecords = await query.CountAsync();
 
             // sort by expire time
-            var current = DateTime.Now;
+            var current = DateTime.UtcNow;
             query = query
-                .OrderByDescending(v => v.Status == VoucherStatus.Created)
-                .ThenByDescending(v => v.Status == VoucherStatus.Active)
+                .OrderByDescending(v => v.ValidFrom <= current && v.ValidUntil >= current)
                 .ThenByDescending(v => v.ValidFrom);
 
             // paging & project
@@ -134,13 +143,18 @@ namespace Core.Services
                     DiscountType = voucher.DiscountType,
                     MaxDiscount = voucher.MaxDiscount,
                     Name = voucher.Name,
+                    IsActive = voucher.IsActive,
                     Quantity = voucher.Quantity,
                     RemainingQuantity = voucher.RemainingQuantity,
-                    Status = voucher.Status,
                     ValidFrom = voucher.ValidFrom,
                     ValidUntil = voucher.ValidUntil
                 })
                 .ToArrayAsync();
+
+            foreach (var item in vouchers)
+            {
+                item.Status = GetStatus(item.ValidFrom, item.ValidUntil);
+            }
 
             var totalPage = (int)Math.Ceiling((double)totalRecords / data.Size);
             return new ApiSuccessResult<Paginated<VoucherDetailDTO>>(new Paginated<VoucherDetailDTO>
@@ -164,15 +178,58 @@ namespace Core.Services
                 Id = voucher.Id,
                 Code = voucher.Code,
                 Discount = voucher.Discount,
+                IsActive = voucher.IsActive,
                 DiscountType = voucher.DiscountType,
                 MaxDiscount = voucher.MaxDiscount,
                 Name = voucher.Name,
                 Quantity = voucher.Quantity,
                 RemainingQuantity = voucher.RemainingQuantity,
-                Status = voucher.Status,
+                Status = GetStatus(voucher.ValidFrom, voucher.ValidUntil),
                 ValidFrom = voucher.ValidFrom,
                 ValidUntil = voucher.ValidUntil
             });
+        }
+
+        public async Task<ApiResult<VoucherListItemDTO[]>> GetAllVouchers()
+        {
+            var vouchers = await _voucherRepo.GetQuery()
+                .Select(v => new VoucherListItemDTO
+                {
+                    Id = v.Id,
+                    Name = v.Name,
+                }).ToArrayAsync();
+
+            return new ApiSuccessResult<VoucherListItemDTO[]>(vouchers);
+        }
+
+        public async Task<ApiResult<string>> DeleteVoucher(string voucherId)
+        {
+            var voucher = await _voucherRepo.Get(voucherId);
+            if (voucher == null)
+            {
+                throw new BadRequestException("Voucher không tồn tại");
+            }
+
+            _voucherRepo.Delete(voucher);
+            await _voucherRepo.Save();
+
+            return new ApiSuccessResult<string>("Xóa voucher thành công", voucher.Id);
+        }
+    
+        private VoucherStatus GetStatus(DateTime validFrom, DateTime validUtil)
+        {
+            var current = DateTime.UtcNow;
+            if (validFrom > current)
+            {
+                return VoucherStatus.Created;
+            }
+
+            if (current > validUtil)
+            {
+                return VoucherStatus.Expired;
+            }
+
+            return VoucherStatus.Effective;
         }
     }
 }

@@ -15,6 +15,10 @@ export const convertDates = (data: any): any => {
 		for (const key in newObj) {
 			if (Object.prototype.hasOwnProperty.call(newObj, key)) {
 				if (isDateString(newObj[key])) {
+					const d = new Date(newObj[key]);
+					d.setHours(d.getHours() + 7);
+
+					newObj[key] = d;
 					newObj[key] = new Date(newObj[key]);
 				} else {
 					newObj[key] = convertDates(newObj[key]);

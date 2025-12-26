@@ -18,13 +18,14 @@ namespace Core.Entities.PaymentFeature
         public PayStatus PaymentStatus { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
         public Guid? AddressId { get; set; }
+        public string? VoucherId { get; set; }
 
         // Rela
         public User Customer { get; set; }
         public Address? Address { get; set; }
+        public Voucher? Voucher { get; set; }
         public List<OrderDetail> OrderDetails { get; set; }
         public List<Transaction> Transactions { get; set; }
-        public List<VoucherUsage> UsedVouchers { get; set; }
         public List<CancelOrderRequest> CancelOrderRequests { get; set; }
     }
 }

@@ -37,7 +37,7 @@ export const refreshToken = async () => {
 };
 
 export const requestSendResetPasswordCode = async (email: string) => {
-	return await post(endpoints.auth.requestResendConfirmEmailCode, { email });
+	return await post(endpoints.auth.sendResetPassCode, { email });
 };
 
 export const resetPassword = async (data: ResetPasswordDTO) => {

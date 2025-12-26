@@ -1,89 +1,78 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import '../../styles/pages/ManageVoucher.css';
-import { Button } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Pagination from "../../components/Pagination";
+import { DiscountType, SearchVoucherDTO, VoucherDetailDTO, VoucherStatus } from "../../types/voucher";
+import { changeActivationVoucher, deleteVoucher, getVouchers } from "../../api/voucher";
+import { useNavigate } from "react-router-dom";
+import { showErrorToast, showInfoToast, showSuccessToast } from "../../utils";
+import { useDispatch } from "react-redux";
+import { AppDispatch, endLoadingStatus, startLoadingStatus, useAppContext } from "../../stores";
 
 const ManageVoucher = () => {
-    const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
+    const navigate = useNavigate();
+    const dispatch = useDispatch<AppDispatch>();
+    const context = useAppContext();
+
     const [page, setPage] = useState<number>(1);
     const [totalPage, setTotalPage] = useState<number>(5);
     
     // Search state
+    const [searchCode, setSearchCode] = useState<string>('');
     const [searchKey, setSearchKey] = useState<string>('');
     const [searchStartDate, setSearchStartDate] = useState<string>('');
     const [searchEndDate, setSearchEndDate] = useState<string>('');
-    
-    // Create form state
-    const [voucherName, setVoucherName] = useState<string>('');
-    const [discountType, setDiscountType] = useState<'percent' | 'amount'>('percent');
-    const [discountValue, setDiscountValue] = useState<number>(0);
-    const [maxDiscount, setMaxDiscount] = useState<number>(0);
-    const [quantity, setQuantity] = useState<number>(0);
-    const [effectiveDate, setEffectiveDate] = useState<string>('');
-    const [duration, setDuration] = useState<number>(0);
 
-    // Mock data
-    const mockVouchers = [
-        {
-            id: 1,
-            code: 'SUMMER2024',
-            name: 'Giảm giá mùa hè',
-            discountLevel: '20%',
-            maxDiscount: 100000,
-            remainingQuantity: 45,
-            totalQuantity: 100,
-            effectiveDate: '2024-06-01',
-            expiryDate: '2024-08-31'
-        },
-        {
-            id: 2,
-            code: 'FREESHIP50K',
-            name: 'Miễn phí vận chuyển',
-            discountLevel: '50000 VNĐ',
-            maxDiscount: 50000,
-            remainingQuantity: 120,
-            totalQuantity: 200,
-            effectiveDate: '2024-05-15',
-            expiryDate: '2024-12-31'
-        },
-        {
-            id: 3,
-            code: 'NEWUSER100',
-            name: 'Ưu đãi khách hàng mới',
-            discountLevel: '15%',
-            maxDiscount: 150000,
-            remainingQuantity: 0,
-            totalQuantity: 50,
-            effectiveDate: '2024-01-01',
-            expiryDate: '2024-06-30'
-        }
-    ];
+    // data
+    const [vouchers, setVouchers] = useState<VoucherDetailDTO[]>([]);
 
     const columns: GridColDef[] = [
         { 
             field: 'stt', 
             headerName: 'STT', 
-            width: 70,
+            width: 50,
             renderCell: (params) => params.api.getAllRowIds().indexOf(params.id) + 1 + (page - 1) * 10
         },
         { 
             field: 'code', 
             headerName: 'Mã', 
-            width: 150,
+            width: 100,
             renderCell: (params) => (
                 <div className="d-flex align-items-center">
-                    <span className="me-2">{params.value}</span>
                     <i 
                         className='bx bx-copy pointer-hover' 
-                        onClick={() => navigator.clipboard.writeText(params.value)}
+                        onClick={() => {
+                            navigator.clipboard.writeText(params.value);
+                            showInfoToast("Đã sao chép mã code Voucher");
+                        }}
                         title="Copy mã"
                     ></i>
+                    <span className="ms-2">{params.value}</span>
                 </div>
             )
         },
-        { field: 'name', headerName: 'Tên', width: 200 },
-        { field: 'discountLevel', headerName: 'Mức giảm', width: 130 },
+        { field: 'name', headerName: 'Tên', width: 180 },
+        { field: 'isActive', headerName: 'Kích hoạt', width: 100, renderCell: (params) => {
+            if (params.value == true) {
+                return <i className='bx bx-check-circle text-success fs-5'></i> ;
+            }
+            return <i className='bx bx-lock fs-5 text-danger'></i>;
+        } },
+        { 
+            field: 'discount', 
+            headerName: 'Mức giảm', 
+            width: 130,
+            renderCell: (params) => {
+                const value = params.row.discount;
+                const type = params.row.discountType;
+
+                if (type === DiscountType.Percentage) {
+                    return `${value}%`;
+                } else {
+                    return `${value.toLocaleString()} VNĐ`;
+                }
+            }
+        },
         { 
             field: 'maxDiscount', 
             headerName: 'Giảm tối đa', 
@@ -93,46 +82,131 @@ const ManageVoucher = () => {
         { 
             field: 'quantity', 
             headerName: 'Số lượng', 
-            width: 150,
-            renderCell: (params) => `${params.row.remainingQuantity}/${params.row.totalQuantity}`
+            width: 100,
+            renderCell: (params) => `${params.row.remainingQuantity}/${params.row.quantity}`
         },
         { 
-            field: 'effectiveDate', 
+            field: 'validFrom', 
             headerName: 'Có hiệu lực', 
-            width: 130,
-            renderCell: (params) => new Date(params.value).toLocaleDateString('vi-VN')
+            width: 150,
+            renderCell: (params) => new Date(params.value).toLocaleString('vi-VN')
         },
         { 
-            field: 'expiryDate', 
+            field: 'validUntil', 
             headerName: 'Hết hạn', 
-            width: 130,
-            renderCell: (params) => new Date(params.value).toLocaleDateString('vi-VN')
+            width: 150,
+            renderCell: (params) => {
+                const str = new Date(params.value).toLocaleString('vi-VN');
+                
+                return str;
+            }
+        },
+        { 
+            field: 'status', 
+            headerName: 'Trạng thái', 
+            width: 100,
+            renderCell: (params) => {
+                if (params.row.status == VoucherStatus.Created) {
+                    return <span className="badge bg-warning text-dark">Chờ</span>;
+                }
+                if (params.row.status == VoucherStatus.Effective) {
+                    return <span className="badge bg-success">Đang diễn ra</span>;
+                }
+                if (params.row.status == VoucherStatus.Expired) {
+                    return <span className="badge bg-secondary">Hết hạn</span>;
+                }
+            }
+        },
+        {
+            field: '',
+            headerName: 'Tùy chọn',
+            width: 100,
+            sortable: false,
+            filterable: false,
+            disableExport: true,
+            renderCell: (params) => (
+                <div className="dropdown">
+                    <i className='bx bx-dots-vertical-rounded' data-bs-toggle="dropdown"></i>
+                    <ul className="dropdown-menu dropdown-menu-end">
+                        <li className="dropdown-item py-0" onClick={() => handleToggleLock(params.row)}>
+                            {!params.row.isActive ? 'Mở khóa voucher' : 'Khóa voucher'}
+                        </li>
+
+                        <li className="dropdown-item py-0" onClick={() => handleDeleteVoucher(params.row)}>
+                            Xóa voucher
+                        </li>
+                    </ul>
+                </div>
+            )
         }
     ];
 
-    const handleCreateVoucher = () => {
-        // TODO: Implement create voucher logic
-        console.log('Create voucher:', {
-            voucherName,
-            discountType,
-            discountValue,
-            maxDiscount,
-            quantity,
-            effectiveDate,
-            duration
-        });
-        setShowCreateForm(false);
+    useEffect(() => {
+        load();
+    }, [page]);
+
+    const load = async () => {
+        dispatch(startLoadingStatus());
+        const request: SearchVoucherDTO = {
+            code: searchCode,
+            name: searchKey,
+            start: searchStartDate ? new Date(searchStartDate) : null,
+            end: searchEndDate ? new Date(searchEndDate) : null,
+            page: page,
+            size: 20
+        };
+        
+        const res = await getVouchers(request);
+        if (res.isSuccess) {
+            setVouchers(res.data!.data);
+            setTotalPage(res.data!.totalPage);
+        } else {
+            showErrorToast(res.message || "Load dữ liệu thất bại");
+        }
+        dispatch(endLoadingStatus());
     };
 
     const handleSearch = () => {
-        // TODO: Implement search logic
-        console.log('Search:', { searchKey, searchStartDate, searchEndDate });
+        setPage(1);
+        load();
     };
 
     const handleResetSearch = () => {
         setSearchKey('');
         setSearchStartDate('');
         setSearchEndDate('');
+        setSearchCode('');
+        handleSearch();
+    };
+
+    const handleToggleLock = async (voucher: VoucherDetailDTO) => {
+        dispatch(startLoadingStatus());
+        const res = await changeActivationVoucher(voucher.id);
+        if (res.isSuccess) {
+            showSuccessToast(res.message || "Tác vụ thành công");
+            load();
+        } else {
+            showErrorToast(res.message || "Tác vụ thất bại");
+        }
+        dispatch(endLoadingStatus());
+    };
+
+    const handleDeleteVoucher = async (voucher: VoucherDetailDTO) => {
+        context?.showConfirmDialog({
+            message: `Bạn chắc chắn muốn xóa voucher "${voucher.name}"?`,
+            onConfirm: async () => {
+                dispatch(startLoadingStatus());
+                const res = await deleteVoucher(voucher.id);
+                if (res.isSuccess) {
+                    showSuccessToast(res.message || "Tác vụ thành công");
+                    load();
+                } else {
+                    showErrorToast(res.message || "Tác vụ thất bại");
+                }
+                dispatch(endLoadingStatus());
+            },
+            onReject: () => {}
+        })
     };
 
     return (
@@ -147,11 +221,21 @@ const ManageVoucher = () => {
                     <h6>Tìm kiếm</h6>
                     <div className="row">
                         <div className="col-md-4 mb-2">
-                            <label className="form-label">Tên / Mã voucher</label>
+                            <label className="form-label">Mã voucher</label>
                             <input 
                                 type="text" 
                                 className="form-control"
-                                placeholder="Nhập tên hoặc mã voucher"
+                                placeholder="Nhập mã voucher"
+                                value={searchCode}
+                                onChange={(e) => setSearchCode(e.target.value)}
+                            />
+                        </div>
+                        <div className="col-md-4 mb-2">
+                            <label className="form-label">Tên voucher</label>
+                            <input 
+                                type="text" 
+                                className="form-control"
+                                placeholder="Nhập tên voucher"
                                 value={searchKey}
                                 onChange={(e) => setSearchKey(e.target.value)}
                             />
@@ -194,19 +278,28 @@ const ManageVoucher = () => {
                 <div className="d-flex justify-content-end mb-3">
                     <button 
                         className="btn btn-success"
-                        onClick={() => setShowCreateForm(true)}
+                        onClick={() => navigate('/admin/voucher/create')}
                     >
                         <i className='bx bx-plus'></i> Tạo mới voucher
                     </button>
                 </div>
 
                 {/* Voucher List */}
-                <div style={{ height: 400, width: '100%' }}>
+                <div style={{ height: 800, width: '100%' }}>
                     <DataGrid
-                        rows={mockVouchers}
+                        rows={vouchers}
                         columns={columns}
                         hideFooter
                         disableRowSelectionOnClick
+                        sx={{
+                            fontSize: '0.75rem',
+                            '& .MuiDataGrid-cell': {
+                                fontSize: '0.75rem',
+                            },
+                            '& .MuiDataGrid-columnHeader': {
+                                fontSize: '0.75rem',
+                            },
+                        }}
                     />
                 </div>
 
@@ -219,122 +312,6 @@ const ManageVoucher = () => {
                     />
                 </div>
             </div>
-
-            {/* Create Voucher Form Modal */}
-            {showCreateForm && (
-                <div className="voucher-modal-overlay">
-                    <div className="voucher-modal">
-                        <div className="voucher-modal-header">
-                            <h5>Tạo mới voucher</h5>
-                            <button 
-                                className="btn-close"
-                                onClick={() => setShowCreateForm(false)}
-                            ></button>
-                        </div>
-                        <div className="voucher-modal-body">
-                            <div className="mb-3">
-                                <label className="form-label">Tên voucher <span className="text-danger">*</span></label>
-                                <input 
-                                    type="text" 
-                                    className="form-control"
-                                    placeholder="Nhập tên voucher"
-                                    value={voucherName}
-                                    onChange={(e) => setVoucherName(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="mb-3">
-                                <label className="form-label">Loại giảm giá <span className="text-danger">*</span></label>
-                                <select 
-                                    className="form-select"
-                                    value={discountType}
-                                    onChange={(e) => setDiscountType(e.target.value as 'percent' | 'amount')}
-                                >
-                                    <option value="percent">Phần trăm (%)</option>
-                                    <option value="amount">Số tiền cố định (VNĐ)</option>
-                                </select>
-                            </div>
-
-                            <div className="mb-3">
-                                <label className="form-label">
-                                    Mức giảm <span className="text-danger">*</span>
-                                    {discountType === 'percent' && <small className="text-muted"> (0-100)</small>}
-                                    {discountType === 'amount' && <small className="text-muted"> (VNĐ)</small>}
-                                </label>
-                                <input 
-                                    type="number" 
-                                    className="form-control"
-                                    placeholder={discountType === 'percent' ? 'Nhập % giảm' : 'Nhập số tiền giảm'}
-                                    value={discountValue}
-                                    onChange={(e) => setDiscountValue(Number(e.target.value))}
-                                    min={0}
-                                    max={discountType === 'percent' ? 100 : undefined}
-                                />
-                            </div>
-
-                            <div className="mb-3">
-                                <label className="form-label">Giảm tối đa (VNĐ)</label>
-                                <input 
-                                    type="number" 
-                                    className="form-control"
-                                    placeholder="Nhập số tiền giảm tối đa"
-                                    value={maxDiscount}
-                                    onChange={(e) => setMaxDiscount(Number(e.target.value))}
-                                    min={0}
-                                />
-                            </div>
-
-                            <div className="mb-3">
-                                <label className="form-label">Số lượng <span className="text-danger">*</span></label>
-                                <input 
-                                    type="number" 
-                                    className="form-control"
-                                    placeholder="Nhập số lượng voucher"
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(Number(e.target.value))}
-                                    min={1}
-                                />
-                            </div>
-
-                            <div className="mb-3">
-                                <label className="form-label">Thời điểm có hiệu lực <span className="text-danger">*</span></label>
-                                <input 
-                                    type="datetime-local" 
-                                    className="form-control"
-                                    value={effectiveDate}
-                                    onChange={(e) => setEffectiveDate(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="mb-3">
-                                <label className="form-label">Khoảng thời gian có hiệu lực (ngày) <span className="text-danger">*</span></label>
-                                <input 
-                                    type="number" 
-                                    className="form-control"
-                                    placeholder="Nhập số ngày có hiệu lực"
-                                    value={duration}
-                                    onChange={(e) => setDuration(Number(e.target.value))}
-                                    min={1}
-                                />
-                            </div>
-                        </div>
-                        <div className="voucher-modal-footer">
-                            <button 
-                                className="btn btn-secondary me-2"
-                                onClick={() => setShowCreateForm(false)}
-                            >
-                                Hủy
-                            </button>
-                            <button 
-                                className="btn btn-success"
-                                onClick={handleCreateVoucher}
-                            >
-                                <i className='bx bx-check'></i> Tạo voucher
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

@@ -34,7 +34,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1050;
+    z-index: 2;
 }
 
 .voucher-modal {
@@ -89,6 +89,16 @@
 .manage-voucher .MuiDataGrid-columnHeaders {
     background-color: #f8f9fa;
     font-weight: 600;
+}
+
+/* Fix dropdown overflow in DataGrid */
+.manage-voucher .MuiDataGrid-cell {
+    overflow: visible !important;
+}
+
+.manage-voucher .dropdown-menu {
+    position: fixed !important;
+    z-index: 9999 !important;
 }
 
 /* Responsive */

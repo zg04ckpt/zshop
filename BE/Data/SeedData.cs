@@ -43,8 +43,8 @@ namespace Data
                     IsEmailComfirmed = true,
                     IsActivated = true,
                     AccessFailedCount = 0,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
                 };
 
                 User testAdmin = new()
@@ -60,8 +60,8 @@ namespace Data
                     IsEmailComfirmed = true,
                     IsActivated = true,
                     AccessFailedCount = 0,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
                 };
 
                 await userRepository.AddUserRoles(admin, "Admin");

@@ -13,8 +13,13 @@ namespace Data.Configurations.VoucherFeature
             builder.Property(x => x.Name).HasMaxLength(100);
             builder.Property(x => x.Code).HasMaxLength(50);
             builder.Property(x => x.DiscountType).HasConversion<string>();
-            builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(8);
             builder.Property(x => x.Discount).HasColumnType("decimal(18,2)");
+            builder.Property(x => x.MaxDiscount).HasColumnType("decimal(18,2)");
+
+            builder.HasMany(v => v.AppliedOrders)
+                .WithOne(o => o.Voucher)
+                .HasForeignKey(o => o.VoucherId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers.v1.Management
 {
-    [Route("api/v1/management/voucher")]
+    [Route("api/v1/management/vouchers")]
     [ApiController]
     [Authorize(Policy = "OnlyAdmin")]
     public class VouchersManagementController : ControllerBase
@@ -19,22 +19,28 @@ namespace API.Controllers.v1.Management
             _voucherService = voucherService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetVouchersAsListItem([FromQuery] SearchVoucherDTO request)
+        [HttpGet("items")]
+        public async Task<IActionResult> GetVouchersAsListItem()
         {
-            return Ok(await _voucherService.GetAllVouchers(request));
+            return Ok(await _voucherService.GetAllVouchers());
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateVoucher([FromQuery] CreateVoucherDTO request)
+        public async Task<IActionResult> CreateVoucher([FromBody] CreateVoucherDTO request)
         {
             return Ok(await _voucherService.CreateVoucher(request));
         }
 
-        [HttpPut("{id}/deactivate")]
-        public async Task<IActionResult> Deactivate(string id)
+        [HttpPost("{id}/change-activation")]
+        public async Task<IActionResult> ChangeVoucherActivation(string id)
         {
-            return Ok(await _voucherService.DeactivateVoucher(id));
+            return Ok(await _voucherService.ChangeVoucherActivation(id));
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteVoucher(string id)
+        {
+            return Ok(await _voucherService.DeleteVoucher(id));
         }
     }
 }

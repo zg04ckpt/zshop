@@ -75,7 +75,6 @@ export const setupInterceptors = (navigate: any, location: any, dispatch: any) =
 	// Response interceptor
 	axiosInstance.interceptors.response.use(
 		(res) => {
-			res.data = convertDates(res.data);
 			return res;
 		},
 		async (error: AxiosError) => {
