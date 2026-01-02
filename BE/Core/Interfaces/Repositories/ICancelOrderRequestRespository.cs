@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces.Repositories
 {
-    public interface ICancelOrderRequestRespository : IBaseRepository<CancelOrderRequest, int>
+    public interface ICancelOrderRequestRespository : IRepository<CancelOrderRequest, int>
     {
     }
 }

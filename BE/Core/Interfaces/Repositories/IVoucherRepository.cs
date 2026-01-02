@@ -2,7 +2,7 @@
 
 namespace Core.Interfaces.Repositories
 {
-    public interface IVoucherRepository : IBaseRepository<Voucher, string>
+    public interface IVoucherRepository : IRepository<Voucher, string>
     {
     }
 }

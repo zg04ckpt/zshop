@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces.Repositories
 {
-    public interface ICartItemRepository : IBaseRepository<CartItem, object>
+    public interface ICartItemRepository : IRepository<CartItem, object>
     {
     }
 }

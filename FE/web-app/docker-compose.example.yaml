@@ -1,0 +1,12 @@
+services:
+  tool:
+    container_name: 'zshop_web'
+    image: zshop_web:latest
+    ports:
+      - "--:80"
+    networks:
+      - default_net
+
+networks:
+  default_net:
+    external: true

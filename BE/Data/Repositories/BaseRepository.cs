@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Core.Repositories.Impl
 {
-    public class BaseRepository<TEntity, TKey> : IBaseRepository<TEntity, TKey> where TEntity : class
+    public class BaseRepository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class
     {
         protected readonly AppDbContext context;
 

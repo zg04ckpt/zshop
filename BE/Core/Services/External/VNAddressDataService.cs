@@ -24,7 +24,7 @@ namespace Core.Services.External
         {
             //using var httpClient = new HttpClient();
             //var res = await httpClient.GetAsync("https://provinces.open-api.vn/api?depth=3");
-            string jsonStringData = await File.ReadAllTextAsync("Resources/VNMap.json")
+            string jsonStringData = await File.ReadAllTextAsync("resources/VNMap.json")
                 ?? throw new Exception("Get address data fail.");
             CityDTO[] cities = JsonConvert.DeserializeObject<CityDTO[]>(jsonStringData)
                 ?? throw new Exception("Get address data fail.");

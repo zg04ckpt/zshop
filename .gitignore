@@ -21,4 +21,6 @@ build
 zshop.conf
 
 **/*.pem
-**/Logs
+**/logs
+**/docker-compose.yaml
+**/*.tar

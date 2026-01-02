@@ -95,7 +95,9 @@ namespace Data.Repositories
         {
             var books = await context.OrderDetails.AsNoTracking()
                 .AsSplitQuery()
-                .Where(e => e.Order.CustomerId == userId)
+                .Where(e => 
+                    e.Order.CustomerId == userId &&
+                    e.Order.OrderStatus == Core.Enums.OrderStatus.Delivered)
                 .Select(e => new
                 {
                     e.BookId,

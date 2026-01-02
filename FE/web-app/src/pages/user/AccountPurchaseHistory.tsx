@@ -22,6 +22,7 @@ export const AccountPurchaseHistory = () => {
         dispatch(startLoadingStatus())
         const res = await getBoughtBooks();
         if (res.isSuccess) {
+            res.data!.forEach(e => e.lastPurchasedAt = new Date(e.lastPurchasedAt));
             setBooks(res.data!);
         }
         else {

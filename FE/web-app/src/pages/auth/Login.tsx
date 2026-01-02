@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { login, loginWithGoogle } from "../../api";
 import { AppDispatch, setUser } from "../../stores";
 import { showErrorToast, showSuccessToast } from "../../utils";
-import { ValidatableInput } from "../../components";
+import { Loading, ValidatableInput } from "../../components";
 
 export const Login = () => {
     const navigate = useNavigate();
@@ -35,8 +35,8 @@ export const Login = () => {
         if (res.isSuccess) {
             // emit user state
             dispatch(setUser(res.data!));
-            navigate((param.get('return_url') || '/'));
             showSuccessToast(`Đăng nhập thành công, xin chào ${res.data!.firstName}`);
+            navigate((param.get('return_url') || '/'));
         } else {
             showErrorToast(res.message!);
         }
@@ -50,6 +50,7 @@ export const Login = () => {
                 <div className="col-lg-4 px-0 offset-lg-4 col-md-6 offset-md-3 col-sm-8 offset-sm-2">
 
                     <div className="card card-body mt-3 rounded-0 p-3">
+                        <Loading isShow={apiLoading}/>
                         <h2 className="fw-bolder text-center">Đăng nhập ZShop</h2>
                         <p className="fw-light text-center">Chào mừng bạn quay trở lại!</p>
 

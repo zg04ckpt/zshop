@@ -216,6 +216,36 @@ export const OrderHistoryDetail = () => {
                         </div>
                     </> }
 
+                    <label className="fw-bold mt-3">Lịch sử giao dịch:</label>
+                    { detail.transactions && <>
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th>Mã giao dịch</th>
+                                    <th>Thời gian</th>
+                                    <th style={{width: '120px'}}>Trạng thái</th>
+                                    <th style={{width: '150px'}}>Số tiền</th>
+                                    <th>Ghi chú</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                { detail.transactions.map(transaction => (
+                                    <tr key={transaction.id}>
+                                        <td>{transaction.id}</td>
+                                        <td>{formatDate(transaction.createdAt, 'HH:mm:ss dd-MM-yyyy')}</td>
+                                        <td>
+                                            {transaction.status === 'Processing' && <span className='gray-tag'>Đang xử lý</span>}
+                                            {transaction.status === 'Success' && <span className='green-tag'>Thành công</span>}
+                                        </td>
+                                        <td>{transaction.amount.toLocaleString('vn')} VNĐ</td>
+                                        <td>{transaction.note || '-'}</td>
+                                    </tr>
+                                )) }
+                            </tbody>
+                        </table>
+                    </> }
+
                     <label className="fw-bold">Chi tiết:</label>
                     <table className="table">
                         <thead>

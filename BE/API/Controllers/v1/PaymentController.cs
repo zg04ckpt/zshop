@@ -55,11 +55,13 @@ namespace API.Controllers.v1
             try
             {
                 var queryParams = Request.Query.ToDictionary(e => e.Key, e => e.Value.ToString());
-                return new JsonResult(await _paymentService.UpdateVNPayTransactionStatus(queryParams));
+                var result = await _paymentService.UpdateVNPayTransactionStatus(queryParams);
+                Console.WriteLine("-> Xử lý cập nhật trạng thái VNPay:" + result);
+                return new JsonResult(result);
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Lỗi khi xử lý IPN VNPay");
+                Console.WriteLine("-> Lỗi xử lý cập nhật trạng thái VNPay:" + ex.Message);
                 return new JsonResult("{\"RspCode\":\"99\",\"Message\":\"Lỗi máy chủ\"}");
             }
         }

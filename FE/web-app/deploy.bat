@@ -4,14 +4,14 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 rem --- Configuration ---
 set "SERVER_USER=root"
 set "SERVER_HOST=hoangcn.com"
-set "SERVER_PATH=/hoangcn/zshop_api"
+set "SERVER_PATH=/hoangcn/zshop_web"
 set "COMPOSE_FILE=docker-compose.yaml"
 
 echo 1. remove old image
-docker rmi zshop_api
+docker rmi zshop_web
 
 echo 2. build new image 
-docker build -t zshop_api .
+docker build -t zshop_web .
 if %ERRORLEVEL% neq 0 (
     echo Docker compose build failed.
     pause
@@ -19,7 +19,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo 3. saving .tar
-set "IMAGE=zshop_api:latest"
+set "IMAGE=zshop_web:latest"
 set "TAR=new.tar"
 
 docker save -o "%TAR%" "%IMAGE%"

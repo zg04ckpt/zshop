@@ -57,7 +57,7 @@ builder.Host.UseSerilog((context, config) => {
         .WriteTo.Console()
         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
         .WriteTo.File(
-            path: "Logs/app-log-.txt",
+            path: Path.Combine(AppContext.BaseDirectory, "logs", ".txt"),
             rollingInterval: RollingInterval.Day,
             outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message}{NewLine}{Exception}"
         );

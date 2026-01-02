@@ -19,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-      <None Include="Resources\Templates\**" CopyToOutputDirectory="PreserveNewest" />
-	  <None Include="Logs\**" CopyToOutputDirectory="PreserveNewest" />
+      <None Include="resources\templates\**" CopyToOutputDirectory="PreserveNewest" />
+	  <None Include="logs\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import '../../styles/pages/ConfirmEmail.css';
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { showErrorToast } from "../../utils";
+import { showErrorToast, showSuccessToast } from "../../utils";
 import { confirmEmail, resendConfirmEmailCode } from "../../api";
 import { Loading } from "../../components";
 
@@ -46,6 +46,7 @@ export const ConfirmEmail = () => {
         }
         setApiLoading(true);
         if (await confirmEmail({email: email!, code: code})) {
+            showSuccessToast(`Xác thực thành công, vui lòng đăng nhập`);
             navigate('/' + returnUrl || '');
         }
         setApiLoading(false);

@@ -1,6 +1,4 @@
-﻿using CloudinaryDotNet;
-using Core.Configurations;
-using Core.DTOs.Book;
+﻿using Core.Configurations;
 using Core.DTOs.Common;
 using Core.DTOs.Order;
 using Core.DTOs.User;
@@ -63,19 +61,23 @@ namespace Core.Services
             _reviewRepository = reviewRepository;
             _voucherRepository = voucherRepository;
         }
+
         public async Task<ApiResult<string>> CreateOrderFromBook(string bookId, ClaimsPrincipal claims)
         {
             // Get price of books
             var book = await _bookRepository.Get(Guid.Parse(bookId))
                 ?? throw new BadRequestException("Không tìm thấy sách.");
 
+            var now = DateTime.UtcNow;
+
             // Create order and detail, default has only 1 book
             var order = new Order
             {
-                Id = "ORDER-" + DateTime.UtcNow.ToString("ddMMyyHHmmss"),
+                Id = "ORDER-" + now.ToString("ddMMyyHHmmss"),
                 Currency = "VND",
                 CustomerId = Guid.Parse(Helper.GetUserIdFromClaims(claims)!),
-                OrderDate = DateTime.UtcNow,
+                OrderDate = now,
+                UpdatedAt = now,
                 PaymentStatus = PayStatus.Unpaid,
                 OrderStatus = OrderStatus.Created,
                 PaymentMethod = PaymentMethod.CashOnDelivery,
@@ -198,10 +200,6 @@ namespace Core.Services
 
             // Order info
             order.PaymentMethod = data.PaymentMethod;
-            if (order.TotalDiscount == 0)
-            {
-                order.PaymentMethod = PaymentMethod.CashOnDelivery;
-            }
             order.OrderStatus = OrderStatus.Placed;
             order.TotalAmount = Math.Round(order.TotalAmount, 0, MidpointRounding.AwayFromZero);
             order.AddressId = data.AddressId;
@@ -229,14 +227,15 @@ namespace Core.Services
 
         private async Task<string> HandleVNPay(Order order, string ip)
         {
-            var now = DateTime.UtcNow;
+            var nowUtc = DateTime.UtcNow;
+            var now = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, TimeZoneInfo.FindSystemTimeZoneById("Asia/Bangkok"));
 
             // Create a transaction
             var transaction = new Transaction
             {
-                Id = "TRA" + DateTime.UtcNow.ToString("yyyyMMddHHmmss"),
+                Id = "TRA" + now.ToString("yyyyMMddHHmmss"),
                 Amount = order.TotalAmount,
-                CreatedAt = now,
+                CreatedAt = nowUtc,
                 OrderId = order.Id,
                 Status = TransactionStatus.Processing,
             };
@@ -261,171 +260,6 @@ namespace Core.Services
 
             string paymentUrl = vnpay.CreateRequestUrl(_vnPayConfig.vnp_Url, EnvHelper.GetVNpayHashSecret());
             return paymentUrl;
-        }
-
-        public async Task<ApiResult<string>> PayByVNPay(string orderId, OrderDTO data, string ip, ClaimsPrincipal claims)
-        {
-            // Get order info
-            var order = await _orderRepository.GetQuery()
-                .Include(e => e.OrderDetails)
-                .FirstOrDefaultAsync(e => e.Id == orderId)
-                ?? throw new BadRequestException("Đơn hàng không tồn tại.");
-
-            // Check valid
-            if (data.AddressId == null)
-            {
-                throw new BadRequestException("Vui lòng thiết lập địa chỉ.");
-            }
-            if (order.CustomerId.ToString() != Helper.GetUserIdFromClaims(claims))
-            {
-                throw new ForbbidenException();
-            }
-            if (order.OrderStatus != OrderStatus.Created)
-            {
-                throw new BadRequestException("Đơn hàng đã hủy hoặc đã được gửi đi, vui lòng kiểm tra lịch sử thanh toán để biết thêm chi tiết.");
-            }
-            if (order.PaymentStatus == PayStatus.Paid)
-            {
-                throw new BadRequestException("Đơn hàng đã được thanh toán, vui lòng kiểm tra lịch sử thanh toán để biết thêm chi tiết.");
-            }
-
-            // Update order info (in case user change number of item)
-            var itemCountMap = data.Items.ToDictionary(e => e.BookId);
-            order.TotalAmount = 0;
-            order.OrderDetails.ForEach(e =>
-            {
-                if (itemCountMap.TryGetValue(e.BookId, out var item))
-                {
-                    e.Quantity = item.Quantity;
-                    order.TotalAmount += e.Price * e.Quantity;
-                }
-                else
-                {
-                    throw new BadRequestException("Thông tin đơn hàng không hợp lệ.");
-                }    
-            });
-
-            // Handle discount by voucher
-            if (!string.IsNullOrEmpty(data.VoucherId))
-            {
-                var voucher = await _voucherRepository.Get(data.VoucherId)
-                    ?? throw new BadRequestException("Voucher giảm giá không tồn tại.");
-                
-                if (voucher.DiscountType == DiscountType.Amount)
-                {
-                    order.TotalDiscount = voucher.Discount;
-                } 
-                else if (voucher.DiscountType == DiscountType.Percentage)
-                {
-                    order.TotalDiscount = Math.Floor(voucher.Discount / 100 * order.TotalAmount);
-                    if (order.TotalDiscount > voucher.MaxDiscount)
-                    {
-                        order.TotalDiscount = voucher.MaxDiscount;
-                    }
-                }
-            }
-            if (order.TotalDiscount > order.TotalAmount)
-            {
-                order.TotalDiscount = order.TotalAmount;
-            }
-            order.TotalAmount -= order.TotalDiscount;
-
-            // Set order info
-            order.PaymentMethod = PaymentMethod.VNPay;
-            order.TotalAmount = Math.Round(order.TotalAmount, 0, MidpointRounding.AwayFromZero);
-            order.AddressId = data.AddressId;
-            order.UpdatedAt = DateTime.UtcNow;
-            _orderRepository.Update(order);
-            _orderDetailRepository.UpdateRange(order.OrderDetails);
-
-            // Create a transaction
-            var transaction = new Transaction
-            {
-                Id = "TRA" + DateTime.UtcNow.ToString("yyyyMMddHHmmss"),
-                Amount = order.TotalAmount,
-                CreatedAt = DateTime.UtcNow,
-                OrderId = orderId,
-                Status = TransactionStatus.Processing,
-            };
-            await _transactionRepository.Add(transaction);
-            await _transactionRepository.Save();
-
-            // Create payment url for customer
-            var vnpay = new VNPayLib();
-
-            vnpay.AddRequestData("vnp_Version", _vnPayConfig.vnp_Version);
-            vnpay.AddRequestData("vnp_Command", _vnPayConfig.vnp_Command);
-            vnpay.AddRequestData("vnp_TmnCode", _vnPayConfig.vnp_TmnCode);
-            vnpay.AddRequestData("vnp_Amount", (transaction.Amount * 100).ToString());
-            vnpay.AddRequestData("vnp_CreateDate", transaction.CreatedAt.ToString("yyyyMMddHHmmss"));
-            vnpay.AddRequestData("vnp_CurrCode", order.Currency);
-            vnpay.AddRequestData("vnp_IpAddr", ip);
-            vnpay.AddRequestData("vnp_Locale", _vnPayConfig.vnp_Locale);
-            vnpay.AddRequestData("vnp_OrderInfo", $"Thanh toan don hang: {transaction.OrderId}");
-            vnpay.AddRequestData("vnp_OrderType", _vnPayConfig.vnp_OrderType);
-            vnpay.AddRequestData("vnp_ReturnUrl", _vnPayConfig.vnp_ReturnUrl);
-            vnpay.AddRequestData("vnp_TxnRef", transaction.Id);
-            vnpay.AddRequestData("vnp_ExpireDate", DateTime.UtcNow.AddMinutes(_paymentConfig.ExpireInMinutes).ToString("yyyyMMddHHmmss"));
-
-            string paymentUrl = vnpay.CreateRequestUrl(
-                _vnPayConfig.vnp_Url, EnvHelper.GetVNpayHashSecret());
-
-            return new ApiSuccessResult<string>(paymentUrl);
-        }
-        
-        public async Task<ApiResult<string>> CashOnDelivery(string orderId, OrderDTO data, ClaimsPrincipal claims)
-        {
-            // Get order info
-            var order = await _orderRepository.GetQuery()
-                .Include(e => e.OrderDetails)
-                .FirstOrDefaultAsync(e => e.Id == orderId)
-                ?? throw new BadRequestException("Đơn hàng không tồn tại.");
-
-            // Check valid
-            if (data.AddressId == null)
-            {
-                throw new BadRequestException("Vui lòng thiết lập địa chỉ.");
-            }
-            if (order.CustomerId.ToString() != Helper.GetUserIdFromClaims(claims))
-            {
-                throw new ForbbidenException();
-            }
-            if (order.OrderStatus != OrderStatus.Created)
-            {
-                throw new BadRequestException("Đơn hàng đã được gửi đi, vui lòng kiểm tra lịch sử thanh toán để biết thêm chi tiết.");
-            }
-            if (order.PaymentStatus != PayStatus.Unpaid)
-            {
-                throw new BadRequestException("Đơn hàng đã được thanh toán, vui lòng kiểm tra lịch sử thanh toán để biết thêm chi tiết.");
-            }
-
-            // update order info (in case user change number of item)
-            var itemCountMap = data.Items.ToDictionary(e => e.BookId);
-            order.TotalAmount = 0;
-            order.OrderDetails.ForEach(e =>
-            {
-                if (itemCountMap.TryGetValue(e.BookId, out var item))
-                {
-                    e.Quantity = item.Quantity;
-                    order.TotalAmount += e.Price * e.Quantity;
-                }
-                else
-                {
-                    throw new BadRequestException("Thông tin đơn hàng không hợp lệ.");
-                }
-            });
-            order.PaymentMethod = PaymentMethod.CashOnDelivery;
-            order.OrderStatus = OrderStatus.Placed;
-            order.TotalAmount = Math.Round(order.TotalAmount, 0, MidpointRounding.AwayFromZero);
-            order.AddressId = data.AddressId;
-            order.UpdatedAt = DateTime.UtcNow;
-            _orderRepository.Update(order);
-            _orderDetailRepository.UpdateRange(order.OrderDetails);
-            await _orderRepository.Save();
-
-            var request = _httpContextAccessor.HttpContext!.Request;
-            return new ApiSuccessResult<string>(
-                $"{request.Scheme}://{request.Host}/payment/order-success?orderId=" + orderId);
         }
 
         public async Task<string> GetCashOnDeliveryOrderSuccess(string orderId)
@@ -515,7 +349,7 @@ namespace Core.Services
                     await _orderRepository.Save();
 
                     string page = await _storageService.GetHtmlTemplate("payment_success_page.html");
-                    page = page.Replace("[amount]", transaction.Amount.ToString("N0", new CultureInfo("vi-VN")));
+                    page = page.Replace("[amount]", transaction.Amount.ToString("N0", CultureInfo.InvariantCulture));
                     page = page.Replace("[currency]", transaction.Order.Currency);
                     page = page.Replace("[orderId]", transaction.Order.Id);
                     page = page.Replace("[clientHomePageUrl]", _paymentConfig.ClientHomeUrl);
@@ -540,6 +374,7 @@ namespace Core.Services
             }
             catch (Exception ex)
             {
+                System.Console.WriteLine(ex);
                 string page = await _storageService.GetHtmlTemplate("payment_failure_page.html");
                 page = page.Replace("[mess]", "Lỗi xử lý kết quả");
                 page = page.Replace("[orderId]", "--");
@@ -550,80 +385,6 @@ namespace Core.Services
 
         public async Task<string> UpdateVNPayTransactionStatus(Dictionary<string, string> data)
         {
-            //var vnpayLib = new VNPayLib();
-            //foreach (var kvp in data)
-            //{
-            //    if (!string.IsNullOrEmpty(kvp.Key) && kvp.Key.StartsWith("vnp_"))
-            //    {
-            //        vnpayLib.AddResponseData(kvp.Key, kvp.Value);
-            //    }
-            //}
-
-            //// Get result
-            //string orderId = vnpayLib.GetResponseData("vnp_TxnRef");
-            //long amount = Convert.ToInt64(vnpayLib.GetResponseData("vnp_Amount"))/100;
-            //string vnpayTranId = vnpayLib.GetResponseData("vnp_TransactionNo");
-            //string vnp_ResponseCode = vnpayLib.GetResponseData("vnp_ResponseCode");
-            //string vnp_TransactionStatus = vnpayLib.GetResponseData("vnp_TransactionStatus");
-            //string vnp_OrderInfo = vnpayLib.GetResponseData("vnp_OrderInfo");
-            //string vnp_SecureHash = vnpayLib.GetResponseData("vnp_SecureHash");
-
-            //// Check secure hash
-            //if (!vnpayLib.ValidateSignature(vnp_SecureHash, EnvHelper.GetVNpayHashSecret()))
-            //{
-            //    await RecordTransaction(vnpayTranId, amount, null, 
-            //        TransactionStatus.Invalid, $"Chữ kí không hợp lệ (Nội dung thanh toán: {vnp_OrderInfo})");
-            //    return "{\"RspCode\":\"97\",\"Message\":\"Invalid signature\"}";
-            //}
-
-            //// Check if orderId valid
-            //var order = await _orderDetailsRepository.Get(orderId);
-            //if (order is null)
-            //{
-            //    await RecordTransaction(vnpayTranId, amount, null,
-            //        TransactionStatus.Invalid, $"Đơn hàng không tồn tại (Nội dung thanh toán: {vnp_OrderInfo})");
-            //    return "{\"RspCode\":\"01\",\"Message\":\"Order not found\"}";
-            //}
-
-
-            //// Check if order already paid
-            //if (order.PaymentStatus != PayStatus.Paid)
-            //{
-            //    return "{\"RspCode\":\"02\",\"Message\":\"Order already confirmed\"}";
-            //}
-
-
-            //// Check if amount valid
-            //if ((long)order.TotalAmount !=  amount)
-            //{
-            //    // <send mail>
-            //    await RecordTransaction(vnpayTranId, amount, order.Id,
-            //        TransactionStatus.NeedRefund, $"Số tiền thanh toán không hợp lệ (Nội dung thanh toán: {vnp_OrderInfo})");
-            //    return "{\"RspCode\":\"04\",\"Message\":\"invalid amount\"}";
-            //}
-
-
-            //// Update order status
-            //if (vnp_ResponseCode == "00" && vnp_TransactionStatus == "00")
-            //{
-            //    await RecordTransaction(vnpayTranId, amount, order.Id,
-            //        TransactionStatus.Success, null);
-            //    order.PaymentStatus = PayStatus.Paid;
-            //    order.OrderStatus = OrderStatus.Placed;
-            //}
-            //else
-            //{
-            //    await RecordTransaction(vnpayTranId, amount, order.Id,
-            //        TransactionStatus.Failure, $"Lỗi không xác định (Nội dung thanh toán: {vnp_OrderInfo})");
-            //    order.PaymentStatus = PayStatus.Failed;
-            //    return "{\"RspCode\":\"99\",\"Message\":\"unknown error\"}";
-            //}
-
-            //// Save order status
-            //_orderDetailsRepository.Update(order);
-            //await _orderDetailsRepository.Save();
-            //return "{\"RspCode\":\"00\",\"Message\":\"Confirm Success\"}";
-
             var vnpayLib = new VNPayLib();
             foreach (var kvp in data)
             {
@@ -642,7 +403,7 @@ namespace Core.Services
             string vnp_SecureHash = vnpayLib.GetResponseData("vnp_SecureHash");
 
             // Get transaction in system
-            string errorMessage = null;
+            string returnMessage = null;
             var transaction = await _transactionRepository.GetQuery()
                 .Where(e => e.Id == transactionId)
                 .Include(e => e.Order)
@@ -655,52 +416,39 @@ namespace Core.Services
             // Check valid
             if (!vnpayLib.ValidateSignature(vnp_SecureHash, EnvHelper.GetVNpayHashSecret()))
             {
-                errorMessage = "{\"RspCode\":\"97\",\"Message\":\"Invalid signature\"}";
+                returnMessage = "{\"RspCode\":\"97\",\"Message\":\"Invalid signature\"}";
                 transaction.Status = TransactionStatus.Failure;
+                transaction.Order.PaymentStatus = PayStatus.Failed;
                 transaction.Note = $"Chữ kí không hợp lệ (Nội dung thanh toán: {vnp_OrderInfo})";
             }
             else if (transaction.Order.TotalAmount != transaction.Amount)
             {
-                errorMessage = "{\"RspCode\":\"04\",\"Message\":\"invalid amount\"}";
+                returnMessage = "{\"RspCode\":\"04\",\"Message\":\"invalid amount\"}";
                 transaction.Status = TransactionStatus.Failure;
+                transaction.Order.PaymentStatus = PayStatus.Failed;
                 transaction.Note = $"Số tiền thanh toán không hợp lệ (Nội dung thanh toán: {vnp_OrderInfo})";
             }
-            // Check if success
             else if (vnp_ResponseCode == "00" && vnp_TransactionStatus == "00")
             {
                 transaction.Status = TransactionStatus.Success;
+                transaction.Order.PaymentStatus = PayStatus.Paid;
+                transaction.Order.OrderStatus = OrderStatus.Placed;
+                returnMessage = "{\"RspCode\":\"00\",\"Message\":\"Confirm Success\"}";
             }
             else
             {
-                errorMessage = "{\"RspCode\":\"99\",\"Message\":\"unknown error\"}";
+                returnMessage = "{\"RspCode\":\"99\",\"Message\":\"unknown error\"}";
                 transaction.Status = TransactionStatus.Failure;
+                transaction.Order.PaymentStatus = PayStatus.Failed;
                 transaction.Note = $"Lỗi không xác định (Nội dung thanh toán: {vnp_OrderInfo})";
             }
 
-            // return result by static page
-            if (transaction.Status == TransactionStatus.Success)
-            {
-                // Update order status
-                transaction.Order.OrderStatus = OrderStatus.Placed;
-                transaction.Order.PaymentStatus = PayStatus.Paid;
-                transaction.Order.UpdatedAt = DateTime.UtcNow;
-                _orderRepository.Update(transaction.Order);
-                _transactionRepository.Update(transaction);
-                await _orderRepository.Save();
+            transaction.Order.UpdatedAt = DateTime.UtcNow;
+            _orderRepository.Update(transaction.Order);
+            _transactionRepository.Update(transaction);
+            await _orderRepository.Save();
 
-                return "{\"RspCode\":\"00\",\"Message\":\"Confirm Success\"}";
-            }
-            else
-            {
-                // Update order status
-                transaction.Order.PaymentStatus = PayStatus.Failed;
-                transaction.Order.UpdatedAt = DateTime.UtcNow;
-                _orderRepository.Update(transaction.Order);
-                _transactionRepository.Update(transaction);
-                await _orderRepository.Save();
-
-                return errorMessage!;
-            }
+            return returnMessage;
         }
 
         public async Task<ApiResult<Paginated<OrderHistoryListItemDTO>>>GetOrderHistory(
@@ -740,7 +488,6 @@ namespace Core.Services
             var userId = Guid.Parse(Helper.GetUserIdFromClaims(claims)!);
             var query = _orderRepository.GetQuery().AsNoTracking();
 
-            // Admin can view any order in system, user only view order that by
             if (Helper.CheckRoleFromClaims("Admin", claims))
             {
                 query = query.Where(e => e.Id == orderId);
@@ -793,7 +540,16 @@ namespace Core.Services
                         ValidUntil = e.Voucher.ValidUntil,
                         ValidFrom = e.Voucher.ValidFrom,
                         Status = Helper.GetStatusFromTimeLine(e.Voucher.ValidFrom, e.Voucher.ValidUntil)
-                    } : null
+                    } : null,
+                    Transactions = e.Transactions.Select(t => new TransactionDetailDTO
+                    {
+                        Id = t.Id,
+                        Amount = t.Amount,
+                        CreatedAt = t.CreatedAt,
+                        Note = t.Note,
+                        OrderId = t.OrderId,
+                        Status = t.Status
+                    }).ToArray()
                 }).FirstOrDefaultAsync()
                 ?? throw new BadRequestException("Đơn hàng không hợp lệ.");
 
@@ -816,8 +572,7 @@ namespace Core.Services
             }
 
             // Only orders with following status can be cancelled: Created, Placed, Accepted, InProgress
-            if (
-                order.OrderStatus == OrderStatus.Shipping ||
+            if (order.OrderStatus == OrderStatus.Shipping ||
                 order.OrderStatus == OrderStatus.Delivered)
             {
                 throw new BadRequestException("Đơn hàng không thể hủy do đang được vận chuyển hoặc đã được giao.");
@@ -974,6 +729,7 @@ namespace Core.Services
                 if (order.OrderStatus != OrderStatus.Placed)
                     throw new BadRequestException("Trạng thái đơn hàng không hợp lệ, vui lòng thử lại.");
             }
+
             // Check Accepted -> InProgress
             if (
                 data.Status == OrderStatus.InProgress && 
@@ -981,6 +737,7 @@ namespace Core.Services
             {
                 throw new BadRequestException("Trạng thái đơn hàng không hợp lệ, vui lòng thử lại.");
             }
+
             // Check InProgress -> Shipping
             if (
                 data.Status == OrderStatus.Shipping &&

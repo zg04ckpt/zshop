@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace API.Converters
@@ -14,7 +15,11 @@ namespace API.Converters
             {
                 if (dt.Kind == DateTimeKind.Unspecified)
                 {
-                    var tz = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                    var tz = TimeZoneInfo.FindSystemTimeZoneById(
+                        RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                            ? "SE Asia Standard Time"
+                            : "Asia/Bangkok"
+                    );
                     return TimeZoneInfo.ConvertTimeToUtc(dt, tz);
                 }
 

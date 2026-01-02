@@ -19,6 +19,16 @@ export interface OrderDTO {
 export type OrderStatus = 'Created'|'Placed'|'Accepted'|'InProgress'|'Shipping'|'Delivered'|'Cancelled';
 export type PaymentStatus = 'Unpaid'|'Paid'|'Failed';
 export type PaymentMethod = 'CashOnDelivery'|'VNPay';
+export type TransactionStatus = 'Processing'|'Success'|'Success';
+
+export interface TransactionDetailDTO {
+    id: string;
+    orderId: string;
+    createdAt: Date;
+    status: TransactionStatus;
+    note: string|null;
+    amount: number
+}
 
 export interface OrderHistoryListItemDTO
 {
@@ -44,6 +54,7 @@ export type OrderHistoryDetailDTO = OrderHistoryListItemDTO & {
     address: AddressItemDTO;
     paymentMethod: PaymentMethod;
     voucher: VoucherDetailDTO|null;
+    transactions: TransactionDetailDTO[];
 }
 
 export interface CancelOrderRequest {

@@ -30,5 +30,6 @@ namespace Core.DTOs.Order
         public OrderItemDTO[] Items { get; set; }
         public AddressItemDTO? Address { get; set; }
         public VoucherDetailDTO? Voucher { get; set; }
+        public TransactionDetailDTO[] Transactions { get; set; }
     }
 }

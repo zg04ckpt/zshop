@@ -28,7 +28,7 @@ namespace Core.Services.External
 
         public async Task<string> GetHtmlTemplate(string templateFileName)
         {
-            var path = Path.Combine(AppContext.BaseDirectory, "Resources", "Templates", templateFileName);
+            var path = Path.Combine(AppContext.BaseDirectory, "resources", "templates", templateFileName);
             return await File.ReadAllTextAsync(path);
         }
 
