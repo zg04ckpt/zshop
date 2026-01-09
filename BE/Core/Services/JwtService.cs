@@ -42,7 +42,7 @@ namespace Core.Services
             SymmetricSecurityKey tokenKey = new(bytes);
 
             // Expiration time
-            DateTime expireAt = DateTime.Now.AddMinutes(_jwtConfig.AccessTokenTTL);
+            DateTime expireAt = DateTime.UtcNow.AddMinutes(_jwtConfig.AccessTokenTTL);
 
             // Gen new access token & refresh token
             JwtSecurityToken token = new

@@ -20,7 +20,7 @@ namespace Core.Interfaces.Services
         Task<ApiResult> ResendConfirmEmailCode(string email);
         Task<ApiResult> ConfirmEmailByCode(ConfirmEmailDTO data);
         Task<JwtTokenDTO> RefreshToken(string accessToken, string refreshToken);
-        Task<ApiResult> SendResetPassAuthCode(string email);
+        Task<ApiResult> RequestSendResetPassAuthCode(string email);
         Task<ApiResult> RefreshPassword(ResetPasswordDTO data);
     }
 }

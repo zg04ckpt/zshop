@@ -79,7 +79,7 @@ namespace Core.Services
 
             // Reset incorrect password times if login success
             user.AccessFailedCount = 0;
-            user.LastLogin = DateTime.Now;
+            user.LastLogin = DateTime.UtcNow;
             _userRepository.Update(user);
             await _userRepository.Save();
 
@@ -182,8 +182,8 @@ namespace Core.Services
                 IsEmailComfirmed = false,
                 IsActivated = true,
                 AccessFailedCount = 0,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
             await _userRepository.Add(user);
             await _userRepository.AddUserRoles(user, "User");
@@ -214,7 +214,7 @@ namespace Core.Services
             return new ApiSuccessResult("Gửi thành công");
         }
 
-        public async Task<ApiResult> SendResetPassAuthCode(string email)
+        public async Task<ApiResult> RequestSendResetPassAuthCode(string email)
         {
             User user = await _userRepository.Get(e => e.Email == email)
                 ?? throw new BadRequestException("Người dùng không tồn tại");
@@ -287,7 +287,7 @@ namespace Core.Services
                     AvatarUrl = claims.FirstOrDefault(e => e.Type == "image")?.Value,
                     Id = Guid.NewGuid(),
                     UserName = "user" + (claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value
-                        ?? DateTime.Now.ToString("ddMMyyyyHHmmss")),
+                        ?? DateTime.UtcNow.ToString("ddMMyyyyHHmmss")),
                     FirstName = claims.FirstOrDefault(c => c.Type == ClaimTypes.Surname)?.Value ?? "Ẩn danh",
                     LastName = claims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName)?.Value ?? "",
                     Email = email,
@@ -297,8 +297,8 @@ namespace Core.Services
                     IsEmailComfirmed = true,
                     IsActivated = true,
                     AccessFailedCount = 0,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 }; 
                 await _userRepository.Add(user);
                 await _userRepository.AddUserRoles(user, "User");
@@ -306,7 +306,7 @@ namespace Core.Services
             } 
             else
             {
-                user.LastLogin = DateTime.Now;
+                user.LastLogin = DateTime.UtcNow;
                 _userRepository.Update(user);
                 await _userRepository.Save();
             }

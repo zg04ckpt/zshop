@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces.Repositories
 {
-    public interface IBookRepository : IBaseRepository<Book, Guid>
+    public interface IBookRepository : IRepository<Book, Guid>
     {
         Task AddToCategory(Guid bookId, int[] categoryIds);
         Task UpdateCategory(Guid bookId, int[] categoryIds);

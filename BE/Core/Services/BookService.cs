@@ -54,7 +54,6 @@ namespace Core.Services
                 Name = data.Name,
                 Author = data.Author,
                 Currency = "VNĐ",
-                AvgRate = 0,
                 Cover = await _storageService.SaveImage(data.Cover)
                         ?? throw new InternalServerErrorException("Lưu ảnh bìa thất bại"),
                 Description = data.Description,
@@ -65,8 +64,8 @@ namespace Core.Services
                 Publisher = data.Publisher, 
                 StockCount = data.Stock,
                 SoldCount = 0,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
             };
 
             await _bookRepository.Add(book);
@@ -97,7 +96,7 @@ namespace Core.Services
 
             // Update other
             book.Name = data.Name;
-            book.UpdatedAt = DateTime.Now;
+            book.UpdatedAt = DateTime.UtcNow;
             book.Author = data.Author;
             book.Publisher = data.Publisher;
             book.PageCount = data.PageCount;
@@ -164,7 +163,7 @@ namespace Core.Services
                     Id = book.Id,
                     Name = book.Name,
                     Currency = book.Currency,
-                    AvgRate = book.AvgRate,
+                    AvgRate = book.Reviews.Average(r => (decimal?)r.Rate) ?? 0,
                     Price = book.Price,
                     SoldCount = book.SoldCount,
                     StockCount = book.StockCount,
@@ -193,7 +192,7 @@ namespace Core.Services
                     Name = book.Name,
                     Author = book.Author,
                     Currency = book.Currency,
-                    AvgRate = book.AvgRate,
+                    AvgRate = book.Reviews.Average(r => (decimal?)r.Rate) ?? 0,
                     Description = book.Description,
                     Language = book.Language,
                     Price = book.Price,
@@ -241,7 +240,7 @@ namespace Core.Services
             {
                 BookId = data.BookId,
                 Content = data.Content,
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 ReviewerId = userId,
                 Rate = data.Rate,
                 Id = Guid.NewGuid(),
@@ -291,8 +290,8 @@ namespace Core.Services
                 ParentId = data.ParentId,
                 Thumbnail = await _storageService.SaveImage(data.Thumbnail)
                     ?? throw new InternalServerErrorException("Lưu ảnh danh mục thất bại."),
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
             };
 
             await _categoryRepository.Add(category);
@@ -367,7 +366,7 @@ namespace Core.Services
                 category.Thumbnail = await _storageService.SaveImage(data.Thumbnail)
                     ?? throw new InternalServerErrorException("Lưu ảnh mới cho danh mục thất bại.");
             }
-            category.UpdatedAt = DateTime.Now;
+            category.UpdatedAt = DateTime.UtcNow;
             _categoryRepository.Update(category);
             await _categoryRepository.Save();
 

@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.User;
+using Core.DTOs.Vouchers;
 using Core.Enums;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace Core.DTOs.Order
         public DateTime OrderDate { get; set; }
         public DateTime UpdatedAt { get; set; }
         public decimal TotalAmount { get; set; }
+        public decimal TotalDiscount { get; set; }
         public string Currency { get; set; }
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
@@ -27,5 +29,7 @@ namespace Core.DTOs.Order
         public PaymentMethod PaymentMethod { get; set; }
         public OrderItemDTO[] Items { get; set; }
         public AddressItemDTO? Address { get; set; }
+        public VoucherDetailDTO? Voucher { get; set; }
+        public TransactionDetailDTO[] Transactions { get; set; }
     }
 }

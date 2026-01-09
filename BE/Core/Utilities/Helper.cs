@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Core.Entities.VoucherFeature;
+using Newtonsoft.Json;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -11,6 +12,31 @@ namespace Core.Utilities
         {
             return TimeZoneInfo.ConvertTimeFromUtc(dateTime, TimeZoneInfo.Local);
         }
+
+        public static VoucherStatus GetStatusFromTimeLine(DateTime validFrom, DateTime validUtil)
+        {
+            var current = DateTime.UtcNow;
+            if (validFrom > current)
+            {
+                return VoucherStatus.Created;
+            }
+
+            if (current > validUtil)
+            {
+                return VoucherStatus.Expired;
+            }
+
+            return VoucherStatus.Effective;
+        }
+
+        public static DateTime ConvertVNTimeToUTC(DateTime dateTime)
+        {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            return TimeZoneInfo.ConvertTimeToUtc(
+                DateTime.SpecifyKind(dateTime, DateTimeKind.Unspecified),
+                tz);
+        }
+
         public static string ToJsonString(object data) => JsonConvert.SerializeObject(data);
 
         public static string HashPassword(string password)

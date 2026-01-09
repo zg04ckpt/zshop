@@ -4,6 +4,7 @@ using Core.DTOs.Auth;
 using Core.DTOs.Common;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -91,9 +92,9 @@ namespace API.Controllers.v1
         }
 
         [HttpPost("send-reset-pass-auth-code")]
-        public async Task<IActionResult> SendResetPassAuthenticationCode([FromBody] SendResetPassAuthCodeDTO data)
+        public async Task<IActionResult> RequestSendResetPassAuthenticationCode([FromBody] SendResetPassAuthCodeDTO data)
         {
-            return Ok(await authService.SendResetPassAuthCode(data.Email));
+            return Ok(await authService.RequestSendResetPassAuthCode(data.Email));
         }
 
         [HttpPost("reset-password")]

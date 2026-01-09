@@ -2,7 +2,7 @@
 
 namespace Core.Interfaces.Repositories
 {
-    public interface ICartRepository : IBaseRepository<Cart, string>
+    public interface ICartRepository : IRepository<Cart, string>
     {
 
     }

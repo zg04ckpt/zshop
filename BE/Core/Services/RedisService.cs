@@ -1,12 +1,6 @@
 ﻿using Core.Interfaces.Services;
 using Newtonsoft.Json;
 using StackExchange.Redis;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Services
 {
@@ -29,8 +23,6 @@ namespace Core.Services
             return await _redis.GetDatabase().StringGetAsync($"{type}:{key}");
         }
 
-        
-
         public async Task<long> GetTTL(string type, string key)
         {
             TimeSpan? ttl = await _redis.GetDatabase().KeyTimeToLiveAsync($"{type}:{key}");
@@ -47,7 +39,6 @@ namespace Core.Services
         {
             return await _redis.GetDatabase().StringSetAsync($"{type}:{key}", value, ttl);
         }
-
         
         public async Task<bool> UpdateAndKeepTTL(string type, string key, string value)
         {

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces.Repositories
 {
-    public interface ICategoryRepository : IBaseRepository<Category, int>
+    public interface ICategoryRepository : IRepository<Category, int>
     {
         Task<bool> HasBookInCate(int cateId);
         Task<CategoryListItemDTO[]> GetTopSell(int count);

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces.Repositories
 {
-    public interface IUserRepository : IBaseRepository<User, Guid>
+    public interface IUserRepository : IRepository<User, Guid>
     {
         Task AddUserRoles(User user, string roleName);
         Task<bool> AnyInRole(string roleName);

@@ -19,3 +19,8 @@ build
 .github
 **/*.sql
 zshop.conf
+
+**/*.pem
+**/logs
+**/docker-compose.yaml
+**/*.tar

@@ -1,4 +1,7 @@
-﻿using API.Middlewares;
+﻿using API.Converters;
+using API.Filters;
+using API.Middlewares;
+using Core.BackgroundTasks;
 using Core.Configurations;
 using Core.DTOs.Common;
 using Core.Interfaces.Repositories;
@@ -10,19 +13,22 @@ using Core.Services.External;
 using Core.Utilities;
 using Data;
 using Data.Repositories;
+using Hangfire;
+using Hangfire.MySql;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
 using StackExchange.Redis;
 using System.Security.Claims;
 using System.Text;
+using System.Transactions;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -48,19 +54,30 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Host.UseSerilog((context, config) => {
     config
         .MinimumLevel.Information()
-        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
         .WriteTo.Console()
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
         .WriteTo.File(
-            path: "Logs/app-log-.txt",
+            path: Path.Combine(AppContext.BaseDirectory, "logs", ".txt"),
             rollingInterval: RollingInterval.Day,
             outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message}{NewLine}{Exception}"
         );
 });
+builder.Logging.ClearProviders(); 
+builder.Logging.AddSerilog();
 
 // Add redis
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
-    var redisConfig = ConfigurationOptions.Parse(config.GetConnectionString("Redis"), true);
+    var configs = builder.Configuration.GetSection("Redis").Get<RedisConfig>();
+    var redisConfig = new ConfigurationOptions
+    {
+        EndPoints = { configs.EndPoints.Default },
+        Password = EnvHelper.GetRedisPassword(),
+        Ssl = configs.Ssl,
+        ConnectTimeout = configs.ConnectTimeout,
+        SyncTimeout = configs.SyncTimeout,
+        ConnectRetry = configs.ConnectRetry
+    };
     return ConnectionMultiplexer.Connect(redisConfig);
 });
 
@@ -118,6 +135,30 @@ builder.Services.AddCors(options =>
             .AllowCredentials());
 });
 
+
+// Add hangfire
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseStorage( 
+        new MySqlStorage(
+            EnvHelper.GetMySQLConnectionString(),
+            new MySqlStorageOptions
+            {
+                QueuePollInterval = TimeSpan.FromSeconds(30),
+                JobExpirationCheckInterval = TimeSpan.FromHours(1),
+                CountersAggregateInterval = TimeSpan.FromMinutes(5),
+                PrepareSchemaIfNecessary = true,
+                DashboardJobListLimit = 5000,
+                TransactionIsolationLevel = IsolationLevel.ReadCommitted,
+                TablesPrefix = "Hangfire"
+            })
+    ));
+
+builder.Services.AddHangfireServer();
+builder.Services.AddScoped<VoucherScheduler>();
+
 // Add repo
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
@@ -131,6 +172,7 @@ builder.Services.AddScoped<ICancelOrderRequestRespository, CancelOrderRequestRep
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IVoucherRepository, VoucherRepository>();
 
 // Add services
 builder.Services.AddTransient<IAuthService, AuthService>();
@@ -138,6 +180,7 @@ builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IBookService, BookService>();
 builder.Services.AddTransient<IPaymentService, PaymentService>();
 builder.Services.AddTransient<ICartService, CartService>();
+builder.Services.AddTransient<IVoucherService, VoucherService>();
 
 builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddSingleton<IRedisService, RedisService>();
@@ -154,6 +197,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+        options.JsonSerializerOptions.Converters.Add(new DateTimeToUtcConverter());
     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -195,7 +239,19 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 512L * 1024 * 1024;
+});
+
 var app = builder.Build();
+
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireDashboardAuthorizationFilter() },
+    DashboardTitle = "ZShop – Hangfire Dashboard"
+});
+
 app.UseForwardedHeaders();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

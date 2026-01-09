@@ -25,11 +25,13 @@ namespace API.Controllers.v1
             _bookService = bookService;
         }
 
+
         [HttpGet("orders/{orderId}/confirm")]
         public async Task<IActionResult> ConfirmOrder(string orderId)
         {
             return Ok(await _paymentService.GetUnConfirmedOrder(orderId, User));
         }
+
 
         [HttpGet("orders/{orderId}/books")]
         public async Task<IActionResult> GetBooksInOrder(string orderId)
@@ -37,11 +39,13 @@ namespace API.Controllers.v1
             return Ok(await _bookService.GetListBookToReview(orderId, User));
         }
 
+
         [HttpPost("orders/{orderId}/cancel")]
         public async Task<IActionResult> UserCancelOrder(string orderId, [FromBody] CancelOrderRequestDTO data)
         {
             return Ok(await _paymentService.CancelOrder(orderId, data, User));
         }
+
 
         //update transaction status
         [HttpGet("/IPN")]
@@ -51,14 +55,17 @@ namespace API.Controllers.v1
             try
             {
                 var queryParams = Request.Query.ToDictionary(e => e.Key, e => e.Value.ToString());
-                return new JsonResult(await _paymentService.UpdateVNPayTransactionStatus(queryParams));
+                var result = await _paymentService.UpdateVNPayTransactionStatus(queryParams);
+                Console.WriteLine("-> Xử lý cập nhật trạng thái VNPay:" + result);
+                return new JsonResult(result);
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Lỗi khi xử lý IPN VNPay");
+                Console.WriteLine("-> Lỗi xử lý cập nhật trạng thái VNPay:" + ex.Message);
                 return new JsonResult("{\"RspCode\":\"99\",\"Message\":\"Lỗi máy chủ\"}");
             }
         }
+
 
         [HttpGet("vnp-result")]
         [AllowAnonymous]
@@ -68,6 +75,7 @@ namespace API.Controllers.v1
             return Content(await _paymentService.GetVNPayTransactionResult(queryParams), "text/html");
         }
 
+
         [HttpGet("/payment/order-success")]
         [AllowAnonymous]
         public async Task<IActionResult> ShowCashOnDeliveryOrderSuccess(string orderId)
@@ -75,11 +83,13 @@ namespace API.Controllers.v1
             return Content(await _paymentService.GetCashOnDeliveryOrderSuccess(orderId), "text/html");
         }
 
+
         [HttpGet("orders/history")]
         public async Task<IActionResult> GetOrdersHistory([FromQuery] OrderHistorySearchDTO data)
         {
             return Ok(await _paymentService.GetOrderHistory(data, User));
         }
+
 
         [HttpGet("orders/history/{orderId}/detail")]
         public async Task<IActionResult> GetOrderHistoryDetail(string orderId)
@@ -87,24 +97,19 @@ namespace API.Controllers.v1
             return Ok(await _paymentService.GetOrderHistoryDetail(orderId, User));
         }
 
+
         [HttpPost("orders")]
         public async Task<IActionResult> MakeOrder(string bookId)
         {
             return Ok(await _paymentService.CreateOrderFromBook(bookId, User));
         }
 
+
         [HttpPost("orders/{orderId}/pay")]
         public async Task<IActionResult> PayOrder(string orderId, [FromBody] OrderDTO data)
         {
             string ipAddr = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault() ?? HttpContext.Connection.RemoteIpAddress!.ToString();
-            if (data.PaymentMethod == PaymentMethod.VNPay)
-            {
-                return Ok(await _paymentService.PayByVNPay(orderId, data, ipAddr, User));
-            }
-            else
-            {
-                return Ok(await _paymentService.CashOnDelivery(orderId, data, User));
-            }
+            return Ok(await _paymentService.Pay(orderId, data, User, ipAddr));
         }
     }
 }
