@@ -94,9 +94,9 @@ export const ManageCancelOrderRequest = () => {
     const load = async () => {
         const res = await getAllCancelOrderRequests(page);
         if (res.isSuccess) {
-            setRequests(res.data!.data);
-            setTotalRecord(res.data!.totalRecord);
-            setTotalPage(res.data!.totalPage);
+            setRequests(res.data!.items);
+            setTotalRecord(res.data!.totalItems);
+            setTotalPage(res.data!.totalPages);
         }
     }
 

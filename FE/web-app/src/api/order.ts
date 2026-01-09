@@ -19,7 +19,7 @@ export const getBooksInOrder = async (orderId: string) => {
 };
 
 export const getOrderHistory = async (page: number, size: number) => {
-    return await get<Paginated<OrderHistoryListItemDTO>>(`${endpoints.order.history}?page=${page}&size=${size}`);
+    return await get<Paginated<OrderHistoryListItemDTO>>(`${endpoints.order.history}?pageIndex=${page}&pageSize=${size}`);
 };
 
 export const getOrderHistoryDetail = async (orderId: string) => {

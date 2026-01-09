@@ -1,40 +1,34 @@
 ﻿using Core.DTOs.Cart;
 using Core.DTOs.Common;
 using Core.DTOs.Order;
+using Core.Entities.BookFeature;
 using Core.Entities.PaymentFeature;
 using Core.Exceptions;
-using Core.Interfaces.Repositories;
+using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Utilities;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace Core.Services
 {
     public class CartService : ICartService
     {
-        private readonly ICartRepository _cartRepository;
-        private readonly IBookRepository _bookRepository;
-        private readonly ICartItemRepository _cartItemRepository;
         private readonly IPaymentService _paymentService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CartService(
-            ICartRepository cartRepository,
-            ICartItemRepository cartItemRepository,
-            IBookRepository bookRepository,
-            IPaymentService paymentService)
+        public CartService(IPaymentService paymentService, IUnitOfWork unitOfWork)
         {
-            _cartRepository = cartRepository;
-            _cartItemRepository = cartItemRepository;
-            _bookRepository = bookRepository;
             _paymentService = paymentService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ApiResult> AddItemToCart(ClaimsPrincipal claims, AddItemToCartDTO data)
         {
+            var cartRepo = _unitOfWork.Repository<Cart>();
+
             // Get cart of user, if null then create new one
             var userId = Guid.Parse(Helper.GetUserIdFromClaims(claims)!);
-            var cart = await _cartRepository.Get(e => e.UserId == userId);
+            var cart = await cartRepo.GetFirstAsync(e => e.UserId == userId);
             if (cart == null)
             {
                 cart = new Cart
@@ -44,28 +38,26 @@ namespace Core.Services
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                 };
-                await _cartRepository.Add(cart);
+                await cartRepo.AddAsync(cart);
             }
 
             // Before add items => need check if item alreay exists in cart and check if book exists
-            if (await _cartItemRepository.IsExists(
-                e => e.CartId == cart.Id && 
-                e.BookId == data.BookId))
+            if (await _unitOfWork.Repository<CartItem>().ExistsAsync(
+                e => e.CartId == cart.Id && e.BookId == data.BookId))
             {
                 throw new BadRequestException("Sách này đã được thêm vào giỏ hàng trước đó.");
             }
-            var book = await _bookRepository.GetQuery().AsNoTracking()
-                .Where(e => e.Id == data.BookId)
-                .Select(x => new
+
+            var book = await _unitOfWork.Repository<Book>().GetFirstAsync(
+                predicate: e => e.Id == data.BookId,
+                selector: x => new
                 {
                     x.Name,
                     x.Price
                 })
-                .FirstOrDefaultAsync()
                 ?? throw new BadRequestException("Sách không tồn tại");
 
-
-            await _cartItemRepository.Add(new()
+            await _unitOfWork.Repository<CartItem>().AddAsync(new CartItem()
             {
                 CartId = cart.Id,
                 BookId = data.BookId,
@@ -73,22 +65,20 @@ namespace Core.Services
                 BookTitle = book.Name,
                 Price = book.Price            
             });
-            await _cartItemRepository.Save();
+            await _unitOfWork.SaveChangesAsync();
 
-            return new()
-            {
-                IsSuccess = true,
-                Message = "Đã thêm " + book.Name + " vào giỏ hàng."
-            };
+            return new ApiSuccessResult("Đã thêm " + book.Name + " vào giỏ hàng.");
         }
 
         public async Task<ApiResult<CartDTO>> GetCart(ClaimsPrincipal claims)
         {
+            var cartRepo = _unitOfWork.Repository<Cart>();
+
             // Get cart of user, if null then create new one
             var userId = Guid.Parse(Helper.GetUserIdFromClaims(claims)!);
-            var cart = await _cartRepository.GetQuery()
-                .Where(e => e.UserId == userId)
-                .Select(e => new CartDTO
+            var cart = await cartRepo.GetFirstAsync(
+                predicate: e => e.UserId == userId,
+                selector: e => new CartDTO
                 {
                     Id = e.Id,
                     UpdatedAt = e.UpdatedAt,
@@ -100,8 +90,8 @@ namespace Core.Services
                         BookCover = i.Book.Cover,
                         Quantity = i.Quantity
                     }).ToArray()
-                })
-                .FirstOrDefaultAsync();
+                });
+
             if (cart == null)
             {
                 var newCart = new Cart
@@ -111,8 +101,8 @@ namespace Core.Services
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                 };
-                await _cartRepository.Add(newCart);
-                await _cartRepository.Save();
+                await cartRepo.AddAsync(newCart);
+                await _unitOfWork.SaveChangesAsync();
 
                 cart = new CartDTO
                 {
@@ -122,21 +112,18 @@ namespace Core.Services
                 };
             }
 
-            return new()
-            {
-                IsSuccess = true,
-                Data = cart
-            };
+            return new ApiSuccessResult<CartDTO>(cart);
         }
 
         public async Task<ApiResult<string>> PayCart(PayCartDTO data, ClaimsPrincipal claims)
         {
+            var cartRepo = _unitOfWork.Repository<Cart>();
             var userId = Helper.GetUserIdFromClaims(claims);
 
             // Check if cart exists
-            var cart = await _cartRepository.GetQuery().AsNoTracking()
-                .Include(e => e.Items)
-                .FirstOrDefaultAsync(e => e.UserId.ToString() == userId)
+            var cart = await cartRepo.GetFirstAsync(
+                predicate: e => e.UserId.ToString() == userId,
+                includes: e => e.Items)
                 ?? throw new BadRequestException("Giỏ hàng không tồn tại.");
 
             // Check if cart valid
@@ -152,7 +139,7 @@ namespace Core.Services
             {
                 if (cartItems.TryGetValue(item.BookId, out var cartItem))
                 {
-                    _cartItemRepository.Delete(cartItem);
+                    await _unitOfWork.Repository<CartItem>().DeleteAsync(cartItem);
                     orderItems.Add(new()
                     {
                         BookId = cartItem.BookId,
@@ -170,35 +157,28 @@ namespace Core.Services
             // Wait create order success to update cart and return order id
             var newOrderId = await _paymentService.CreateOrderFromCart(orderItems, claims);
             cart.UpdatedAt = DateTime.UtcNow;
-            _cartRepository.Update(cart);
-            await _cartRepository.Save();
+            await cartRepo.UpdateAsync(cart);
+            await _unitOfWork.SaveChangesAsync();
 
-            return new ApiResult<string>
-            {
-                IsSuccess = true,
-                Data = newOrderId,
-                Message = "Tạo đơn hàng thành công."
-            };
+            return new ApiSuccessResult<string>("Tạo đơn hàng thành công.", newOrderId);
         }
 
         public async Task<ApiResult> RemoveItemFromCart(ClaimsPrincipal claims, string bookId)
         {
             // Check and get cart id
             var userId = Helper.GetUserIdFromClaims(claims);
-            var cartId = await _cartRepository.GetQuery().AsNoTracking()
-                .Where(e => e.UserId.ToString() == userId)
-                .Select(e => e.Id.ToString())
-                .FirstOrDefaultAsync()
+            var cartId = await _unitOfWork.Repository<Cart>().GetFirstAsync(
+                predicate: e => e.UserId.ToString() == userId,
+                selector: e => e.Id.ToString())
                 ?? throw new BadRequestException("Giỏ hàng chưa được khởi tạo, vui lòng thêm ít nhất một sách vào giỏ.");
 
             // Check if book already exists in cart
-            var cartItem = await _cartItemRepository.GetQuery().AsNoTracking()
-                .Where(e => e.CartId == cartId && e.BookId.ToString() == bookId)
-                .FirstOrDefaultAsync()
+            var cartItem = await _unitOfWork.Repository<CartItem>().GetFirstAsync(
+                e => e.CartId == cartId && e.BookId.ToString() == bookId)
                 ?? throw new BadRequestException("Sách không tồn tại trong giỏ hàng, vui lòng thử lại.");
 
-            _cartItemRepository.Delete(cartItem);
-            await _cartItemRepository.Save();
+            await _unitOfWork.Repository<CartItem>().DeleteAsync(cartItem);
+            await _unitOfWork.SaveChangesAsync();
 
             return new ApiSuccessResult("Xóa khỏi giỏ hàng thành công.");
         }

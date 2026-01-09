@@ -2,7 +2,7 @@
 
 namespace Core.DTOs.Vouchers
 {
-    public class SearchVoucherDTO : BasePaging
+    public class SearchVoucherDTO : PagingRequest
     {
         public string? Name { get; set; }
         public string? Code { get; set; }

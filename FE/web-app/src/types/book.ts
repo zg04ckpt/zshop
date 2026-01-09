@@ -1,4 +1,4 @@
-import { BasePaging } from "./api";
+import { PagingRequest } from "./api";
 
 
 export interface CategoryDTO
@@ -91,7 +91,7 @@ export interface CreateBookReviewDTO
     rate: number;
 }
 
-export interface BookSearchDTO extends BasePaging
+export interface BookSearchDTO extends PagingRequest
 {
     name: string;
     minPrice: number|null;

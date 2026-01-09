@@ -30,7 +30,7 @@ namespace Core.Services
             return (long)ttl.Value.TotalSeconds;
         }
 
-        public async Task<bool> IsExists(string type, string key)
+        public async Task<bool> ExistsAsync(string type, string key)
         {
             return await _redis.GetDatabase().KeyExistsAsync($"{type}:{key}");
         }

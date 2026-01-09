@@ -9,7 +9,7 @@ import { OutletContextProp } from "../../types/base";
 import { AppDispatch, endLoadingStatus, startLoadingStatus } from "../../stores";
 import { BookDetailDTO, BookListItemDTO, BookReviewListItemDTO } from "../../types/book";
 import { addBookToCart, createOrder, getBookDetail, getBookReviews, getRandomBooks, getTopSellBooks, payOrder } from "../../api";
-import { showErrorToast, showSuccessToast } from "../../utils";
+import { showErrorToast, showInfoToast, showSuccessToast } from "../../utils";
 import { defaultImageUrl } from "../../utils/helper";
 import Button from "../../components/Button";
 import ReviewComment from "../../components/ReviewComment";
@@ -49,7 +49,6 @@ export const Detail = () => {
 
     const initReviews = async () => {
         const res = await getBookReviews(book!.id, 1, 10);
-        debugger
         if (res.isSuccess) {
             setReviews(res.data!);
         }
@@ -204,7 +203,9 @@ export const Detail = () => {
                             <div className="d-flex align-items-center mb-2 mt-3">
                                 <h5 className="label">Đánh giá</h5>
                                 <div className="flex-fill"></div>
-                                <a className="action-text fst-italic text-decoration-underline" style={{fontSize: '14px'}}>Xem tất cả</a>
+                                <a onClick={() => showInfoToast("Tính năng chưa phát triển")} className="action-text fst-italic text-decoration-underline" style={{fontSize: '14px'}}>
+                                    Xem tất cả
+                                </a>
                             </div>
                             {reviews.map(e => <>
                                 <ReviewComment data={e} className="mb-3"/>

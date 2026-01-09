@@ -1,5 +1,6 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using Core.Exceptions;
 using Core.Interfaces.Services.External;
 using Core.Utilities;
 using Microsoft.AspNetCore.Http;
@@ -42,11 +43,21 @@ namespace Core.Services.External
         public async Task<string?> SaveImage(IFormFile file)
         {
             if (file.Length == 0) return null;
+
+            //if (file.Length > 10 * 1024 * 1024)
+            //    throw new InternalServerErrorException("File ảnh quá lớn (tối đa 10MB)");
+
             using var fileStream = file.OpenReadStream();
             var uploadParam = new ImageUploadParams
             {
                 Folder = "zshop/images",
-                File = new FileDescription(file.Name, fileStream)
+                File = new FileDescription(file.Name, fileStream),
+                Transformation = new Transformation()
+                    .Width(1600)
+                    .Height(1600)
+                    .Crop("limit")
+                    .Quality("auto")
+                    .FetchFormat("auto")
             };
 
             var result = await _cloudinary.UploadAsync(uploadParam);

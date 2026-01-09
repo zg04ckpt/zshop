@@ -1,4 +1,4 @@
-import { BasePaging } from "./api"
+import { PagingRequest } from "./api"
 
 export enum DiscountType {
     Percentage = 'Percentage',
@@ -41,7 +41,7 @@ export interface CreateVoucherDTO {
     duration: string
 }
 
-export interface SearchVoucherDTO extends BasePaging {
+export interface SearchVoucherDTO extends PagingRequest {
     name: string|null,
     code: string|null,
     start: Date|null,

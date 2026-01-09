@@ -1,9 +1,9 @@
 ﻿using API.Converters;
 using API.Filters;
 using API.Middlewares;
-using Core.BackgroundTasks;
 using Core.Configurations;
 using Core.DTOs.Common;
+using Core.Interfaces;
 using Core.Interfaces.Repositories;
 using Core.Interfaces.Services;
 using Core.Interfaces.Services.External;
@@ -136,43 +136,45 @@ builder.Services.AddCors(options =>
 });
 
 
-// Add hangfire
-builder.Services.AddHangfire(config => config
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UseStorage( 
-        new MySqlStorage(
-            EnvHelper.GetMySQLConnectionString(),
-            new MySqlStorageOptions
-            {
-                QueuePollInterval = TimeSpan.FromSeconds(30),
-                JobExpirationCheckInterval = TimeSpan.FromHours(1),
-                CountersAggregateInterval = TimeSpan.FromMinutes(5),
-                PrepareSchemaIfNecessary = true,
-                DashboardJobListLimit = 5000,
-                TransactionIsolationLevel = IsolationLevel.ReadCommitted,
-                TablesPrefix = "Hangfire"
-            })
-    ));
+//// Add hangfire
+//builder.Services.AddHangfire(config => config
+//    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+//    .UseSimpleAssemblyNameTypeSerializer()
+//    .UseRecommendedSerializerSettings()
+//    .UseStorage( 
+//        new MySqlStorage(
+//            EnvHelper.GetMySQLConnectionString(),
+//            new MySqlStorageOptions
+//            {
+//                QueuePollInterval = TimeSpan.FromSeconds(30),
+//                JobExpirationCheckInterval = TimeSpan.FromHours(1),
+//                CountersAggregateInterval = TimeSpan.FromMinutes(5),
+//                PrepareSchemaIfNecessary = true,
+//                DashboardJobListLimit = 5000,
+//                TransactionIsolationLevel = IsolationLevel.ReadCommitted,
+//                TablesPrefix = "Hangfire"
+//            })
+//    ));
 
-builder.Services.AddHangfireServer();
-builder.Services.AddScoped<VoucherScheduler>();
+//builder.Services.AddHangfireServer();
 
 // Add repo
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
-builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
-builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
-builder.Services.AddScoped<ICancelOrderRequestRespository, CancelOrderRequestRepository>();
-builder.Services.AddScoped<ICartRepository, CartRepository>();
-builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-builder.Services.AddScoped<IVoucherRepository, VoucherRepository>();
+builder.Services.AddScoped<SeedData>();
+
+//builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+//builder.Services.AddScoped<IAddressRepository, AddressRepository>();
+//builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+//builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
+//builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+//builder.Services.AddScoped<ICancelOrderRequestRespository, CancelOrderRequestRepository>();
+//builder.Services.AddScoped<ICartRepository, CartRepository>();
+//builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
+//builder.Services.AddScoped<IVoucherRepository, VoucherRepository>();
 
 // Add services
 builder.Services.AddTransient<IAuthService, AuthService>();
@@ -246,11 +248,11 @@ builder.Services.Configure<FormOptions>(options =>
 
 var app = builder.Build();
 
-app.UseHangfireDashboard("/hangfire", new DashboardOptions
-{
-    Authorization = new[] { new HangfireDashboardAuthorizationFilter() },
-    DashboardTitle = "ZShop – Hangfire Dashboard"
-});
+//app.UseHangfireDashboard("/hangfire", new DashboardOptions
+//{
+//    Authorization = new[] { new HangfireDashboardAuthorizationFilter() },
+//    DashboardTitle = "ZShop – Hangfire Dashboard"
+//});
 
 app.UseForwardedHeaders();
 // Configure the HTTP request pipeline.
@@ -273,13 +275,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 using var scope = app.Services.CreateScope();
-await SeedData.Init(
-        scope.ServiceProvider.GetRequiredService<AppDbContext>(),
-        scope.ServiceProvider.GetRequiredService<IRoleRepository>(),
-        scope.ServiceProvider.GetRequiredService<IUserRepository>(),
-        scope.ServiceProvider.GetRequiredService<ICategoryRepository>()
-    );
+var seeder = scope.ServiceProvider.GetRequiredService<SeedData>();
+await seeder.InitAsync();
 
 app.Run();
-
-//

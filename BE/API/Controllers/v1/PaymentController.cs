@@ -1,10 +1,6 @@
-﻿using Core.DTOs.Common;
-using Core.DTOs.Order;
-using Core.Entities.PaymentFeature;
-using Core.Enums;
+﻿using Core.DTOs.Order;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers.v1

@@ -26,12 +26,12 @@ export const ManageUser = () => {
 
     const load = async () => {
         const res = await getUsers({
-            page,size,name,userName,email,roleId,isActivated,
+            pageIndex: page,pageSize: size,name,userName,email,roleId,isActivated,
         });
         if (res.isSuccess) {
-            setUsers(res.data!.data!);
-            setTotalPage(res.data!.totalPage);
-            setTotalRecord(res.data!.totalRecord);
+            setUsers(res.data!.items!);
+            setTotalPage(res.data!.totalPages);
+            setTotalRecord(res.data!.totalItems);
         }
 
         setRoles((await getRoles()).data!);

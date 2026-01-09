@@ -14,7 +14,7 @@ export const endpoints = {
 	book: {
 		root: "/books",
 		detail: (id: string) => `/books/${id}`,
-		reviews: (id: string, page: number, size: number) => `/books/${id}/reviews?page=${page}&size=${size}`,
+		reviews: (id: string, page: number, size: number) => `/books/${id}/reviews?pageIndex=${page}&pageSize=${size}`,
 		createReview: "/books/review",
 		topSell: "/books/top-sell",
 		explorer: "/books/explorer",

@@ -152,14 +152,14 @@ const ManageVoucher = () => {
             name: searchKey,
             start: searchStartDate ? new Date(searchStartDate) : null,
             end: searchEndDate ? new Date(searchEndDate) : null,
-            page: page,
-            size: 20
+            pageIndex: page,
+            pageSize: 20
         };
         
         const res = await getVouchers(request);
         if (res.isSuccess) {
-            setVouchers(res.data!.data);
-            setTotalPage(res.data!.totalPage);
+            setVouchers(res.data!.items);
+            setTotalPage(res.data!.totalPages);
         } else {
             showErrorToast(res.message || "Load dữ liệu thất bại");
         }

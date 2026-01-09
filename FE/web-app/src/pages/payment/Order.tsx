@@ -71,11 +71,11 @@ export const Order = () => {
             name: null,
             start: null,
             end: null,
-            page: 1,
-            size: 1000
+            pageIndex: 1,
+            pageSize: 1000
         });
         if (res.isSuccess) {
-            setVouchers(res.data!.data);
+            setVouchers(res.data!.items);
         }
     }
 
@@ -183,52 +183,7 @@ export const Order = () => {
                                     <Button label="Chọn voucher" onClick={() => setShowPickVoucher(true)}></Button>
                                 </> }
 
-                                { showPickVoucher && <>
-                                    <div className="position-fixed top-0 start-0 vh-100 vw-100 bg-secondary"
-                                        style={{ zIndex: 2, opacity: 0.7 }}
-                                    />
-
-                                    <div className="card card-body position-fixed start-50 translate-middle-x"
-                                        style={{ top: 100, width: 500, height: 600, zIndex: 3 }}
-                                    >
-                                        <h5>Chọn voucher</h5>
-                                        <hr className="my-2" />
-
-                                        <div className="vertical-scrollable">
-                                            {vouchers.map(e => (<>
-                                                <div key={e.id} className="d-flex flex-column opacity-hover" onClick={() => {
-                                                    if (e.status != VoucherStatus.Effective) {
-                                                        showInfoToast("Voucher chưa có hiệu lực/đã hết hạn");
-                                                        return;
-                                                    }
-                                                    setOrder(prev => ({... prev!, voucherId: e.id}));
-                                                    setAppliedVoucher(e);
-                                                    setShowPickVoucher(false);
-                                                }}>
-                                                    <div className="fw-bold max-1-line">{e.name}</div>
-                                                    <div className="d-flex justify-content-between">
-                                                        <small className="fst-italic">{
-                                                            e.discountType == DiscountType.Amount? 
-                                                                `${e.discount.toLocaleString()} VNĐ`:
-                                                                `${e.discount}%`
-                                                        }</small>
-
-                                                        <div style={{fontSize: 12}}>{
-                                                            e.status == VoucherStatus.Created? `Còn lại ${e.remainingQuantity}/${e.quantity} - Chưa có hiệu lực`:
-                                                            e.status == VoucherStatus.Effective? `Còn lại ${e.remainingQuantity}/${e.quantity} - Đang diễn ra`:
-                                                            `Đã hết hạn`
-                                                        }</div>
-                                                    </div>
-                                                </div>
-                                                <hr className="my-1"/>
-                                            </>))}
-                                        </div>
-
-                                        <div className="d-flex justify-content-center">
-                                            <Button label="Hủy" onClick={() => setShowPickVoucher(false)} pxWidth={100}></Button>
-                                        </div>
-                                    </div>
-                                </> }
+                                
                             </div>
         
                             {/* Receiver Info */}
@@ -347,6 +302,54 @@ export const Order = () => {
                         {/* <div className="d-flex justify-content-center mb-2">
                             <Button className="mt-3" label="Xác nhận" pxWidth={120} pxSize={14} blackTheme onClick={() => {}}/>
                         </div> */}
+                    </div>
+                </div>
+            </> }
+
+            {/* Select voucher */}
+            { showPickVoucher && <>
+                <div className="position-fixed top-0 start-0 vh-100 vw-100 bg-secondary"
+                    style={{ zIndex: 2, opacity: 0.7 }}
+                />
+
+                <div className="card card-body position-fixed start-50 translate-middle-x"
+                    style={{ top: 100, width: 500, height: 600, zIndex: 3 }}
+                >
+                    <h5>Chọn voucher</h5>
+                    <hr className="my-2" />
+
+                    <div className="vertical-scrollable">
+                        {vouchers.map(e => (<>
+                            <div key={e.id} className="d-flex flex-column opacity-hover" onClick={() => {
+                                if (e.status != VoucherStatus.Effective) {
+                                    showInfoToast("Voucher chưa có hiệu lực/đã hết hạn");
+                                    return;
+                                }
+                                setOrder(prev => ({... prev!, voucherId: e.id}));
+                                setAppliedVoucher(e);
+                                setShowPickVoucher(false);
+                            }}>
+                                <div className="fw-bold max-1-line">{e.name}</div>
+                                <div className="d-flex justify-content-between">
+                                    <small className="fst-italic">{
+                                        e.discountType == DiscountType.Amount? 
+                                            `${e.discount.toLocaleString()} VNĐ`:
+                                            `${e.discount}%`
+                                    }</small>
+
+                                    <div style={{fontSize: 12}}>{
+                                        e.status == VoucherStatus.Created? `Còn lại ${e.remainingQuantity}/${e.quantity} - Chưa có hiệu lực`:
+                                        e.status == VoucherStatus.Effective? `Còn lại ${e.remainingQuantity}/${e.quantity} - Đang diễn ra`:
+                                        `Đã hết hạn`
+                                    }</div>
+                                </div>
+                            </div>
+                            <hr className="my-1"/>
+                        </>))}
+                    </div>
+
+                    <div className="d-flex justify-content-center">
+                        <Button label="Hủy" onClick={() => setShowPickVoucher(false)} pxWidth={100}></Button>
                     </div>
                 </div>
             </> }

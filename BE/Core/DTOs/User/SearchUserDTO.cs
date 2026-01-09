@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Core.DTOs.User
 {
-    public class SearchUserDTO : BasePaging
+    public class SearchUserDTO : PagingRequest
     {
         public string? Name { get; set; } 
         public string? UserName { get; set; }

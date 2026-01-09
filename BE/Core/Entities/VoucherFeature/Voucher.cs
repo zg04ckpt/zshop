@@ -11,7 +11,6 @@ namespace Core.Entities.VoucherFeature
         public decimal Discount { get; set; }
         public decimal MaxDiscount { get; set; }
         public int? Quantity { get; set; }
-        public int? RemainingQuantity { get; set; }
         public DateTime ValidFrom { get; set; }
         public DateTime ValidUntil { get; set; }
         public bool IsActive { get; set; }

@@ -113,7 +113,7 @@ namespace Data.Migrations
 
                     b.HasIndex("BookId");
 
-                    b.ToTable("BookImages");
+                    b.ToTable("BookImages", (string)null);
                 });
 
             modelBuilder.Entity("Core.Entities.BookFeature.Category", b =>
@@ -555,9 +555,6 @@ namespace Data.Migrations
                         .HasColumnType("varchar(100)");
 
                     b.Property<int?>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("RemainingQuantity")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ValidFrom")

@@ -47,11 +47,11 @@ export const Home = () => {
             name: null,
             start: null,
             end: null,
-            page: 1,
-            size: 6
+            pageIndex: 1,
+            pageSize: 6
         });
         if (res.isSuccess) {
-            setVouchers(res.data!.data);
+            setVouchers(res.data!.items);
         }
     }
 

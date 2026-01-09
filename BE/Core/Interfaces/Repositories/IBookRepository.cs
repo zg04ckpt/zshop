@@ -1,15 +1,10 @@
 ﻿using Core.DTOs.Book;
 using Core.Entities.BookFeature;
 using Core.Interfaces.Services.External;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Interfaces.Repositories
 {
-    public interface IBookRepository : IRepository<Book, Guid>
+    public interface IBookRepository : IRepository<Book>
     {
         Task AddToCategory(Guid bookId, int[] categoryIds);
         Task UpdateCategory(Guid bookId, int[] categoryIds);

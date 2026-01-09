@@ -1,31 +1,27 @@
-﻿using Core.BackgroundTasks;
-using Core.DTOs.Common;
+﻿using Core.DTOs.Common;
 using Core.DTOs.Vouchers;
 using Core.Entities.VoucherFeature;
 using Core.Exceptions;
-using Core.Interfaces.Repositories;
+using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Utilities;
-using Microsoft.EntityFrameworkCore;
+using LinqKit;
 
 namespace Core.Services
 {
     public class VoucherService : IVoucherService
     {
-        private readonly IVoucherRepository _voucherRepo;
-        private readonly VoucherScheduler _scheduler;
+        private readonly IUnitOfWork _unitOfWork;
 
         public VoucherService(
-            IVoucherRepository voucherRepo, 
-            VoucherScheduler scheduler)
+            IUnitOfWork unitOfWork)
         {
-            _voucherRepo = voucherRepo;
-            _scheduler = scheduler;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ApiResult<string>> CreateVoucher(CreateVoucherDTO data)
         {
-            if (await _voucherRepo.IsExists(v => v.Name == data.Name))
+            if (await _unitOfWork.Repository<Voucher>().ExistsAsync(v => v.Name == data.Name))
             {
                 throw new BadRequestException("Tên đã tồn tại");
             }
@@ -56,36 +52,30 @@ namespace Core.Services
                 MaxDiscount = data.MaxDiscount,
                 Quantity = data.Quantity,
                 IsActive = true,
-                RemainingQuantity = data.Quantity,
                 ValidFrom = data.ValidFrom,
                 ValidUntil = data.ValidFrom.Add(data.Duration),
             }; 
 
-            while (await _voucherRepo.IsExists(v => v.Code == voucher.Code))
+            while (await _unitOfWork.Repository<Voucher>().ExistsAsync(v => v.Code == voucher.Code))
             {
                 voucher.Code = Helper.GenerateRandomToken("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
             }
 
-            await _voucherRepo.Add(voucher);
-            await _voucherRepo.Save();
-
-            await _scheduler.ScheduleVoucherActivation(voucher);
+            await _unitOfWork.Repository<Voucher>().AddAsync(voucher);
+            await _unitOfWork.SaveChangesAsync();
 
             return new ApiSuccessResult<string>(voucher.Id);
         }
 
         public async Task<ApiResult<string>> ChangeVoucherActivation(string voucherId)
         {
-            var voucher = await _voucherRepo.Get(voucherId);
-            if (voucher == null)
-            {
-                throw new BadRequestException("Voucher không tồn tại");
-            }
+            var voucher = await _unitOfWork.Repository<Voucher>().GetFirstAsync(e => e.Id == voucherId)
+                ?? throw new BadRequestException("Voucher không tồn tại");
 
             voucher.IsActive = !voucher.IsActive;
 
-            _voucherRepo.Update(voucher);
-            await _voucherRepo.Save();
+            await _unitOfWork.Repository<Voucher>().UpdateAsync(voucher);
+            await _unitOfWork.SaveChangesAsync();
 
             return new ApiSuccessResult<string>(
                 voucher.IsActive? "Đã kích hoạt voucher!":"Đã khóa voucher!", 
@@ -94,48 +84,40 @@ namespace Core.Services
 
         public async Task<ApiResult<Paginated<VoucherDetailDTO>>> GetVouchers(SearchVoucherDTO data)
         {
-            var query = _voucherRepo.GetQuery().AsNoTracking();
+            var filter = PredicateBuilder.New<Voucher>(true);
 
             // filter
             if (!string.IsNullOrEmpty(data.Code))
             {
-                query = query.Where(v => v.Code == data.Code);
+                filter.And(v => v.Code == data.Code);
             }
 
             if (!string.IsNullOrEmpty(data.Name))
             {
-                query = query.Where(v => v.Name.Contains(data.Name));
+                filter.And(v => v.Name.Contains(data.Name));
             }
 
             if (data.Start is not null)
             {
                 // Reset về đầu ngày
                 data.Start = Helper.ConvertVNTimeToUTC(data.Start.Value.Date);
-
-                query = query.Where(v => v.ValidFrom >=  data.Start);
+                filter.And(v => v.ValidFrom >=  data.Start);
             }
 
             if (data.End is not null)
             {
                 // Reset về cuối ngày
                 data.End = Helper.ConvertVNTimeToUTC(data.End.Value.Date.AddDays(1).AddTicks(-1));
-
-                query = query.Where(v => v.ValidUntil <= data.End);
+                filter.And(v => v.ValidUntil <= data.End);
             }
 
-            var totalRecords = await query.CountAsync();
-
-            // sort by expire time
             var current = DateTime.UtcNow;
-            query = query
-                .OrderByDescending(v => v.ValidFrom <= current && v.ValidUntil >= current)
-                .ThenByDescending(v => v.ValidFrom);
 
-            // paging & project
-            var vouchers = await query
-                .Skip((data.Page - 1) * data.Size)
-                .Take(data.Size)
-                .Select(voucher => new VoucherDetailDTO
+            var vouchers = await _unitOfWork.Repository<Voucher>().GetPagingAsync(
+                predicate: filter,
+                pageIndex: data.PageIndex,
+                pageSize: data.PageSize,
+                selector: voucher => new VoucherDetailDTO
                 {
                     Id = voucher.Id,
                     Code = voucher.Code,
@@ -145,73 +127,72 @@ namespace Core.Services
                     Name = voucher.Name,
                     IsActive = voucher.IsActive,
                     Quantity = voucher.Quantity,
-                    RemainingQuantity = voucher.RemainingQuantity,
+                    RemainingQuantity = voucher.Quantity - voucher.AppliedOrders.Count,
                     ValidFrom = voucher.ValidFrom,
                     ValidUntil = voucher.ValidUntil
-                })
-                .ToArrayAsync();
+                },
+                orderBy: v => v.ValidFrom <= current && v.ValidUntil >= current,
+                asc: false);
 
-            foreach (var item in vouchers)
+            
+            //query = query
+            //    .OrderByDescending(v => v.ValidFrom <= current && v.ValidUntil >= current)
+            //    .ThenByDescending(v => v.ValidFrom);
+
+            // paging & project
+
+            foreach (var item in vouchers.Items)
             {
                 item.Status = GetStatus(item.ValidFrom, item.ValidUntil);
             }
 
-            var totalPage = (int)Math.Ceiling((double)totalRecords / data.Size);
-            return new ApiSuccessResult<Paginated<VoucherDetailDTO>>(new Paginated<VoucherDetailDTO>
-            {
-                TotalPage = totalPage,
-                TotalRecord = totalRecords,
-                Data = vouchers
-            });
+            return new ApiSuccessResult<Paginated<VoucherDetailDTO>>(vouchers);
         }
 
         public async Task<ApiResult<VoucherDetailDTO>> GetVoucherById(string voucherId)
         {
-            var voucher = await _voucherRepo.Get(voucherId);
-            if (voucher == null)
-            {
-                throw new BadRequestException("Voucher không tồn tại");
-            }
+            var voucher = await _unitOfWork.Repository<Voucher>().GetFirstAsync(
+                predicate: e => e.Id == voucherId,
+                selector: voucher => new VoucherDetailDTO
+                {
+                    Id = voucher.Id,
+                    Code = voucher.Code,
+                    Discount = voucher.Discount,
+                    IsActive = voucher.IsActive,
+                    DiscountType = voucher.DiscountType,
+                    MaxDiscount = voucher.MaxDiscount,
+                    Name = voucher.Name,
+                    Quantity = voucher.Quantity,
+                    RemainingQuantity = voucher.Quantity - voucher.AppliedOrders.Count,
+                    Status = GetStatus(voucher.ValidFrom, voucher.ValidUntil),
+                    ValidFrom = voucher.ValidFrom,
+                    ValidUntil = voucher.ValidUntil
+                })
+                ?? throw new BadRequestException("Voucher không tồn tại");
 
-            return new ApiSuccessResult<VoucherDetailDTO>(new VoucherDetailDTO
-            {
-                Id = voucher.Id,
-                Code = voucher.Code,
-                Discount = voucher.Discount,
-                IsActive = voucher.IsActive,
-                DiscountType = voucher.DiscountType,
-                MaxDiscount = voucher.MaxDiscount,
-                Name = voucher.Name,
-                Quantity = voucher.Quantity,
-                RemainingQuantity = voucher.RemainingQuantity,
-                Status = GetStatus(voucher.ValidFrom, voucher.ValidUntil),
-                ValidFrom = voucher.ValidFrom,
-                ValidUntil = voucher.ValidUntil
-            });
+            return new ApiSuccessResult<VoucherDetailDTO>(voucher);
         }
 
         public async Task<ApiResult<VoucherListItemDTO[]>> GetAllVouchers()
         {
-            var vouchers = await _voucherRepo.GetQuery()
-                .Select(v => new VoucherListItemDTO
+            var vouchers = await _unitOfWork.Repository<Voucher>().GetAllAsync(
+                predicate: e => true,
+                selector: v => new VoucherListItemDTO
                 {
                     Id = v.Id,
                     Name = v.Name,
-                }).ToArrayAsync();
+                });
 
-            return new ApiSuccessResult<VoucherListItemDTO[]>(vouchers);
+            return new ApiSuccessResult<VoucherListItemDTO[]>(vouchers.ToArray());
         }
 
         public async Task<ApiResult<string>> DeleteVoucher(string voucherId)
         {
-            var voucher = await _voucherRepo.Get(voucherId);
-            if (voucher == null)
-            {
-                throw new BadRequestException("Voucher không tồn tại");
-            }
+            var voucher = await _unitOfWork.Repository<Voucher>().GetFirstAsync(e => e.Id == voucherId)
+                ?? throw new BadRequestException("Voucher không tồn tại");
 
-            _voucherRepo.Delete(voucher);
-            await _voucherRepo.Save();
+            await _unitOfWork.Repository<Voucher>().DeleteAsync(voucher);
+            await _unitOfWork.SaveChangesAsync();
 
             return new ApiSuccessResult<string>("Xóa voucher thành công", voucher.Id);
         }

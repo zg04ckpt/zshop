@@ -46,15 +46,15 @@ export const ManageBook = () => {
 
     const load = async () => {
         const res = await getBooksForManagement({
-            name, maxPrice, minPrice, page, size, sortBy, order,
+            name, maxPrice, minPrice, pageIndex: page, pageSize: size, sortBy, order,
             categoryIds: categories
                 .filter(e => e.isChecked)
                 .map(e => e.id)
         });
         if (res.isSuccess) {
-            setTotalPage(res.data!.totalPage);
-            setTotalRecord(res.data!.totalRecord);
-            setBooks(res.data!.data)
+            setTotalPage(res.data!.totalPages);
+            setTotalRecord(res.data!.totalItems);
+            setBooks(res.data!.items)
         }
     }
 
