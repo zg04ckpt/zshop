@@ -75,6 +75,7 @@ namespace API.Controllers.v1
             {
                 Response.Cookies.Delete("AccessToken");
                 Response.Cookies.Delete("RefreshToken");
+                Response.Cookies.Delete("ConversationId");
             }
             return Ok(await authService.LogOut(accessToken));
         }

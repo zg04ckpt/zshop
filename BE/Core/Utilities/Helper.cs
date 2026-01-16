@@ -1,4 +1,5 @@
 ﻿using Core.Entities.VoucherFeature;
+using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -8,6 +9,11 @@ namespace Core.Utilities
 {
     public class Helper
     {
+        public static string? GetIpAddressFromHubContext(HubCallerContext context)
+        {
+            return context.GetHttpContext()?.Connection.RemoteIpAddress?.ToString();
+        }
+
         public static DateTime ConvertFromUtcToLocalTime(DateTime dateTime)
         {
             return TimeZoneInfo.ConvertTimeFromUtc(dateTime, TimeZoneInfo.Local);

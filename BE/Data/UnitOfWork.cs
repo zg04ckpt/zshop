@@ -15,7 +15,8 @@ namespace Data
         private IBookRepository? bookRepo;
         private ICategoryRepository? _categoryRepository;
         private IReviewRepository? _reviewRepository;
-        private IUserRepository? userRepo;
+        private IUserRepository? _userRepo;
+        private IConversationRepository? _conversationRepo;
 
         public UnitOfWork(AppDbContext context)
         {
@@ -29,7 +30,8 @@ namespace Data
 
         public IReviewRepository Reviews => _reviewRepository ??= new ReviewRepository(_context);
 
-        public IUserRepository Users => userRepo ??= new UserRepository(_context);
+        public IUserRepository Users => _userRepo ??= new UserRepository(_context);
+        public IConversationRepository Conversations => _conversationRepo ??= new ConversationRepository(_context);
 
         public async Task BeginTransactionAsync()
         {

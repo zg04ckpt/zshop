@@ -9,6 +9,7 @@ namespace Core.Interfaces
         ICategoryRepository Categories { get; }
         IReviewRepository Reviews { get; }
         IUserRepository Users { get; }
+        IConversationRepository Conversations { get; }
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();
