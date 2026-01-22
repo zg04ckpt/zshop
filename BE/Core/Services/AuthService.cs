@@ -43,6 +43,11 @@ namespace Core.Services
             var user = await userRepo.GetFirstAsync(e => e.Email == data.Email)
                 ?? throw new BadRequestException("Email không tồn tại");
 
+            if (!user.IsActivated)
+            {
+                throw new ForbbidenException();
+            }
+
             // Check email confirm
             if (!user.IsEmailComfirmed)
             {

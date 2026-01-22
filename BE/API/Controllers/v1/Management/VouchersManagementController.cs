@@ -19,28 +19,28 @@ namespace API.Controllers.v1.Management
             _voucherService = voucherService;
         }
 
-        [HttpGet("items")]
-        public async Task<IActionResult> GetVouchersAsListItem()
-        {
-            return Ok(await _voucherService.GetAllVouchers());
-        }
+        //[HttpGet("items")]
+        //public async Task<IActionResult> GetVouchersAsListItem()
+        //{
+        //    return Ok(await _voucherService.GetAllVouchers());
+        //}
 
-        [HttpPost]
-        public async Task<IActionResult> CreateVoucher([FromBody] CreateVoucherDTO request)
-        {
-            return Ok(await _voucherService.CreateVoucher(request));
-        }
+        //[HttpPost]
+        //public async Task<IActionResult> CreateVoucher([FromBody] CreateVoucherDTO request)
+        //{
+        //    return Ok(await _voucherService.CreateVoucher(request));
+        //}
 
-        [HttpPost("{id}/change-activation")]
-        public async Task<IActionResult> ChangeVoucherActivation(string id)
-        {
-            return Ok(await _voucherService.ChangeVoucherActivation(id));
-        }
+        //[HttpPost("{id}/change-activation")]
+        //public async Task<IActionResult> ChangeVoucherActivation(string id)
+        //{
+        //    return Ok(await _voucherService.ChangeVoucherActivation(id));
+        //}
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteVoucher(string id)
-        {
-            return Ok(await _voucherService.DeleteVoucher(id));
-        }
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteVoucher(string id)
+        //{
+        //    return Ok(await _voucherService.DeleteVoucher(id));
+        //}
     }
 }

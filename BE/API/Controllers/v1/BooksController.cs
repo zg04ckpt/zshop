@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers.v1
 {
-    [Route("api/v1/books")]
+    [Route("api/v{version:apiVersion}/books")]
     [ApiController]
+    [ApiVersion("1.0")]
     public class BooksController : ControllerBase
     {
         private readonly IBookService _bookService;
@@ -78,7 +79,48 @@ namespace API.Controllers.v1
             return Ok(await _bookService.ReviewBook(data, User));
         }
 
-        // Auto
-        
+        #region Manage
+        [HttpPost("manage")]
+        [Authorize(Policy = "AllowTest")]
+        public async Task<IActionResult> CreateBook([FromForm] BookDTO data)
+        {
+            return Ok(await _bookService.CreateBook(data));
+        }
+
+        [HttpPut("manage/{id}")]
+        [Authorize(Policy = "AllowTest")]
+        public async Task<IActionResult> UpdateBook(string id, [FromForm] BookDTO data)
+        {
+            return Ok(await _bookService.UpdateBook(id, data));
+        }
+
+        [HttpDelete("manage/{id}")]
+        [Authorize(Policy = "AllowTest")]
+        public async Task<IActionResult> DeleteBook(string id)
+        {
+            return Ok(await _bookService.DeleteBook(id));
+        }
+
+        [HttpPost("manage/categories")]
+        [Authorize(Policy = "AllowTest")]
+        public async Task<IActionResult> CreateNewCategory([FromForm] CategoryDTO data)
+        {
+            return Ok(await _bookService.CreateCategory(data));
+        }
+
+        [HttpPut("manage/categories/{id}")]
+        [Authorize(Policy = "AllowTest")]
+        public async Task<IActionResult> UpdateCategory(int id, [FromForm] CategoryDTO data)
+        {
+            return Ok(await _bookService.UpdateCategory(id, data));
+        }
+
+        [HttpDelete("manage/categories/{id}")]
+        [Authorize(Policy = "AllowTest")]
+        public async Task<IActionResult> RemoveCategory(int id)
+        {
+            return Ok(await _bookService.DeleteCategory(id));
+        } 
+        #endregion
     }
 }

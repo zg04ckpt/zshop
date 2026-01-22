@@ -5,9 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers.v1
 {
-    [Route("api/v1/cart")]
+    [Route("api/v{version:apiVersion}/cart")]
     [ApiController]
     [Authorize]
+    [ApiVersion("1.0")]
     public class CartsController : ControllerBase
     {
         private readonly ICartService _cartService;

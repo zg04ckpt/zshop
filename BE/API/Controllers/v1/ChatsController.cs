@@ -9,8 +9,9 @@ using Microsoft.Extensions.Options;
 
 namespace API.Controllers.v1
 {
-    [Route("api/v1/chats")]
+    [Route("api/v{version:apiVersion}/chats")]
     [ApiController]
+    [ApiVersion("1.0")]
     public class ChatsController : ControllerBase
     {
         private readonly IChatService _chatService;
@@ -68,19 +69,19 @@ namespace API.Controllers.v1
             return Ok(res);
         }
 
-        [HttpGet("management")]
+        [HttpGet("manage")]
         public async Task<IActionResult> GetAllConversations([FromQuery] int index)
         {
             return Ok(await _chatService.GetConversationsAsync(index));
         }
 
-        [HttpGet("management/{id}")]
+        [HttpGet("manage/{id}")]
         public async Task<IActionResult> GetConversation(Guid id)
         {
             return Ok(await _chatService.GetConversationByIdAsync(id));
         }
 
-        [HttpPost("management/delete")]
+        [HttpPost("manage/delete")]
         public async Task<IActionResult> DeleteConversation(DeleteConversationsRequest request)
         {
             return Ok(await _chatService.DeleteConversationsAsync(request));

@@ -3,16 +3,19 @@ using API.Filters;
 using API.Middlewares;
 using Core.Configurations;
 using Core.DTOs.Common;
+using Core.Entities.System;
 using Core.Hubs;
 using Core.Interfaces;
 using Core.Interfaces.Repositories;
 using Core.Interfaces.Services;
 using Core.Interfaces.Services.External;
+using Core.Providers;
 using Core.Repositories.Impl;
 using Core.Services;
 using Core.Services.External;
 using Core.Utilities;
 using Data;
+using Data.Providers;
 using Data.Repositories;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -35,14 +38,22 @@ var config = builder.Configuration;
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddApiVersioning(options =>
+{
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.ReportApiVersions = true;
+});
+
 // Add config mapping
 builder.Services.Configure<JwtConfig>(config.GetSection("JwtConfig"));
 builder.Services.Configure<AuthConfig>(config.GetSection("AuthConfig"));
 builder.Services.Configure<MailConfig>(config.GetSection("MailConfig"));
 builder.Services.Configure<VNPayConfig>(config.GetSection("VNPayConfig"));
 builder.Services.Configure<PaymentConfig>(config.GetSection("PaymentConfig"));
+builder.Services.Configure<BackupConfig>(config.GetSection("BackupConfig"));
 
-// Add myserver service to the container.
+// Add mysql service to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseMySql(
@@ -147,7 +158,10 @@ builder.Services.AddAuthentication(options =>
 // Add authorization
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("OnlyAdmin", policy => policy.RequireClaim(ClaimTypes.Role, "Admin"));
+    options.AddPolicy("OnlyAdmin", 
+        policy => policy.RequireClaim(ClaimTypes.Role, RoleNames.Admin));
+    options.AddPolicy("AllowTest", policy 
+        => policy.RequireClaim(ClaimTypes.Role, RoleNames.Admin, RoleNames.Tester));
 });
 
 // Add cor
@@ -192,6 +206,9 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<SeedData>();
+builder.Services.AddScoped<IDbConnectionInfoProvider, MySqlConnectionInfoProvider>();
+builder.Services.AddScoped<IBackupService, MySqlBackupService>();
+
 
 // Add services
 builder.Services.AddTransient<IAuthService, AuthService>();
@@ -201,6 +218,8 @@ builder.Services.AddTransient<IPaymentService, PaymentService>();
 builder.Services.AddTransient<ICartService, CartService>();
 builder.Services.AddTransient<IVoucherService, VoucherService>();
 builder.Services.AddTransient<IChatService, ChatService>();
+
+//builder.Services.AddTransient<IBackupRepository, SQLServerBackupRepository>();
 
 builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddSingleton<IRedisService, RedisService>();

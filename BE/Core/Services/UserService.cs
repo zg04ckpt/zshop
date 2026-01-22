@@ -3,12 +3,10 @@ using Core.DTOs.User;
 using Core.Entities.System;
 using Core.Exceptions;
 using Core.Interfaces;
-using Core.Interfaces.Repositories;
 using Core.Interfaces.Services;
 using Core.Interfaces.Services.External;
 using Core.Utilities;
 using LinqKit;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace Core.Services
@@ -208,7 +206,7 @@ namespace Core.Services
                 filter.And(e => e.UserName.Contains(data.UserName));
             if (data.RoleId != -1)
                 filter.And(e => e.UserRoles.Any(ur => ur.RoleId == data.RoleId));
-            filter.And(e => e.IsActivated == data.IsActivated);
+            //filter.And(e => e.IsActivated == data.IsActivated);
 
             var users = await _unitOfWork.Repository<User>().GetPagingAsync(
                 predicate: filter,
@@ -242,6 +240,53 @@ namespace Core.Services
                     Name = e.Name
                 });
             return new ApiSuccessResult<RoleSelectItemDTO[]>(roles.ToArray());
+        }
+
+        public async Task<ApiResult> SetUserActive(SetUserActiveDTO data)
+        {
+            var res = await _unitOfWork.Repository<User>().GetFirstAsync(
+                predicate: e => e.Id == data.UserId,
+                selector: e => new
+                {
+                    User = e,
+                    Roles = e.UserRoles.Select(ur => ur.Role.Name)
+                })
+                ?? throw new BadRequestException("Người dùng không tồn tại");
+
+            // Check role before change active
+            if (res.Roles.Contains(RoleNames.Admin))
+            {
+                throw new BadRequestException("Không thể thay đổi trạng thái tài khoản admin");
+            }
+
+            res.User.IsActivated = data.IsActived;
+            await _unitOfWork.Repository<User>().UpdateAsync(res.User);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ApiSuccessResult($"Cập nhật thành công, đã {(data.IsActived ? "mở" : "")} khóa tài khoản");
+        }
+
+        public async Task<ApiResult> DeleteUser(Guid userId)
+        {
+            var data = await _unitOfWork.Repository<User>().GetFirstAsync(
+                predicate: e => e.Id == userId,
+                selector: e => new
+                {
+                    User = e,
+                    Roles = e.UserRoles.Select(ur => ur.Role.Name)
+                })
+                ?? throw new BadRequestException("Người dùng không tồn tại");
+
+            // Check role before delete
+            if (data.Roles.Contains(RoleNames.Admin) || data.Roles.Contains(RoleNames.Tester))
+            {
+                throw new BadRequestException("Không thể xóa TK admin và test");
+            }
+
+            await _unitOfWork.Repository<User>().DeleteAsync(data.User);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ApiSuccessResult($"Đã xóa người dùng");
         }
         #endregion
     }

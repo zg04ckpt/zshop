@@ -1,6 +1,7 @@
 ﻿using Core.Entities.VoucherFeature;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -9,6 +10,30 @@ namespace Core.Utilities
 {
     public class Helper
     {
+        public static async Task RunProcessAsync(string fileName, string arguments)
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    Arguments = arguments,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+            var error = await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            if (process.ExitCode != 0)
+                throw new Exception(error);
+        }
+
+
         public static string? GetIpAddressFromHubContext(HubCallerContext context)
         {
             return context.GetHttpContext()?.Connection.RemoteIpAddress?.ToString();
