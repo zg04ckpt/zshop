@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppDispatch, endLoadingStatus, startLoadingStatus } from "../../stores";
 import { showErrorToast, showSuccessToast } from "../../utils";
+import { saveToLocal } from "../../utils/localStore";
 
 export const HandleGoogleLoginCallback = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -15,11 +16,15 @@ export const HandleGoogleLoginCallback = () => {
         const isSuccess = params.get('success');
         if (isSuccess && isSuccess == 'true') {
             showSuccessToast(`Đăng nhập thành công!`);
+            saveToLocal("isLoggedIn", true);
         } else {
             showErrorToast(`Đăng nhập thất bại!`)
         }
         dispatch(endLoadingStatus());
-        nav('/');
+
+        setTimeout(() => {
+            nav('/');
+        }, 2000);
     }
 
     useEffect(() => {

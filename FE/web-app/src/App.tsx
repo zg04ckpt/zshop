@@ -12,7 +12,7 @@ import { AccountLayout } from './layout/AccountLayout';
 import { AccountAddress, AccountInfo, AccountPurchaseHistory, ManageUser, OrderHistoryDetail, PaymentHistory, ReviewBook } from './pages/user';
 import AdminLayout from './layout/AdminLayout';
 import AdminOrderLayout from './layout/AdminOrderLayout';
-import { AppDispatch, setUser, useAppContext } from './stores';
+import { AppDispatch, setUser, useAppContext, startLoadingStatus, endLoadingStatus } from './stores';
 import { getLoginInfo } from './api';
 import { setupInterceptors } from './api/config/axios';
 import TopBar from './layout/TopBar';
@@ -21,6 +21,10 @@ import { Footer } from './layout/Footer';
 import ConfirmDialog from './components/ConfirmDialog';
 import ManageVoucher from './pages/voucher/ManageVoucher';
 import CreateVoucher from './pages/voucher/CreateVoucher';
+import { ChatWidget } from './components';
+import ChatSupport from './pages/chat/ChatSupport';
+import ManageBackup from './pages/backup/ManageBackup';
+import { getFromLocal } from './utils/localStore';
 
 
 export const router = createBrowserRouter([{ 
@@ -60,6 +64,8 @@ export const router = createBrowserRouter([{
       { path: 'cate', element: <ManageCate/> },
       { path: 'voucher', element: <ManageVoucher/> },
       { path: 'voucher/create', element: <CreateVoucher/> },
+      { path: 'chat', element: <ChatSupport/> },
+      { path: 'backup', element: <ManageBackup/> },
       { path: 'order', element: <AdminOrderLayout/>, children: [
         { index: true, element: <ManageOrder/> },
         { path: 'request-cancel', element: <ManageCancelOrderRequest/> },
@@ -77,8 +83,14 @@ function App() {
   const [isApiReady, setIsApiReady] = useState<boolean>(false);
 
   const reinitUserSession = async () => {
+    
+    const isLoggedIn = getFromLocal("isLoggedIn") as boolean;
+    if (!isLoggedIn) return;
+
+    dispatch(startLoadingStatus());
     const res = await getLoginInfo();
     if (res.isSuccess) dispatch(setUser(res.data!));
+    dispatch(endLoadingStatus());
   }
   
   useEffect(() => {
@@ -89,22 +101,16 @@ function App() {
 
   return (
       <>
-          {/* Content */}
-          <TopBar/>
-          <DynamicTitle/>
-          <div style={{minHeight: '100vh'}}>
-              <div className="col-12">
-                  <Outlet context={{ isApiReady }}/>
-              </div>
-          </div>        
-          <Footer/>
-          <ScrollRestoration/>
-          
-          {/* Toast */}
-          <Toaster />
-
-          {/* Confirm dialog */}
-          <ConfirmDialog/>
+        <TopBar/>
+        <DynamicTitle/>
+        <div style={{minHeight: '100vh'}}>
+            <div className="col-12">
+                <Outlet context={{ isApiReady }}/>
+            </div>
+        </div>        
+        <ScrollRestoration/>
+        <Toaster />
+        <ConfirmDialog/>
       </>
   );
 }

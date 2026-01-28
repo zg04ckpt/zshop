@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useOutletContext } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import '../../styles/pages/ManageCancelOrderRequest.css';
-import { AppDispatch } from "../../stores";
+import { AppDispatch, startLoadingStatus, endLoadingStatus } from "../../stores";
 import { OutletContextProp } from "../../types/base";
 import { CancelOrderRequestListItemDTO } from "../../types/order";
 import { formatDate } from "../../utils/helper";
@@ -92,26 +92,32 @@ export const ManageCancelOrderRequest = () => {
     ];
 
     const load = async () => {
+        dispatch(startLoadingStatus());
         const res = await getAllCancelOrderRequests(page);
         if (res.isSuccess) {
             setRequests(res.data!.items);
             setTotalRecord(res.data!.totalItems);
             setTotalPage(res.data!.totalPages);
         }
+        dispatch(endLoadingStatus());
     }
 
     const accept = async (id: number) => {
+        dispatch(startLoadingStatus());
         if ((await acceptOrRejectCancelOrderRequest(id, true)).isSuccess) {
             showSuccessToast('Đã hủy đơn hàng');
             setRequests(pre => pre.filter(e => e.id != id));
         }
+        dispatch(endLoadingStatus());
     }
 
     const reject = async (id: number) => {
+        dispatch(startLoadingStatus());
         if ((await acceptOrRejectCancelOrderRequest(id, false)).isSuccess) {
             showSuccessToast('Đã từ chối hủy đơn hàng');
             setRequests(pre => pre.filter(e => e.id != id));
         }
+        dispatch(endLoadingStatus());
     }
 
     useEffect(() => {

@@ -14,6 +14,6 @@ namespace Core.Entities.VoucherFeature
         public DateTime ValidFrom { get; set; }
         public DateTime ValidUntil { get; set; }
         public bool IsActive { get; set; }
-        public List<Order> AppliedOrders { get; set; }
+        public List<Order> AppliedOrders { get; set; } = new List<Order>();
     }
 }

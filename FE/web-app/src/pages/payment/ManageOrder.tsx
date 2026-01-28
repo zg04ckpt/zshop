@@ -6,11 +6,11 @@ import { useDispatch } from "react-redux";
 import '../../styles/pages/ManageOrder.css';
 import { endOfDay, endOfMonth, endOfWeek, startOfDay, startOfMonth, startOfWeek } from "date-fns";
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AppDispatch } from "../../stores";
+import { AppDispatch, startLoadingStatus, endLoadingStatus } from "../../stores";
 import { OutletContextProp } from "../../types/base";
 import { OrderStatus, PaymentMethod, PaymentStatus, SystemOrdersDTO } from "../../types/order";
 import { getSystemOrders, setOrderStatus } from "../../api";
-import { showSuccessToast } from "../../utils";
+import { showErrorToast, showSuccessToast } from "../../utils";
 import { formatDate } from "../../utils/helper";
 import Button from "../../components/Button";
 import Pagination from "../../components/Pagination";
@@ -33,6 +33,7 @@ export const ManageOrder = () => {
         params.get('time') as TimeOption ?? 'Today');
 
     const load = async () => {
+        dispatch(startLoadingStatus());
         const res = await getSystemOrders({
             pageIndex: page, pageSize: size, 
             status: filterStatus == '--'? null: filterStatus,
@@ -40,14 +41,19 @@ export const ManageOrder = () => {
             endDate
         });
         setData(res.data!);
+        dispatch(endLoadingStatus());
     }
 
     const setStatus = async (orderId: string, status: OrderStatus) => {
+        dispatch(startLoadingStatus());
         const res =await setOrderStatus(orderId, status);
         if (res.isSuccess) {
             showSuccessToast("Cập nhật trạng thái đơn hàng thành công.");   
             load();
+        } else {
+            showErrorToast(res.message || "Cập nhật trạng thái đơn hàng thất bại");
         }
+        dispatch(endLoadingStatus());
     }
 
     useEffect(() => {

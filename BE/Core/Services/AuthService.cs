@@ -43,6 +43,11 @@ namespace Core.Services
             var user = await userRepo.GetFirstAsync(e => e.Email == data.Email)
                 ?? throw new BadRequestException("Email không tồn tại");
 
+            if (!user.IsActivated)
+            {
+                throw new ForbbidenException();
+            }
+
             // Check email confirm
             if (!user.IsEmailComfirmed)
             {
@@ -220,10 +225,15 @@ namespace Core.Services
             if (user.IsEmailComfirmed)
                 throw new BadRequestException("Email đã được xác thực.");
 
-            if (await _redisService.ExistsAsync(KeySet.RedisType.CONFIRM_EMAIL, user.Email))
+            // Check if there is an existing code, delete it 
+            string? existingCode = await _redisService.Get(KeySet.RedisType.CONFIRM_EMAIL, user.Email);
+            if (!string.IsNullOrEmpty(existingCode))
+            {
+                await _redisService.Delete(KeySet.RedisType.CONFIRM_EMAIL, user.Email);
+            }
 
-                if (!await AuthenticateUserEmail(user))
-                    throw new InternalServerErrorException("Gửi thất bại, vui lòng thử lại.");
+            if (!await AuthenticateUserEmail(user))
+                throw new InternalServerErrorException("Gửi thất bại, vui lòng thử lại.");
 
             return new ApiSuccessResult("Gửi thành công");
         }
@@ -234,6 +244,13 @@ namespace Core.Services
 
             User user = await userRepo.GetFirstAsync(e => e.Email == email)
                 ?? throw new BadRequestException("Người dùng không tồn tại");
+
+            // Check if there is an existing code in Redis, delete it if exists
+            string? existingCode = await _redisService.Get(KeySet.RedisType.RESET_PASS, user.Id.ToString());
+            if (!string.IsNullOrEmpty(existingCode))
+            {
+                await _redisService.Delete(KeySet.RedisType.RESET_PASS, user.Id.ToString());
+            }
 
             // Generate 6 digit chars, save to _redis and send to user email
             string code = Helper.GenerateRandomToken("0123456789", 6);

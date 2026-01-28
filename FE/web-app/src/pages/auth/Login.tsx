@@ -6,6 +6,7 @@ import { login, loginWithGoogle } from "../../api";
 import { AppDispatch, setUser } from "../../stores";
 import { showErrorToast, showSuccessToast } from "../../utils";
 import { Loading, ValidatableInput } from "../../components";
+import { saveToLocal } from "../../utils/localStore";
 
 export const Login = () => {
     const navigate = useNavigate();
@@ -35,6 +36,7 @@ export const Login = () => {
         if (res.isSuccess) {
             // emit user state
             dispatch(setUser(res.data!));
+            saveToLocal("isLoggedIn", true);
             showSuccessToast(`Đăng nhập thành công, xin chào ${res.data!.firstName}`);
             navigate((param.get('return_url') || '/'));
         } else {

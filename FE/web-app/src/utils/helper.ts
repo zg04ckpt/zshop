@@ -119,10 +119,9 @@ export const convertDateToTimeSpan = (date: Date): string => {
 };
 
 export const formatDate = (val: any, pattern: string) => {
+    debugger
     if (!val) return null;
-    
     try {
-        // Handle different date formats
         let dateObj: Date;
         
         if (val instanceof Date) {

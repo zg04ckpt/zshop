@@ -2,8 +2,11 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { ApiResult } from "../../types/api";
 import { logout, refreshToken } from "../auth";
 import { showInfoToast, showSuccessToast } from "../../utils";
-import { endLoadingStatus, setUser, useAppContext } from "../../stores";
+import { endLoadingStatus, RootState, setUser, store, useAppContext } from "../../stores";
 import { toCamelCase } from "../../utils/helper";
+import { LocalUser } from "../../types/auth";
+import { useSelector } from "react-redux";
+import { getFromLocal, saveToLocal } from "../../utils/localStore";
 
 const axiosInstance = axios.create({
 	baseURL: process.env.REACT_APP_API_BASE_URL,
@@ -64,6 +67,7 @@ export const del = async <T = void>(url: string): Promise<ApiResult<T>> => {
 
 
 export const setupInterceptors = (navigate: any, location: any, dispatch: any, context: any) => {
+	
 
 	// Request interceptor
 	axiosInstance.interceptors.request.use((config) => {
@@ -79,7 +83,7 @@ export const setupInterceptors = (navigate: any, location: any, dispatch: any, c
 		async (error: AxiosError) => {
 			const apiError = error as AxiosError;
 			const originalRequest = apiError.config!;
-
+			debugger
 			if (apiError.response?.status === 403) {
 				navigate("/forbidden");
 				return
@@ -91,20 +95,28 @@ export const setupInterceptors = (navigate: any, location: any, dispatch: any, c
 						return axiosInstance(originalRequest);
 					}
 				} else {
+					const isLoggedIn = getFromLocal("isLoggedIn") as boolean;
+					let mess = "Phiên đăng nhập đã hết hạn? Bạn có muốn đăng nhập lại không?";
+					if (!isLoggedIn) {
+						mess = "Đăng nhập để tiếp tục?"
+					}
+					debugger
                     dispatch(setUser(null));
                     dispatch(endLoadingStatus());
 					context?.showConfirmDialog({
-						message: "Phiên đăng nhập đã hết hạn? Bạn có muốn đăng nhập lại không?",
+						message: mess,
 						onConfirm: () => {
                     		navigate(`/login?return_url=${encodeURIComponent(location.pathname)}`);
 							showInfoToast("Vui lòng đăng nhập để tiếp tục.");
 						},
-						onReject: () => {
+						onReject: async () => {
+							await logout();
 							showSuccessToast("Đã đăng xuất");
+							saveToLocal("isLoggedIn", false);
 							navigate("/");
 						}
 					});
-                    return null
+                    return null;
 				}
 			}
 

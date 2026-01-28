@@ -24,6 +24,7 @@ export const ConfirmEmail = () => {
     }, []);
 
     const handleResendConfirmEmail = async () => {
+        setApiLoading(true);
         const result = await resendConfirmEmailCode(email!);
         if(result.isSuccess) {
             setRemaining(60);
@@ -37,6 +38,7 @@ export const ConfirmEmail = () => {
                 });
             }, 1000);
         }
+        setApiLoading(false);
     };
 
     const handleConfirmEmailAction = async () => {
@@ -45,9 +47,12 @@ export const ConfirmEmail = () => {
             return;
         }
         setApiLoading(true);
-        if (await confirmEmail({email: email!, code: code})) {
+        const res = await confirmEmail({email: email!, code: code}); 
+        if (res.isSuccess) {
             showSuccessToast(`Xác thực thành công, vui lòng đăng nhập`);
             navigate('/' + returnUrl || '');
+        } else {
+            showErrorToast(res.message || "Lỗi khi xác thực email");
         }
         setApiLoading(false);
     }

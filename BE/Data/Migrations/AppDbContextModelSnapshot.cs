@@ -205,6 +205,58 @@ namespace Data.Migrations
                     b.ToTable("ReviewMedias", (string)null);
                 });
 
+            modelBuilder.Entity("Core.Entities.ChatFeature.Conversation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Conversations", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Entities.ChatFeature.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<Guid>("ConvertsationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConvertsationId", "Timestamp");
+
+                    b.ToTable("Messages", (string)null);
+                });
+
             modelBuilder.Entity("Core.Entities.PaymentFeature.CancelOrderRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -638,6 +690,26 @@ namespace Data.Migrations
                     b.Navigation("Review");
                 });
 
+            modelBuilder.Entity("Core.Entities.ChatFeature.Conversation", b =>
+                {
+                    b.HasOne("Core.Entities.System.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Core.Entities.ChatFeature.Message", b =>
+                {
+                    b.HasOne("Core.Entities.ChatFeature.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConvertsationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+                });
+
             modelBuilder.Entity("Core.Entities.PaymentFeature.CancelOrderRequest", b =>
                 {
                     b.HasOne("Core.Entities.PaymentFeature.Order", "Order")
@@ -787,6 +859,11 @@ namespace Data.Migrations
             modelBuilder.Entity("Core.Entities.BookFeature.Review", b =>
                 {
                     b.Navigation("ReviewMedias");
+                });
+
+            modelBuilder.Entity("Core.Entities.ChatFeature.Conversation", b =>
+                {
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("Core.Entities.PaymentFeature.Cart", b =>

@@ -1,17 +1,16 @@
-﻿using API.Middlewares;
-using Core.Configurations;
+﻿using Core.Configurations;
 using Core.DTOs.Auth;
 using Core.DTOs.Common;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace API.Controllers.v1
 {
-    [Route("api/v1/auth")]
+    [Route("api/v{version:apiVersion}/auth")]
     [ApiController]
+    [ApiVersion("1.0")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService authService;
@@ -48,7 +47,7 @@ namespace API.Controllers.v1
             if (!Request.Headers.ContainsKey("Authorization") 
                 || string.IsNullOrEmpty(Request.Headers["Authorization"]))
             {
-                return BadRequest(new ApiErrorResult("Người dùng chưa đăng nhập"));
+                return Unauthorized(new ApiErrorResult("Người dùng chưa đăng nhập"));
             }
             return Ok(await authService.GetLoginInfo(User));
         }
@@ -71,11 +70,9 @@ namespace API.Controllers.v1
         public async Task<IActionResult> Logout()
         {
             var accessToken = Request.Cookies["AccessToken"];
-            if (accessToken != null)
-            {
-                Response.Cookies.Delete("AccessToken");
-                Response.Cookies.Delete("RefreshToken");
-            }
+            Response.Cookies.Delete("AccessToken");
+            Response.Cookies.Delete("RefreshToken");
+            Response.Cookies.Delete("ConversationId");
             return Ok(await authService.LogOut(accessToken));
         }
 

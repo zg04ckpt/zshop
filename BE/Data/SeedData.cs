@@ -45,7 +45,12 @@ namespace Data
                 var userRepo = _unitOfWork.Users;
 
                 // InitAsync default roles
-                string[] roles = new[] { "Admin", "User", "Seller" };
+                string[] roles = new[] {
+                    RoleNames.Admin,
+                    RoleNames.User,
+                    RoleNames.Seller,
+                    RoleNames.Tester,
+                };
                 foreach (string role in roles)
                 {
                     if (!await roleRepo.ExistsAsync(e => e.Name.ToLower() == role.ToLower()))
@@ -75,8 +80,31 @@ namespace Data
                         UpdatedAt = DateTime.UtcNow,
                     };
 
-                    await userRepo.AddUserRoles(admin, "admin");
+                    await userRepo.AddUserRoles(admin, RoleNames.Admin);
                     await userRepo.AddAsync(admin);
+                }
+
+                if (!await userRepo.ExistsAsync(e => e.UserName == "tester"))
+                {
+                    var tester = new User()
+                    {
+                        Id = Guid.NewGuid(),
+                        FirstName = "Hoàng Văn",
+                        LastName = "Tester",
+                        Email = "test@zshop.com",
+                        UserName = "tester",
+                        Gender = Gender.Male,
+                        Password = Helper.HashPassword("test"),
+                        PhoneNumber = "0000000000",
+                        IsEmailComfirmed = true,
+                        IsActivated = true,
+                        AccessFailedCount = 0,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                    };
+
+                    await userRepo.AddUserRoles(tester, RoleNames.Tester);
+                    await userRepo.AddAsync(tester);
                 }
 
                 await _unitOfWork.CommitTransactionAsync();

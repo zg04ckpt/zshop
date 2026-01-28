@@ -3,7 +3,7 @@ import '../../styles/pages/OrderHistoryDetail.css';
 import { useNavigate, useOutletContext, useParams, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Dialog, DialogContent, DialogTitle, FormControlLabel, Radio, RadioGroup, Step, StepLabel, Stepper } from "@mui/material";
-import { AppDispatch, RootState } from "../../stores";
+import { AppDispatch, RootState, startLoadingStatus, endLoadingStatus } from "../../stores";
 import { OutletContextProp } from "../../types/base";
 import { CancelOrderRequest, OrderHistoryDetailDTO, OrderStatus, PaymentMethod, PaymentStatus } from "../../types/order";
 import { cancelOrder, getOrderHistory, getOrderHistoryDetail } from "../../api";
@@ -46,12 +46,14 @@ export const OrderHistoryDetail = () => {
     const user = useSelector((state: RootState) => state.auth.user);
 
     const init = async () => {
+        dispatch(startLoadingStatus());
         const id = param.get('id');
         setOrderId(id);
         const res = await getOrderHistoryDetail(id!);
         if (res.isSuccess) {
             setDetail(res.data!);
         }
+        dispatch(endLoadingStatus());
     }
 
     const getPaymentStatus = (status: PaymentStatus) => {
@@ -103,6 +105,7 @@ export const OrderHistoryDetail = () => {
         if (!cancelData!.reason) {
             cancelData!.reason = otherReasonRef.current!.value;
         }
+        dispatch(startLoadingStatus());
         const result = await cancelOrder(cancelData!);
         if (result.isSuccess) {
             showSuccessToast(result.message!, 3000);
@@ -111,6 +114,7 @@ export const OrderHistoryDetail = () => {
         } else {
             showErrorToast(result.message!, 3000);
         }
+        dispatch(endLoadingStatus());
     }
 
     useEffect(() => {

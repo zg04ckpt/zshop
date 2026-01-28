@@ -7,7 +7,7 @@ import { flushSync } from "react-dom";
 import { debounce, throttle } from "lodash";
 import { BookListItemDTO, CategorySelectItemDTO } from "../../types/book";
 import { OutletContextProp } from "../../types/base";
-import { AppDispatch } from "../../stores";
+import { AppDispatch, startLoadingStatus, endLoadingStatus } from "../../stores";
 import { getBooks, getCategories } from "../../api";
 import { scrollToTop } from "../../utils/helper";
 import Button from "../../components/Button";
@@ -56,15 +56,18 @@ export const Search = () => {
 
     // init cate list
     const initCate = async () => {
+        dispatch(startLoadingStatus());
         const cateData = await getCategories()
         setCategories(cateData.data!.map(e => ({
             ... e,
             isChecked: e.id == Number(params.get('cate'))
         })));
+        dispatch(endLoadingStatus());
     }
 
     // load from api
     const load = async () => {
+        dispatch(startLoadingStatus());
         const res = await getBooks({
             name, maxPrice, 
             minPrice, pageIndex: page, pageSize: size, sortBy, order,
@@ -79,6 +82,7 @@ export const Search = () => {
             scrollToTop();
             if (categories.length == 0) initCate();
         }
+        dispatch(endLoadingStatus());
     }
     
     const reset = () => {

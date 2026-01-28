@@ -3,37 +3,47 @@ using API.Filters;
 using API.Middlewares;
 using Core.Configurations;
 using Core.DTOs.Common;
+using Core.Entities.System;
+using Core.Hubs;
 using Core.Interfaces;
 using Core.Interfaces.Repositories;
 using Core.Interfaces.Services;
 using Core.Interfaces.Services.External;
+using Core.Providers;
 using Core.Repositories.Impl;
 using Core.Services;
 using Core.Services.External;
 using Core.Utilities;
 using Data;
+using Data.Providers;
 using Data.Repositories;
-using Hangfire;
-using Hangfire.MySql;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
 using StackExchange.Redis;
 using System.Security.Claims;
 using System.Text;
-using System.Transactions;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddApiVersioning(options =>
+{
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.ReportApiVersions = true;
+});
 
 // Add config mapping
 builder.Services.Configure<JwtConfig>(config.GetSection("JwtConfig"));
@@ -41,8 +51,9 @@ builder.Services.Configure<AuthConfig>(config.GetSection("AuthConfig"));
 builder.Services.Configure<MailConfig>(config.GetSection("MailConfig"));
 builder.Services.Configure<VNPayConfig>(config.GetSection("VNPayConfig"));
 builder.Services.Configure<PaymentConfig>(config.GetSection("PaymentConfig"));
+builder.Services.Configure<BackupConfig>(config.GetSection("BackupConfig"));
 
-// Add myserver service to the container.
+// Add mysql service to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseMySql(
@@ -81,6 +92,16 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     return ConnectionMultiplexer.Connect(redisConfig);
 });
 
+// Add SignalR
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
+})
+.AddHubOptions<ChatHub>(o =>
+{
+    o.AddFilter<HubExceptionFilter>();
+});
+
 // Add authentication jwt
 builder.Services.AddAuthentication(options =>
 {
@@ -103,6 +124,23 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("SecretKey")!))
     };
+
+    option.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var path = context.HttpContext.Request.Path;
+            if (path.StartsWithSegments("/hubs"))
+            {
+                var accessToken = context.Request.Cookies["AccessToken"];
+                if (!string.IsNullOrEmpty(accessToken))
+                {
+                    context.Token = accessToken;
+                }
+            }
+            return Task.CompletedTask;
+        }
+    };
 })
 .AddCookie(options =>
 {
@@ -120,7 +158,10 @@ builder.Services.AddAuthentication(options =>
 // Add authorization
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("OnlyAdmin", policy => policy.RequireClaim(ClaimTypes.Role, "Admin"));
+    options.AddPolicy("OnlyAdmin", 
+        policy => policy.RequireClaim(ClaimTypes.Role, RoleNames.Admin));
+    options.AddPolicy("AllowTest", policy 
+        => policy.RequireClaim(ClaimTypes.Role, RoleNames.Admin, RoleNames.Tester));
 });
 
 // Add cor
@@ -165,16 +206,9 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<SeedData>();
+builder.Services.AddScoped<IDbConnectionInfoProvider, MySqlConnectionInfoProvider>();
+builder.Services.AddScoped<IBackupService, MySqlBackupService>();
 
-//builder.Services.AddScoped<IRoleRepository, RoleRepository>();
-//builder.Services.AddScoped<IAddressRepository, AddressRepository>();
-//builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-//builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
-//builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
-//builder.Services.AddScoped<ICancelOrderRequestRespository, CancelOrderRequestRepository>();
-//builder.Services.AddScoped<ICartRepository, CartRepository>();
-//builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
-//builder.Services.AddScoped<IVoucherRepository, VoucherRepository>();
 
 // Add services
 builder.Services.AddTransient<IAuthService, AuthService>();
@@ -183,12 +217,16 @@ builder.Services.AddTransient<IBookService, BookService>();
 builder.Services.AddTransient<IPaymentService, PaymentService>();
 builder.Services.AddTransient<ICartService, CartService>();
 builder.Services.AddTransient<IVoucherService, VoucherService>();
+builder.Services.AddTransient<IChatService, ChatService>();
+
+//builder.Services.AddTransient<IBackupRepository, SQLServerBackupRepository>();
 
 builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddSingleton<IRedisService, RedisService>();
 builder.Services.AddSingleton<IStorageService, StorageService>();
 builder.Services.AddSingleton<IMailService, MailService>();
 builder.Services.AddSingleton<IVNAddressDataService, VNAddressDataService>();
+builder.Services.AddSingleton<ChatConnnectionStoreService>();
 
 // Add middleware
 builder.Services.AddSingleton<JwtCookieMiddleware>();
@@ -262,10 +300,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
 app.UseCors("AllowWebClient");
-
 app.UseHttpsRedirection();
-
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<JwtCookieMiddleware>();
 
@@ -273,6 +310,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChatHub>(ChatHub.URL);
 
 using var scope = app.Services.CreateScope();
 var seeder = scope.ServiceProvider.GetRequiredService<SeedData>();

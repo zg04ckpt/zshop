@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Dialog, DialogContent, DialogTitle, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import { CancelOrderRequest, OrderHistoryListItemDTO, OrderStatus, PaymentMethod, PaymentStatus } from '../../types/order';
-import { AppDispatch } from '../../stores';
+import { AppDispatch, startLoadingStatus, endLoadingStatus } from '../../stores';
 import { OutletContextProp } from '../../types/base';
 import { formatDate } from '../../utils/helper';
 import Button from '../../components/Button';
@@ -177,24 +177,28 @@ export const PaymentHistory = () => {
     const otherReasonRef = React.useRef<HTMLTextAreaElement>(null);
 
     const load = async () => {
+        dispatch(startLoadingStatus());
         const res = await getOrderHistory(page, size);
         if (res.isSuccess) {
             setOrders(res.data!.items);
             setTotalRecord(res.data!.totalItems);
             setTotalPage(res.data!.totalPages);
         }
+        dispatch(endLoadingStatus());
     }
 
     const requestCancelOrder = async () => {
         if (!cancelData!.reason) {
             cancelData!.reason = otherReasonRef.current!.value;
         }
+        dispatch(startLoadingStatus());
         const result = await cancelOrder(cancelData!);
         if (result) {
             showSuccessToast(result.message!, 3000);
             setCancelData(null);
             load();
         }
+        dispatch(endLoadingStatus());
     }
 
     useEffect(() => {
