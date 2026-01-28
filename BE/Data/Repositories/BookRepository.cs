@@ -1,15 +1,15 @@
 ﻿using Core.DTOs.Book;
 using Core.Entities.BookFeature;
+using Core.Entities.PaymentFeature;
 using Core.Exceptions;
 using Core.Interfaces.Repositories;
 using Core.Interfaces.Services.External;
-using Core.Repositories.Impl;
 using Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data.Repositories
 {
-    public class BookRepository : BaseRepository<Book, Guid>, IBookRepository
+    public class BookRepository : Repository<Book>, IBookRepository
     {
         public BookRepository(AppDbContext context) : base(context)
         {
@@ -21,13 +21,13 @@ namespace Data.Repositories
                 throw new BadRequestException("Mã danh mục bị trùng");
 
             // To check cate if id is exist
-            var validIds = context.Categories.Select(c => c.Id).ToHashSet();
+            var validIds = _context.Set<Category>().Select(c => c.Id).ToHashSet();
 
             foreach (var id in categoryIds)
             {
                 if (!validIds.Contains(id))
                     throw new BadRequestException("Mã danh mục không hợp lệ");
-                await context.BookCategories.AddAsync(new BookCategory
+                await _context.Set<BookCategory>().AddAsync(new BookCategory
                 {
                     BookId = bookId,
                     CategoryId = id
@@ -38,7 +38,7 @@ namespace Data.Repositories
         public async Task CreateOrUpdateBookImages(Guid bookId,
             List<CreateOrUpdateBookImageListItemDTO> images, IStorageService storageService)
         {
-            var map =  await context.BookImages
+            var map =  await _context.Set<BookImage>()
                 .Where(e => e.BookId == bookId)
                 .ToDictionaryAsync(e => e.Id);
 
@@ -52,7 +52,7 @@ namespace Data.Repositories
                         throw new BadRequestException("Dữ liệu ảnh mới trống");
                     }
 
-                    await context.BookImages.AddAsync(new BookImage
+                    await _context.Set<BookImage>().AddAsync(new BookImage
                     {
                         BookId = bookId,
                         ImageUrl = await storageService.SaveImage(image.Image)
@@ -64,14 +64,13 @@ namespace Data.Repositories
                     // Update existing
                     if (map.TryGetValue(image.Id, out var oldImage))
                     {
-                        // If Id != null and Image file != null => Update image
                         if (image.Image != null)
                         {
                             if (!await storageService.RemoveImage(oldImage.ImageUrl))
                                 throw new InternalServerErrorException("Xóa ảnh minh họa cũ thất bại.");
                             oldImage.ImageUrl = await storageService.SaveImage(image.Image)
                                 ?? throw new InternalServerErrorException("Cập nhật ảnh minh họa thất bại.");
-                            context.BookImages.Update(oldImage);
+                            _context.Set<BookImage>().Update(oldImage);
                         }
                         map.Remove(image.Id);
                     } 
@@ -87,13 +86,13 @@ namespace Data.Repositories
             {
                 if (!await storageService.RemoveImage(image.ImageUrl))
                     throw new InternalServerErrorException("Xóa ảnh minh họa cũ thất bại.");
-                context.BookImages.Remove(image);
+                _context.Set<BookImage>().Remove(image);
             }
         }
 
         public async Task<BoughtBookListItemDTO[]> GetBoughtBooks(Guid userId)
         {
-            var books = await context.OrderDetails.AsNoTracking()
+            var books = await _context.Set<OrderDetail>().AsNoTracking()
                 .AsSplitQuery()
                 .Where(e => 
                     e.Order.CustomerId == userId &&
@@ -110,7 +109,7 @@ namespace Data.Repositories
                     LastPurchasedAt = g.Max(g => g.PurchasedDate),
                     PurchaseCount = g.Count()
                 })
-                .Join(context.Books, g => g.BookId, b => b.Id, (g, b) => new BoughtBookListItemDTO
+                .Join(_context.Set<Book>(), g => g.BookId, b => b.Id, (g, b) => new BoughtBookListItemDTO
                 {
                     Id = b.Id,
                     Name = b.Name,
@@ -131,7 +130,7 @@ namespace Data.Repositories
 
         public async Task<BookListItemDTO[]> GetNewest(int count)
         {
-            var books = await context.Books.AsSplitQuery()
+            var books = await _context.Set<Book>().AsSplitQuery()
                 .OrderByDescending(e => e.CreatedAt)
                 .Take(count)
                 .Select(e => new BookListItemDTO
@@ -152,7 +151,7 @@ namespace Data.Repositories
 
         public async Task<BookListItemDTO[]> GetRandom(int count)
         {
-            var books = await context.Books
+            var books = await _context.Set<Book>()
                 .AsSplitQuery()
                 .OrderBy(e => Guid.NewGuid())
                 .Take(count)
@@ -175,7 +174,7 @@ namespace Data.Repositories
 
         public async Task<BookListItemDTO[]> GetTopSell(int count)
         {
-            var books = await context.Books
+            var books = await _context.Set<Book>()
                 .AsSplitQuery()
                 .OrderByDescending(e => e.SoldCount)
                 .Take(count)
@@ -198,7 +197,7 @@ namespace Data.Repositories
         public async Task SetRemainingBooksInStock(Guid bookId, int purchasedCount)
         {
             // Tìm sách theo bookId
-            var book = await context.Books
+            var book = await _context.Set<Book>()
                 .FirstOrDefaultAsync(b => b.Id == bookId) 
                 ?? throw new BadRequestException($"Book with ID {bookId} not found.");
 
@@ -207,7 +206,7 @@ namespace Data.Repositories
             book.StockCount -= purchasedCount;
             book.UpdatedAt = DateTime.UtcNow;
 
-            context.Books.Update(book);
+            _context.Set<Book>().Update(book);
         }
 
         public async Task UpdateCategory(Guid bookId, int[] categoryIds)
@@ -216,11 +215,11 @@ namespace Data.Repositories
                 throw new BadRequestException("Mã danh mục bị trùng");
 
             // To check cate if id is exist
-            var validIds = context.Categories
+            var validIds = _context.Set<Category>()
                 .Select(c => c.Id)
                 .ToHashSet();
 
-            var oldCategories = await context.BookCategories
+            var oldCategories = await _context.Set<BookCategory>()
                 .Where(c => c.BookId == bookId)
                 .ToDictionaryAsync(e => e.CategoryId);
 
@@ -234,7 +233,7 @@ namespace Data.Repositories
                 }
                 else
                 {
-                    await context.BookCategories.AddAsync(new BookCategory
+                    await _context.Set<BookCategory>().AddAsync(new BookCategory
                     {
                         BookId = bookId,
                         CategoryId = id
@@ -244,7 +243,7 @@ namespace Data.Repositories
             }
 
             // The remaining is categories need to be removed 
-            context.BookCategories.RemoveRange(oldCategories.Values);
+            _context.Set<BookCategory>().RemoveRange(oldCategories.Values);
         }
     }
 }

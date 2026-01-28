@@ -179,9 +179,9 @@ export const PaymentHistory = () => {
     const load = async () => {
         const res = await getOrderHistory(page, size);
         if (res.isSuccess) {
-            setOrders(res.data!.data);
-            setTotalRecord(res.data!.totalRecord);
-            setTotalPage(res.data!.totalPage);
+            setOrders(res.data!.items);
+            setTotalRecord(res.data!.totalItems);
+            setTotalPage(res.data!.totalPages);
         }
     }
 

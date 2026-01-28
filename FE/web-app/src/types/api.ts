@@ -19,15 +19,17 @@ export interface ApiResult<T=void> {
     errors?: any;
 }
 
-export interface BasePaging
+export interface PagingRequest
 {
-    page: number;
-    size: number;
+    pageIndex: number;
+    pageSize: number;
 }
 
 export interface Paginated<T>
 {
-    totalRecord: number;
-    totalPage: number;
-    data: T[];
+    totalItems: number;
+    totalPages: number;
+    pageIndex: number;
+    pageSize: number;
+    items: T[];
 }

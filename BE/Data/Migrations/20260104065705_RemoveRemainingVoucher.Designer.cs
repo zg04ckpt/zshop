@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251219141458_UpdateBookReview")]
-    partial class UpdateBookReview
+    [Migration("20260104065705_RemoveRemainingVoucher")]
+    partial class RemoveRemainingVoucher
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -115,7 +115,7 @@ namespace Data.Migrations
 
                     b.HasIndex("BookId");
 
-                    b.ToTable("BookImages");
+                    b.ToTable("BookImages", (string)null);
                 });
 
             modelBuilder.Entity("Core.Entities.BookFeature.Category", b =>
@@ -557,9 +557,6 @@ namespace Data.Migrations
                         .HasColumnType("varchar(100)");
 
                     b.Property<int?>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("RemainingQuantity")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ValidFrom")

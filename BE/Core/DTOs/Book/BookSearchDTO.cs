@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Core.DTOs.Book
 {
-    public class BookSearchDTO : BasePaging
+    public class BookSearchDTO : PagingRequest
     {
         public string? Name { get; set; }
         public decimal? MinPrice { get; set; }

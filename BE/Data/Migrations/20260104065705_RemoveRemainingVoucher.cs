@@ -4,25 +4,22 @@
 
 namespace Data.Migrations
 {
-    public partial class RemoveFixedStatus : Migration
+    public partial class RemoveRemainingVoucher : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Status",
+                name: "RemainingQuantity",
                 table: "Vouchers");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "Status",
+            migrationBuilder.AddColumn<int>(
+                name: "RemainingQuantity",
                 table: "Vouchers",
-                type: "varchar(20)",
-                maxLength: 20,
-                nullable: false,
-                defaultValue: "")
-                .Annotation("MySql:CharSet", "utf8mb4");
+                type: "int",
+                nullable: true);
         }
     }
 }

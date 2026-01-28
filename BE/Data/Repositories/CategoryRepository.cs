@@ -3,11 +3,11 @@ using Core.Entities.BookFeature;
 using Microsoft.EntityFrameworkCore;
 using Core.Interfaces.Repositories;
 using Core.DTOs.Book;
-using Microsoft.EntityFrameworkCore.Internal;
+using Data.Repositories;
 
 namespace Core.Repositories.Impl
 {
-    public class CategoryRepository : BaseRepository<Category, int>, ICategoryRepository
+    public class CategoryRepository : Repository<Category>, ICategoryRepository
     {
         public CategoryRepository(AppDbContext context) : base(context)
         {
@@ -15,9 +15,9 @@ namespace Core.Repositories.Impl
 
         public async Task<CategoryListItemDTO[]> GetTopSell(int count)
         {
-            var books = await context.BookCategories.AsNoTracking()
+            var books = await _context.Set<BookCategory>().AsNoTracking()
                 .Join(
-                    context.Books,
+                    _context.Set<Book>(),
                     bc => bc.BookId,
                     b => b.Id,
                     (bc, b) => new {
@@ -33,7 +33,7 @@ namespace Core.Repositories.Impl
                 .OrderByDescending(g => g.TotalSoldCount)
                 .Take(count)
                 .Join(
-                      context.Categories,
+                      _context.Set<Category>(),
                       g => g.CategoryId,
                       c => c.Id,
                       (g, c) => new CategoryListItemDTO
@@ -52,7 +52,7 @@ namespace Core.Repositories.Impl
 
         public async Task<bool> HasBookInCate(int cateId)
         {
-            return await context.BookCategories.AnyAsync(e => e.CategoryId == cateId);
+            return await _context.Set<BookCategory>().AnyAsync(e => e.CategoryId == cateId);
         }
     }
 }

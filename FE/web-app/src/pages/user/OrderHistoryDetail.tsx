@@ -54,16 +54,6 @@ export const OrderHistoryDetail = () => {
         }
     }
 
-    const getOrderStatus = (status: OrderStatus) => {
-        if (status == 'Created') return <>Chưa gửi</>;
-        if (status == 'Placed') return <>Chờ xác nhận</>;
-        if (status == 'Accepted') return <>Đã xác nhận</>;
-        if (status == 'InProgress') return <>Đang đóng gói</>;
-        if (status == 'Shipping') return <>Đang vận chuyển</>;
-        if (status == 'Delivered') return <>Đã giao</>;
-        if (status == 'Cancelled') return <>Đã hủy</>;
-    }
-
     const getPaymentStatus = (status: PaymentStatus) => {
         if (status == 'Unpaid') return <span className='gray-tag'>Chưa thanh toán</span>
         if (status == 'Paid') return <span className='green-tag'>Đã thanh toán</span>
@@ -199,7 +189,7 @@ export const OrderHistoryDetail = () => {
                         ))}
                     </Stepper>
 
-                    <label className="fw-bold mt-3">Địa chỉ nhận hàng:</label>
+                    <label className="fw-bold mt-3"><i className='bx  bx-location-alt-2'></i> Địa chỉ nhận hàng:</label>
                     { detail.address && <>
                         <div className="d-flex flex-column address p-2 position-relative">
                             <div className="d-flex align-items-center">
@@ -216,7 +206,7 @@ export const OrderHistoryDetail = () => {
                         </div>
                     </> }
 
-                    <label className="fw-bold mt-3">Lịch sử giao dịch:</label>
+                    <label className="fw-bold mt-3"><i className='bx bx-history'></i> Lịch sử giao dịch:</label>
                     { detail.transactions && <>
                         <table className="table">
                             <thead>
@@ -246,7 +236,7 @@ export const OrderHistoryDetail = () => {
                         </table>
                     </> }
 
-                    <label className="fw-bold">Chi tiết:</label>
+                    <label className="fw-bold"><i className='bx bx-list'></i> Chi tiết:</label>
                     <table className="table">
                         <thead>
                             <tr>

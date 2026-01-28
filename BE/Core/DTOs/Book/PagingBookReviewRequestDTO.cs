@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Core.DTOs.Book
 {
-    public class PagingBookReviewRequestDTO : BasePaging
+    public class PagingBookReviewRequestDTO : PagingRequest
     {
     }
 }

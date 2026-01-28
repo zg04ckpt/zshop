@@ -8,22 +8,22 @@ export const Header = () => {
     const banners = [
         {
             id: 1,
-            url: 'https://res.cloudinary.com/dvk5yt0oi/image/upload/v1744384919/zshop/images/wmuqz6rsmy5lvmbp8fdh.png',
+            url: 'https://res.cloudinary.com/dvk5yt0oi/image/upload/v1767920067/SaiGonBook_Resize_KC_840x320_iql1n5.webp',
             label: 'Banner 1',
         },
         {
             id: 2,
-            url: 'https://res.cloudinary.com/dvk5yt0oi/image/upload/v1744384919/zshop/images/rsz2izzusfeun0otkvuk.webp',
+            url: 'https://res.cloudinary.com/dvk5yt0oi/image/upload/v1767920067/TrangUuDai_T1_umphzx.webp',
             label: 'Banner 2',
         },
         {
             id: 3,
-            url: 'https://res.cloudinary.com/dvk5yt0oi/image/upload/v1744384919/zshop/images/i7foyqw5r2vtffqwzzuv.webp',
+            url: 'https://res.cloudinary.com/dvk5yt0oi/image/upload/v1767920067/CTT1_1501_840x320_ur0hgv.webp',
             label: 'Banner 3',
         },
         {
             id: 4,
-            url: 'https://res.cloudinary.com/dvk5yt0oi/image/upload/v1744384919/zshop/images/iubj1aovqjfpfre955cy.webp',
+            url: 'https://res.cloudinary.com/dvk5yt0oi/image/upload/v1767920067/quatang_840x320_n63cx4.webp',
             label: 'Banner 4',
         },
     ];

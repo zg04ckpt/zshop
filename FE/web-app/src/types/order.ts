@@ -73,8 +73,8 @@ export interface CancelOrderRequestListItemDTO
 }
 
 export interface SystemOrderSearchDTO {
-    page: number;
-    size: number;
+    pageIndex: number;
+    pageSize: number;
     status: OrderStatus|null;
     startDate: Date;
     endDate: Date;

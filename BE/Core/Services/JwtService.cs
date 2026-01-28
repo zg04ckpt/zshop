@@ -1,19 +1,14 @@
 ﻿using Core.Configurations;
 using Core.DTOs.Auth;
-using Core.Utilities;
 using Core.Entities.System;
-using Microsoft.Extensions.Configuration;
+using Core.Interfaces.Services;
+using Core.Utilities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
-using Core.Interfaces.Services;
 
 namespace Core.Services
 {
@@ -146,7 +141,7 @@ namespace Core.Services
 
         public async Task<bool> IsRevokedToken(string accessToken)
         {
-            return await _redisService.IsExists(KeySet.RedisType.REVOKED_ACCESS_TOKEN, accessToken);
+            return await _redisService.ExistsAsync(KeySet.RedisType.REVOKED_ACCESS_TOKEN, accessToken);
         }
     }
 }

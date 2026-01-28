@@ -12,7 +12,7 @@ import { AccountLayout } from './layout/AccountLayout';
 import { AccountAddress, AccountInfo, AccountPurchaseHistory, ManageUser, OrderHistoryDetail, PaymentHistory, ReviewBook } from './pages/user';
 import AdminLayout from './layout/AdminLayout';
 import AdminOrderLayout from './layout/AdminOrderLayout';
-import { AppDispatch, setUser } from './stores';
+import { AppDispatch, setUser, useAppContext } from './stores';
 import { getLoginInfo } from './api';
 import { setupInterceptors } from './api/config/axios';
 import TopBar from './layout/TopBar';
@@ -69,6 +69,7 @@ export const router = createBrowserRouter([{
 }]);
 
 function App() {
+  const context = useAppContext();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -81,7 +82,7 @@ function App() {
   }
   
   useEffect(() => {
-      setupInterceptors(navigate, location, dispatch);
+      setupInterceptors(navigate, location, dispatch, context);
       reinitUserSession();
       setIsApiReady(true);
   }, []);

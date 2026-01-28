@@ -1,4 +1,4 @@
-import { BasePaging } from "./api";
+import { PagingRequest } from "./api";
 
 export type Gender = 'Male'|'Female'|'Other'
 
@@ -53,7 +53,7 @@ export type AddressItemDTO = AddressDTO & {
 }
 
 // Management
-export interface SearchUserDTO extends BasePaging
+export interface SearchUserDTO extends PagingRequest
 {
     name: string;
     userName: string;

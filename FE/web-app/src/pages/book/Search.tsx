@@ -67,15 +67,15 @@ export const Search = () => {
     const load = async () => {
         const res = await getBooks({
             name, maxPrice, 
-            minPrice, page, size, sortBy, order,
+            minPrice, pageIndex: page, pageSize: size, sortBy, order,
             categoryIds: categories
                 .filter(e => e.isChecked)
                 .map(e => e.id)
         });
         if (res.isSuccess) {
-            setTotalPage(res.data!.totalPage);
-            setTotalRecord(res.data!.totalRecord);
-            setBooks(res.data!.data)
+            setTotalPage(res.data!.totalPages);
+            setTotalRecord(res.data!.totalItems);
+            setBooks(res.data!.items)
             scrollToTop();
             if (categories.length == 0) initCate();
         }

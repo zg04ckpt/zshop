@@ -1,9 +1,8 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
-import { convertDates } from "../../utils/date";
 import { ApiResult } from "../../types/api";
-import { refreshToken } from "../auth";
-import { showInfoToast } from "../../utils";
-import { endLoadingStatus, setUser } from "../../stores";
+import { logout, refreshToken } from "../auth";
+import { showInfoToast, showSuccessToast } from "../../utils";
+import { endLoadingStatus, setUser, useAppContext } from "../../stores";
 import { toCamelCase } from "../../utils/helper";
 
 const axiosInstance = axios.create({
@@ -64,7 +63,7 @@ export const del = async <T = void>(url: string): Promise<ApiResult<T>> => {
 };
 
 
-export const setupInterceptors = (navigate: any, location: any, dispatch: any) => {
+export const setupInterceptors = (navigate: any, location: any, dispatch: any, context: any) => {
 
 	// Request interceptor
 	axiosInstance.interceptors.request.use((config) => {
@@ -92,10 +91,19 @@ export const setupInterceptors = (navigate: any, location: any, dispatch: any) =
 						return axiosInstance(originalRequest);
 					}
 				} else {
-					showInfoToast("Vui lòng đăng nhập để tiếp tục.");
                     dispatch(setUser(null));
                     dispatch(endLoadingStatus());
-                    navigate(`/login?return_url=${encodeURIComponent(location.pathname)}`);
+					context?.showConfirmDialog({
+						message: "Phiên đăng nhập đã hết hạn? Bạn có muốn đăng nhập lại không?",
+						onConfirm: () => {
+                    		navigate(`/login?return_url=${encodeURIComponent(location.pathname)}`);
+							showInfoToast("Vui lòng đăng nhập để tiếp tục.");
+						},
+						onReject: () => {
+							showSuccessToast("Đã đăng xuất");
+							navigate("/");
+						}
+					});
                     return null
 				}
 			}

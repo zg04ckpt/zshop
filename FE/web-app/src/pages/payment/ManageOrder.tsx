@@ -34,7 +34,7 @@ export const ManageOrder = () => {
 
     const load = async () => {
         const res = await getSystemOrders({
-            page, size, 
+            pageIndex: page, pageSize: size, 
             status: filterStatus == '--'? null: filterStatus,
             startDate,
             endDate
@@ -279,7 +279,7 @@ export const ManageOrder = () => {
 
                 <div className="d-flex my-2">
                     <label className="fw-light">Tổng số đơn hàng: </label>
-                    <b className="mx-2">{ data.totalRecord }</b>
+                    <b className="mx-2">{ data.totalItems }</b>
                 </div>
 
                 <div className="d-flex my-2">
@@ -294,7 +294,7 @@ export const ManageOrder = () => {
 
                 <div className='card card-body rounded-0 shadow-sm p-0'>
                     <DataGrid
-                        rows={data.data}
+                        rows={data.items}
                         columns={columns}
                         columnHeaderHeight={28}
                         hideFooter
@@ -302,7 +302,7 @@ export const ManageOrder = () => {
                     />
                 </div>
                 <div className='d-flex justify-content-center my-3'>
-                    <Pagination page={page} total={data.totalPage} onPageChange={p => setPage(p)}/>
+                    <Pagination page={page} total={data.totalPages} onPageChange={p => setPage(p)}/>
                 </div>
             </> }
         </div>
