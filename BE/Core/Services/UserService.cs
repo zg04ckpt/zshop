@@ -2,37 +2,37 @@
 using Core.DTOs.User;
 using Core.Entities.System;
 using Core.Exceptions;
-using Core.Interfaces.Repositories;
+using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Interfaces.Services.External;
 using Core.Utilities;
-using Microsoft.EntityFrameworkCore;
+using LinqKit;
 using System.Security.Claims;
 
 namespace Core.Services
 {
     public class UserService : IUserService
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IAddressRepository _addressRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IStorageService _storageService;
-        private readonly IRoleRepository _roleRepository;
         private readonly IVNAddressDataService _vnAddressDataService;
 
-        public UserService(IUserRepository userRepository, IStorageService storageService, IAddressRepository addressRepository, IVNAddressDataService vnAddressDataService, IRoleRepository roleRepository)
+        public UserService(
+            IUnitOfWork unitOfWork, 
+            IStorageService storageService, 
+            IVNAddressDataService vnAddressDataService)
         {
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
             _storageService = storageService;
-            _addressRepository = addressRepository;
             _vnAddressDataService = vnAddressDataService;
-            _roleRepository = roleRepository;
         }
 
-        #region Profile
 
+        #region Profile
         public async Task<ApiResult<UserProfileDTO>> GetProfile(ClaimsPrincipal claims)
         {
-            var user = await _userRepository.Get(Guid.Parse(Helper.GetUserIdFromClaims(claims)!))
+            var userId = Guid.Parse(Helper.GetUserIdFromClaims(claims)!);
+            var user = await _unitOfWork.Users.GetFirstAsync(e => e.Id == userId)
                 ?? throw new BadRequestException("Người dùng không tồn tại");
 
             return new ApiSuccessResult<UserProfileDTO>(new UserProfileDTO
@@ -50,7 +50,8 @@ namespace Core.Services
 
         public async Task<ApiResult> UpdateProfile(ClaimsPrincipal claims, UpdateUserProfileDTO data)
         {
-            var user = await _userRepository.Get(Guid.Parse(Helper.GetUserIdFromClaims(claims)!))
+            var userId = Guid.Parse(Helper.GetUserIdFromClaims(claims)!);
+            var user = await _unitOfWork.Users.GetFirstAsync(e => e.Id == userId)
                 ?? throw new BadRequestException("Người dùng không tồn tại");
 
             user.LastName = data.LastName.Trim();
@@ -78,8 +79,8 @@ namespace Core.Services
                     ?? throw new InternalServerErrorException("Lưu ảnh thất bại");
             }
 
-            _userRepository.Update(user);
-            await _userRepository.Save();
+            await _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync();
 
             return new ApiSuccessResult("Cập nhật thành công.");
         }
@@ -89,8 +90,9 @@ namespace Core.Services
         #region Shipping Address
         public async Task<ApiResult> AddAddress(ClaimsPrincipal claims, AddressDTO data)
         {
-            var user = await _userRepository.Get(Guid.Parse(Helper.GetUserIdFromClaims(claims)!))
-                ?? throw new BadRequestException("Người dùng không tồn tại.");
+            var userId = Guid.Parse(Helper.GetUserIdFromClaims(claims)!);
+            var user = await _unitOfWork.Users.GetFirstAsync(e => e.Id == userId)
+                ?? throw new BadRequestException("Người dùng không tồn tại");
 
             if (!_vnAddressDataService.IsValidCity(data.City, data.CityCode))
                 throw new BadRequestException("Tỉnh/Thành phố không hợp lệ.");
@@ -117,23 +119,24 @@ namespace Core.Services
             if (user.DefaultAddressId == null)
             {
                 user.DefaultAddressId = address.Id;
-                _userRepository.Update(user);
+                await _unitOfWork.Users.UpdateAsync(user);
             }
 
-            await _addressRepository.Add(address);
-            await _addressRepository.Save();
+            await _unitOfWork.Repository<Address>().AddAsync(address);
+            await _unitOfWork.SaveChangesAsync();
 
             return new ApiSuccessResult("Thêm địa chỉ thành công");
         }
 
         public async Task<ApiResult<List<AddressItemDTO>>> GetAddresses(ClaimsPrincipal claims)
         {
-            var user = await _userRepository.Get(Guid.Parse(Helper.GetUserIdFromClaims(claims)!))
+            var userId = Guid.Parse(Helper.GetUserIdFromClaims(claims)!);
+            var user = await _unitOfWork.Users.GetFirstAsync(e => e.Id == userId)
                 ?? throw new BadRequestException("Người dùng không tồn tại");
 
-            var addresses = await _addressRepository.GetQuery().AsNoTracking()
-                .Where(e => e.UserId == user.Id)
-                .Select(e => new AddressItemDTO
+            var addresses = await _unitOfWork.Repository<Address>().GetAllAsync(
+                predicate: e => e.UserId == user.Id,
+                selector: e => new AddressItemDTO
                 {
                     Id = e.Id.ToString(),
                     City = e.City,
@@ -143,17 +146,18 @@ namespace Core.Services
                     PhoneNumber = e.PhoneNumber,
                     ReceiverName = e.ReceiverName,
                     IsDefault = user.DefaultAddressId == e.Id
-                })
-                .ToListAsync();
+                });
 
-            return new ApiSuccessResult<List<AddressItemDTO>>(addresses);
+            return new ApiSuccessResult<List<AddressItemDTO>>(addresses.ToList());
         }
 
         public async Task<ApiResult> RemoveAddress(ClaimsPrincipal claims, string addressId)
         {
-            var user = await _userRepository.Get(Guid.Parse(Helper.GetUserIdFromClaims(claims)!))
+            var userId = Guid.Parse(Helper.GetUserIdFromClaims(claims)!);
+            var user = await _unitOfWork.Users.GetFirstAsync(e => e.Id == userId)
                 ?? throw new BadRequestException("Người dùng không tồn tại");
-            var address = await _addressRepository.Get(Guid.Parse(addressId))
+
+            var address = await _unitOfWork.Repository<Address>().GetFirstAsync(e => e.Id.ToString() == addressId)
                 ?? throw new BadRequestException("Địa chỉ không tồn tại.");
 
             if (address.UserId != user.Id)
@@ -162,26 +166,27 @@ namespace Core.Services
             if (user.DefaultAddressId == address.Id)
                 throw new BadRequestException("Không thể xóa địa chỉ mặc định.");
 
-            _addressRepository.Delete(address);
-            await _addressRepository.Save();
+            await _unitOfWork.Repository<Address>().DeleteAsync(address);
+            await _unitOfWork.SaveChangesAsync();
 
             return new ApiSuccessResult("Xóa địa chỉ thành công.");
         }
 
         public async Task<ApiResult> SetDefaultAddress(ClaimsPrincipal claims, string addressId)
         {
-            var user = await _userRepository.Get(Guid.Parse(Helper.GetUserIdFromClaims(claims)!))
+            var userId = Guid.Parse(Helper.GetUserIdFromClaims(claims)!);
+            var user = await _unitOfWork.Users.GetFirstAsync(e => e.Id == userId)
                 ?? throw new BadRequestException("Người dùng không tồn tại");
 
-            var address = await _addressRepository.Get(Guid.Parse(addressId))
+            var address = await _unitOfWork.Repository<Address>().GetFirstAsync(e => e.Id.ToString() == addressId)
                 ?? throw new BadRequestException("Địa chỉ không tồn tại.");
 
             if (address.UserId != user.Id)
                 throw new ForbbidenException();
 
             user.DefaultAddressId = address.Id;
-            _userRepository.Update(user);
-            await _userRepository.Save();
+            await _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync();
 
             return new ApiSuccessResult("Thay đổi địa chỉ mặc định thành công");
         }
@@ -191,33 +196,25 @@ namespace Core.Services
         #region Management
         public async Task<ApiResult<Paginated<UserItemDTO>>> GetUsersAsList(SearchUserDTO data)
         {
-            var query = _userRepository.GetQuery().AsNoTracking();
-
             // filter
-            query = query.Include(e => e.UserRoles).ThenInclude(e => e.Role);
-
+            var filter = PredicateBuilder.New<User>(true);
             if (data.Name != null)
-                query = query.Where(e => e.LastName.Contains(data.Name) || e.FirstName.Contains(data.Name));
-
+                filter.And(e => e.LastName.Contains(data.Name) || e.FirstName.Contains(data.Name));
             if (data.Email != null)
-                query = query.Where(e => e.Email.Contains(data.Email));
-
+                filter.And(e => e.Email.Contains(data.Email));
             if (data.UserName != null)
-                query = query.Where(e => e.UserName.Contains(data.UserName));
-
+                filter.And(e => e.UserName.Contains(data.UserName));
             if (data.RoleId != -1)
-                query = query.Where(e => e.UserRoles.Any(ur => ur.RoleId == data.RoleId));
+                filter.And(e => e.UserRoles.Any(ur => ur.RoleId == data.RoleId));
+            //filter.And(e => e.IsActivated == data.IsActivated);
 
-            query = query.Where(e => e.IsActivated == data.IsActivated);
-
-
-            // paging
-            int totalRecord = await query.CountAsync();
-            int totalPage = (int)Math.Ceiling((double)totalRecord / data.Size);
-            var users = await query
-                .Skip((data.Page - 1) * data.Size)
-                .Take(data.Size)
-                .Select(e => new UserItemDTO
+            var users = await _unitOfWork.Repository<User>().GetPagingAsync(
+                predicate: filter,
+                pageIndex: data.PageIndex,
+                pageSize: data.PageSize,
+                orderBy: e => e.FirstName,
+                asc: true,
+                selector: e => new UserItemDTO
                 {
                     Id = e.Id,
                     FullName = e.LastName + " " + e.FirstName,
@@ -228,29 +225,69 @@ namespace Core.Services
                     PhoneNumber = e.PhoneNumber,
                     UserName = e.UserName,
                     Roles = e.UserRoles.Select(e => e.Role.Name).ToArray(),
-                })
-                .ToArrayAsync();
+                });
 
-            return new ApiSuccessResult<Paginated<UserItemDTO>>(new Paginated<UserItemDTO>
-            {
-                TotalRecord = totalRecord,
-                TotalPage = totalPage,
-                Data = users
-            });
+            return new ApiSuccessResult<Paginated<UserItemDTO>>(users);
         }
 
         public async Task<ApiResult<RoleSelectItemDTO[]>> GetRoles()
         {
-            return new ApiSuccessResult<RoleSelectItemDTO[]>(await _roleRepository
-                .GetAll().Select(e => new RoleSelectItemDTO
+            var roles = await _unitOfWork.Repository<Role>().GetAllAsync(
+                predicate: e => true,
+                selector: e => new RoleSelectItemDTO
                 {
                     Id = e.Id,
                     Name = e.Name
-                }).ToArrayAsync());
+                });
+            return new ApiSuccessResult<RoleSelectItemDTO[]>(roles.ToArray());
         }
 
+        public async Task<ApiResult> SetUserActive(SetUserActiveDTO data)
+        {
+            var res = await _unitOfWork.Repository<User>().GetFirstAsync(
+                predicate: e => e.Id == data.UserId,
+                selector: e => new
+                {
+                    User = e,
+                    Roles = e.UserRoles.Select(ur => ur.Role.Name)
+                })
+                ?? throw new BadRequestException("Người dùng không tồn tại");
 
+            // Check role before change active
+            if (res.Roles.Contains(RoleNames.Admin))
+            {
+                throw new BadRequestException("Không thể thay đổi trạng thái tài khoản admin");
+            }
 
+            res.User.IsActivated = data.IsActived;
+            await _unitOfWork.Repository<User>().UpdateAsync(res.User);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ApiSuccessResult($"Cập nhật thành công, đã {(data.IsActived ? "mở" : "")} khóa tài khoản");
+        }
+
+        public async Task<ApiResult> DeleteUser(Guid userId)
+        {
+            var data = await _unitOfWork.Repository<User>().GetFirstAsync(
+                predicate: e => e.Id == userId,
+                selector: e => new
+                {
+                    User = e,
+                    Roles = e.UserRoles.Select(ur => ur.Role.Name)
+                })
+                ?? throw new BadRequestException("Người dùng không tồn tại");
+
+            // Check role before delete
+            if (data.Roles.Contains(RoleNames.Admin) || data.Roles.Contains(RoleNames.Tester))
+            {
+                throw new BadRequestException("Không thể xóa TK admin và test");
+            }
+
+            await _unitOfWork.Repository<User>().DeleteAsync(data.User);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ApiSuccessResult($"Đã xóa người dùng");
+        }
         #endregion
     }
 }

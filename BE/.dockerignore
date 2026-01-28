@@ -1,0 +1,26 @@
+# .NET / MSBuild build artifacts
+**/bin/
+**/obj/
+**/out/
+**/publish/
+**/TestResults/
+**/*.user
+**/*.suo
+**/*.cache
+**/*.vs/
+**/*.vscode/
+**/*.idea/
+
+# Git
+.git
+.gitignore
+
+# NuGet packages cache
+**/packages/
+**/nuget.config
+**/global.json
+
+# Docker files (không cần copy vào image)
+Dockerfile
+*.dockerignore
+docker-compose.*

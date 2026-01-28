@@ -1,14 +1,17 @@
-# Image to build project
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-WORKDIR /App
+# build project
+FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
+WORKDIR /src
 COPY . . 
 RUN dotnet restore 
-RUN dotnet publish -c Release -o out
+RUN dotnet publish API/API.csproj -c Release -o /app/publish \
+    --no-restore \
+    /p:UseAppHost=false
 
-# Image to run application
-FROM mcr.microsoft.com/dotnet/aspnet:6.0
-WORKDIR /App
-EXPOSE 80
-
-COPY --from=build /App/out .
-ENTRYPOINT ["dotnet", "API.dll"]
+# final image to run application
+FROM mcr.microsoft.com/dotnet/aspnet:6.0-alpine AS final
+RUN apk add --no-cache tzdata
+WORKDIR /app
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "API.dll"] 

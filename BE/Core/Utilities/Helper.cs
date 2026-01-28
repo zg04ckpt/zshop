@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Core.Entities.VoucherFeature;
+using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -7,10 +10,64 @@ namespace Core.Utilities
 {
     public class Helper
     {
+        public static async Task RunProcessAsync(string fileName, string arguments)
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    Arguments = arguments,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+            var error = await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            if (process.ExitCode != 0)
+                throw new Exception(error);
+        }
+
+
+        public static string? GetIpAddressFromHubContext(HubCallerContext context)
+        {
+            return context.GetHttpContext()?.Connection.RemoteIpAddress?.ToString();
+        }
+
         public static DateTime ConvertFromUtcToLocalTime(DateTime dateTime)
         {
             return TimeZoneInfo.ConvertTimeFromUtc(dateTime, TimeZoneInfo.Local);
         }
+
+        public static VoucherStatus GetStatusFromTimeLine(DateTime validFrom, DateTime validUtil)
+        {
+            var current = DateTime.UtcNow;
+            if (validFrom > current)
+            {
+                return VoucherStatus.Created;
+            }
+
+            if (current > validUtil)
+            {
+                return VoucherStatus.Expired;
+            }
+
+            return VoucherStatus.Effective;
+        }
+
+        public static DateTime ConvertVNTimeToUTC(DateTime dateTime)
+        {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            return TimeZoneInfo.ConvertTimeToUtc(
+                DateTime.SpecifyKind(dateTime, DateTimeKind.Unspecified),
+                tz);
+        }
+
         public static string ToJsonString(object data) => JsonConvert.SerializeObject(data);
 
         public static string HashPassword(string password)

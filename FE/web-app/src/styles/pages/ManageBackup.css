@@ -1,0 +1,27 @@
+/* Styles for ManageBackup page */
+
+.manage-backup-container {
+  padding: 24px;
+}
+
+.snapshot-table-container {
+  margin-top: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.snapshot-action-btn {
+  margin: 0 4px;
+}
+
+.snapshot-info-card {
+  padding: 16px;
+  margin-bottom: 24px;
+  background-color: #e3f2fd;
+  border-radius: 8px;
+}
+
+.empty-state {
+  padding: 48px;
+  text-align: center;
+  color: #666;
+}

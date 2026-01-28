@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Core.DTOs.Order
 {
-    public class OrderHistorySearchDTO : BasePaging
+    public class OrderHistorySearchDTO : PagingRequest
     {
 
     }

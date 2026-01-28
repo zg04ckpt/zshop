@@ -29,9 +29,6 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<decimal>("AvgRate")
-                        .HasColumnType("decimal(1,1)");
-
                     b.Property<string>("Cover")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -116,7 +113,7 @@ namespace Data.Migrations
 
                     b.HasIndex("BookId");
 
-                    b.ToTable("BookImages");
+                    b.ToTable("BookImages", (string)null);
                 });
 
             modelBuilder.Entity("Core.Entities.BookFeature.Category", b =>
@@ -208,6 +205,58 @@ namespace Data.Migrations
                     b.ToTable("ReviewMedias", (string)null);
                 });
 
+            modelBuilder.Entity("Core.Entities.ChatFeature.Conversation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Conversations", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Entities.ChatFeature.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<Guid>("ConvertsationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConvertsationId", "Timestamp");
+
+                    b.ToTable("Messages", (string)null);
+                });
+
             modelBuilder.Entity("Core.Entities.PaymentFeature.CancelOrderRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -287,6 +336,9 @@ namespace Data.Migrations
                     b.Property<Guid?>("AddressId")
                         .HasColumnType("char(36)");
 
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(65,30)");
+
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -312,14 +364,22 @@ namespace Data.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("TotalDiscount")
+                        .HasColumnType("decimal(65,30)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("VoucherId")
+                        .HasColumnType("varchar(255)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AddressId");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("VoucherId");
 
                     b.ToTable("Orders", (string)null);
                 });
@@ -518,6 +578,48 @@ namespace Data.Migrations
                     b.ToTable("UserRoles", (string)null);
                 });
 
+            modelBuilder.Entity("Core.Entities.VoucherFeature.Voucher", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("DiscountType")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<decimal>("MaxDiscount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int?>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("ValidUntil")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Vouchers", (string)null);
+                });
+
             modelBuilder.Entity("Core.Entities.BookFeature.BookCategory", b =>
                 {
                     b.HasOne("Core.Entities.BookFeature.Book", "Book")
@@ -588,6 +690,26 @@ namespace Data.Migrations
                     b.Navigation("Review");
                 });
 
+            modelBuilder.Entity("Core.Entities.ChatFeature.Conversation", b =>
+                {
+                    b.HasOne("Core.Entities.System.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Core.Entities.ChatFeature.Message", b =>
+                {
+                    b.HasOne("Core.Entities.ChatFeature.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConvertsationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+                });
+
             modelBuilder.Entity("Core.Entities.PaymentFeature.CancelOrderRequest", b =>
                 {
                     b.HasOne("Core.Entities.PaymentFeature.Order", "Order")
@@ -642,9 +764,16 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("Core.Entities.VoucherFeature.Voucher", "Voucher")
+                        .WithMany("AppliedOrders")
+                        .HasForeignKey("VoucherId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Address");
 
                     b.Navigation("Customer");
+
+                    b.Navigation("Voucher");
                 });
 
             modelBuilder.Entity("Core.Entities.PaymentFeature.OrderDetail", b =>
@@ -732,6 +861,11 @@ namespace Data.Migrations
                     b.Navigation("ReviewMedias");
                 });
 
+            modelBuilder.Entity("Core.Entities.ChatFeature.Conversation", b =>
+                {
+                    b.Navigation("Messages");
+                });
+
             modelBuilder.Entity("Core.Entities.PaymentFeature.Cart", b =>
                 {
                     b.Navigation("Items");
@@ -767,6 +901,11 @@ namespace Data.Migrations
                     b.Navigation("Reviews");
 
                     b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("Core.Entities.VoucherFeature.Voucher", b =>
+                {
+                    b.Navigation("AppliedOrders");
                 });
 #pragma warning restore 612, 618
         }

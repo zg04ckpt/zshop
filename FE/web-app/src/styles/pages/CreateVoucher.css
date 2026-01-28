@@ -1,0 +1,91 @@
+/* Create Voucher Page Styles */
+.create-voucher {
+    padding: 20px;
+}
+
+.create-voucher-header {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 15px;
+}
+
+.create-voucher-header h5 {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.create-voucher-header p {
+    font-size: 0.95rem;
+}
+
+.create-voucher-form {
+    padding: 20px 0;
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.form-label .text-danger {
+    color: #dc3545;
+}
+
+.form-label .text-muted {
+    font-weight: 400;
+    font-size: 0.85rem;
+}
+
+.form-control,
+.form-select {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 0.95rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+}
+
+.form-actions button {
+    min-width: 120px;
+    font-weight: 500;
+    padding: 8px 20px;
+}
+
+.form-actions button:hover {
+    transition: all 0.2s;
+}
+
+.form-actions button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .create-voucher {
+        padding: 15px;
+    }
+
+    .create-voucher-form {
+        padding: 15px 0;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions button {
+        width: 100%;
+    }
+}

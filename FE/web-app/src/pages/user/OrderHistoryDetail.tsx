@@ -1,0 +1,333 @@
+import React, { useEffect, useState } from "react";
+import '../../styles/pages/OrderHistoryDetail.css';
+import { useNavigate, useOutletContext, useParams, useSearchParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Dialog, DialogContent, DialogTitle, FormControlLabel, Radio, RadioGroup, Step, StepLabel, Stepper } from "@mui/material";
+import { AppDispatch, RootState, startLoadingStatus, endLoadingStatus } from "../../stores";
+import { OutletContextProp } from "../../types/base";
+import { CancelOrderRequest, OrderHistoryDetailDTO, OrderStatus, PaymentMethod, PaymentStatus } from "../../types/order";
+import { cancelOrder, getOrderHistory, getOrderHistoryDetail } from "../../api";
+import Button from "../../components/Button";
+import { showErrorToast, showInfoToast, showSuccessToast } from "../../utils";
+import { formatDate } from "../../utils/helper";
+import SelectBookFromOrderToReviewDialog from "../../components/SelectBookFromOrderToReviewDialog";
+import { DiscountType } from "../../types/voucher";
+
+const orderSteps = [
+    'Đã tạo', 
+    'Chờ người bán xác nhận', 
+    'Đã được xác nhận',
+    'Chờ xử lý / đóng gói',
+    'Đang vận chuyển',
+    'Giao hàng thành công',
+    'Đã hủy'
+];
+
+const cancelOrderReasons = [
+    { value: 'Muốn thay đổi thông tin đặt hàng', label: 'Muốn thay đổi thông tin đặt hàng' },
+    { value: 'Giá quá đắt', label: 'Giá quá đắt' },
+    { value: 'Đổi ý không muốn mua nữa', label: 'Đổi ý không muốn mua nữa' },
+    { value: '', label: 'Lý do khác:' },
+];
+
+export const OrderHistoryDetail = () => {
+    const dispatch = useDispatch<AppDispatch>();
+    const { isApiReady } = useOutletContext<OutletContextProp>();
+    const navigate = useNavigate();
+    const [param] = useSearchParams();
+
+    const [orderId, setOrderId] = useState<string|null>(null);
+    const [detail, setDetail] = useState<OrderHistoryDetailDTO|null>(null);
+    const [currentOrderStep, setCurrentOrderStep] = useState<number>(0);
+    const [cancelData, setCancelData] = useState<CancelOrderRequest|null>(null);
+    const otherReasonRef = React.useRef<HTMLTextAreaElement>(null);
+    const [reviewOrderId, setReviewOrderId] = useState<string|null>(null);
+    const [showSelectBookToReview, setShowSelectBookToReview] = useState<boolean>(false);
+    const user = useSelector((state: RootState) => state.auth.user);
+
+    const init = async () => {
+        dispatch(startLoadingStatus());
+        const id = param.get('id');
+        setOrderId(id);
+        const res = await getOrderHistoryDetail(id!);
+        if (res.isSuccess) {
+            setDetail(res.data!);
+        }
+        dispatch(endLoadingStatus());
+    }
+
+    const getPaymentStatus = (status: PaymentStatus) => {
+        if (status == 'Unpaid') return <span className='gray-tag'>Chưa thanh toán</span>
+        if (status == 'Paid') return <span className='green-tag'>Đã thanh toán</span>
+        if (status == 'Failed') return <span className='red-tag'>Thanh toán lỗi</span>
+    }
+
+    const getPaymentMethod = (status: PaymentMethod) => {
+        if (status == 'CashOnDelivery') return <>Thanh toán khi nhận hàng</>
+        if (status == 'VNPay') return <>Thanh toán qua VNPay</>
+    }
+
+    const getAction =  () => {
+        const orderStatus = detail!.orderStatus;
+        const paymentMethod = detail!.paymentMethod;
+        const paymentStatus = detail!.paymentStatus;
+        const actions = [];
+
+        if (orderStatus == 'Created' || orderStatus == 'Placed' || orderStatus == 'Accepted' || orderStatus == 'InProgress') {
+            actions.push(<Button label='Hủy đơn hàng' className='me-2' pxHeight={20} onClick={() => setCancelData({
+                orderId: detail!.id,
+                reason: cancelOrderReasons[0].value
+            })}/>);
+        }
+        if (orderStatus == 'Created') {
+            actions.push(<Button label='Tiếp tục thiết lập' className='me-2' pxHeight={20} onClick={() => navigate('/order?id=' + detail!.id)}/>);
+        }
+
+        if (paymentMethod == 'VNPay' && orderStatus != 'Created' && orderStatus != 'Cancelled' &&  paymentStatus == 'Unpaid') {
+            actions.push(<Button label='Thanh toán ngay' className='me-2' blackTheme pxHeight={20} onClick={() => {}}/>);
+        }
+
+        if (orderStatus == 'Delivered') {
+            actions.push(<Button label='Đánh giá đơn hàng' className='me-2' pxHeight={20} onClick={() => {
+                setReviewOrderId(detail!.id);
+                setShowSelectBookToReview(true);
+            }}/>);
+        }
+
+        return (
+            <div className='d-flex mt-5 justify-content-center'>
+                {actions}
+            </div>
+        );
+    }
+
+    const requestCancelOrder = async () => {
+        if (!cancelData!.reason) {
+            cancelData!.reason = otherReasonRef.current!.value;
+        }
+        dispatch(startLoadingStatus());
+        const result = await cancelOrder(cancelData!);
+        if (result.isSuccess) {
+            showSuccessToast(result.message!, 3000);
+            setCancelData(null);
+            init();
+        } else {
+            showErrorToast(result.message!, 3000);
+        }
+        dispatch(endLoadingStatus());
+    }
+
+    useEffect(() => {
+        if(isApiReady) {
+            init()
+        }
+    }, [isApiReady]);
+
+    useEffect(() => {
+        if (detail) {
+            if (detail.orderStatus == 'Created')
+                setCurrentOrderStep(0);
+            else if (detail.orderStatus == 'Placed')
+                setCurrentOrderStep(1);
+            else if (detail.orderStatus == 'Accepted')
+                setCurrentOrderStep(2);
+            else if (detail.orderStatus == 'InProgress')
+                setCurrentOrderStep(3);
+            else if (detail.orderStatus == 'Shipping')
+                setCurrentOrderStep(4);
+            else if (detail.orderStatus == 'Delivered')
+                setCurrentOrderStep(5);
+            else
+                setCurrentOrderStep(6);
+        }
+    }, [detail]);       
+
+    return (
+        <div className="order-history-detail">
+            <h5>Chi tiết đơn hàng</h5>
+            <div className="d-flex align-items-center mb-2">
+                <Button label="Quay lại" onClick={() => navigate(-1)} icon={
+                    <i className="fas fa-arrow-left me-1"></i>
+                }/>
+            </div>
+            { detail && <>
+                <div className="card card-body rounded-0">
+                    <table>
+                        <tbody>
+                            { user?.roles.includes('Admin') && <>
+                                <tr>
+                                    <th>Tài khoản thanh toán:</th>
+                                    <td>{ detail.userId }</td>
+                                </tr>
+                            </> }
+                            <tr>
+                                <th>Mã đơn hàng:</th>
+                                <td>{orderId}</td>
+                            </tr>
+                            <tr>
+                                <th>Tạo lúc:</th>
+                                <td>{formatDate(detail.orderDate, 'HH:mm:ss dd-MM-yyyy')}</td>
+                            </tr>
+                            <tr>
+                                <th>Cập nhật:</th>
+                                <td>{formatDate(detail.updatedAt, 'HH:mm:ss dd-MM-yyyy')}</td>
+                            </tr>
+
+                            <tr>
+                                <th>Trạng thái thanh toán:</th>
+                                <td>{getPaymentStatus(detail.paymentStatus)}</td>
+                            </tr>
+                            <tr>
+                                <th>Hình thức thanh toán:</th>
+                                <td>{getPaymentMethod(detail.paymentMethod)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <label className="fw-bold mt-2 mb-3">Trạng thái đơn hàng:</label>
+                    <Stepper activeStep={currentOrderStep} alternativeLabel>
+                        { orderSteps.map((label, index) => (
+                            <Step key={label}>
+                            <StepLabel optional={index != 0 && index != 6}>{label}</StepLabel>
+                            </Step>
+                        ))}
+                    </Stepper>
+
+                    <label className="fw-bold mt-3"><i className='bx  bx-location-alt-2'></i> Địa chỉ nhận hàng:</label>
+                    { detail.address && <>
+                        <div className="d-flex flex-column address p-2 position-relative">
+                            <div className="d-flex align-items-center">
+                                <i className='bx bx-user'></i>
+                                <div className="ms-2">{detail.address.receiverName}</div>
+                                <i className='bx bx-phone ms-3'></i>
+                                <div className="ms-2">{detail.address.phoneNumber}</div>
+                            </div>
+
+                            <div className="d-flex align-items-center">
+                                <i className='bx bx-home-alt'></i>
+                                <div className="ms-2 max-1-line">{detail.address.detail}, {detail.address.ward}, {detail.address.district}, {detail.address.city}</div>
+                            </div>
+                        </div>
+                    </> }
+
+                    <label className="fw-bold mt-3"><i className='bx bx-history'></i> Lịch sử giao dịch:</label>
+                    { detail.transactions && <>
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th>Mã giao dịch</th>
+                                    <th>Thời gian</th>
+                                    <th style={{width: '120px'}}>Trạng thái</th>
+                                    <th style={{width: '150px'}}>Số tiền</th>
+                                    <th>Ghi chú</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                { detail.transactions.map(transaction => (
+                                    <tr key={transaction.id}>
+                                        <td>{transaction.id}</td>
+                                        <td>{formatDate(transaction.createdAt, 'HH:mm:ss dd-MM-yyyy')}</td>
+                                        <td>
+                                            {transaction.status === 'Processing' && <span className='gray-tag'>Đang xử lý</span>}
+                                            {transaction.status === 'Success' && <span className='green-tag'>Thành công</span>}
+                                        </td>
+                                        <td>{transaction.amount.toLocaleString('vn')} VNĐ</td>
+                                        <td>{transaction.note || '-'}</td>
+                                    </tr>
+                                )) }
+                            </tbody>
+                        </table>
+                    </> }
+
+                    <label className="fw-bold"><i className='bx bx-list'></i> Chi tiết:</label>
+                    <table className="table">
+                        <thead>
+                            <tr>
+                                <th className="fst-italic">- Tên sách</th>
+                                <th style={{width: '100px'}}>Số lượng</th>
+                                <th style={{width: '120px'}}>Đơn giá</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            { detail.items.map(e => <>
+                                <tr>
+                                    <td><a onClick={() => navigate('/book?id=' + e.bookId)}   className="action-text">{e.title}</a></td>
+                                    <td>x{e.quantity}</td>
+                                    <td>{e.price.toLocaleString('vn')} VNĐ</td>
+                                </tr>
+                            </>) }
+
+                            { detail.voucher && <>
+                                <tr>
+                                    <th className="fst-italic" colSpan={2}>- Voucher khuyến mại</th>
+                                    <th style={{width: '100px'}}>Mức giảm</th>
+                                </tr>
+                                <tr>
+                                    <td colSpan={2}>{detail.voucher.name}({detail.voucher.code} - {
+                                        detail.voucher.discountType == DiscountType.Percentage?
+                                            `${detail.voucher.discount}%`:`${detail.voucher.discount} VNĐ`
+                                    }) <a href="#" onClick={() => showInfoToast("Chức năng chưa phát triển")}>Xem chi tiết</a></td>
+                                    <td style={{width: '100px'}}>- {detail.totalDiscount.toLocaleString('vn')}</td>
+                                </tr>
+                            </> }
+                        </tbody>
+                    </table>
+                    <div className="d-flex w-100 pe-4">
+                        <div className="flex-fill"></div>
+                        <label htmlFor="">Tổng tiền:</label>
+                        <div className="fw-bolder mx-2">{detail.totalAmount.toLocaleString('vn')} {detail.currency}</div>
+                    </div>
+
+                    { getAction() }
+                </div>
+            </> }
+
+            {/* Cancel order confirm dialog */}
+            { cancelData && <>
+                <Dialog 
+                    onClose={() => {}} open={true}
+                    sx={{ '& .MuiDialog-paper': { width: '80%', maxHeight: 435 } }}
+                    maxWidth="xs"
+                >
+                    <DialogTitle fontSize={16} textAlign={'center'}>Hủy đơn hàng {cancelData.orderId}</DialogTitle>
+                    <DialogContent dividers>
+                        <div className='mb-2 fw-light'>Vui lòng cung cấp nguyên nhân hủy đơn hàng</div>
+                        <RadioGroup
+                            // ref={radioGroupRef}
+                            aria-label="ringtone"
+                            name="ringtone"
+                            value={cancelData.reason}
+                            onChange={e => setCancelData(prev => ({... prev!, reason: e.target.value}))}
+                        >
+                            {cancelOrderReasons.map((e) => (
+                                <FormControlLabel
+                                    value={e.value}
+                                    control={<Radio />}
+                                    label={e.label}
+                                />
+                            ))}
+                        </RadioGroup>
+                        { !cancelData.reason && <>
+                            <textarea ref={otherReasonRef}
+                                rows={4} className='form-control' placeholder="Mô tả lý do"></textarea>
+                        </> }
+                        <div className='d-flex justify-content-center mt-3'>
+                            <Button label='Giữ lại đơn hàng' className='me-2' onClick={() => setCancelData(null)}/>
+                            <Button label='Xác nhận hủy' blackTheme onClick={() => requestCancelOrder()}/>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            </> }
+
+
+            { reviewOrderId && <>
+                <SelectBookFromOrderToReviewDialog 
+                    orderId={reviewOrderId} 
+                    open={showSelectBookToReview} 
+                    onClose={() => setShowSelectBookToReview(false)}/>
+            </> }
+        </div>
+    );
+}

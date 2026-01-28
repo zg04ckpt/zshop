@@ -17,55 +17,55 @@ namespace API.Controllers.v1.Management
             _bookService = bookService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetBooksAsListItem([FromQuery]BookSearchDTO data)
-        {
-            return Ok(await _bookService.GetBooksAsListItem(data));
-        }
+        //[HttpGet]
+        //public async Task<IActionResult> GetBooksAsListItem([FromQuery]BookSearchDTO data)
+        //{
+        //    return Ok(await _bookService.GetBooksAsListItem(data));
+        //}
 
-        [HttpPost]
-        public async Task<IActionResult> CreateBook([FromForm] BookDTO data)
-        {
-            return Ok(await _bookService.CreateBook(data));
-        }
+        //[HttpPost]
+        //public async Task<IActionResult> CreateBook([FromForm] BookDTO data)
+        //{
+        //    return Ok(await _bookService.CreateBook(data));
+        //}
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBook(string id, [FromForm] BookDTO data)
-        {
-            return Ok(await _bookService.UpdateBook(id, data));
-        }
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> UpdateBook(string id, [FromForm] BookDTO data)
+        //{
+        //    return Ok(await _bookService.UpdateBook(id, data));
+        //}
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBook(string id)
-        {
-            return Ok(await _bookService.DeleteBook(id));
-        }
-        #region Category
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteBook(string id)
+        //{
+        //    return Ok(await _bookService.DeleteBook(id));
+        //}
+        //#region Category
 
-        [HttpGet("categories")]
-        public async Task<IActionResult> GetCategoriesAsListItem()
-        {
-            return Ok(await _bookService.GetCategoriesAsListItem());
-        }
+        //[HttpGet("categories")]
+        //public async Task<IActionResult> GetCategoriesAsListItem()
+        //{
+        //    return Ok(await _bookService.GetCategoriesAsListItem());
+        //}
 
-        [HttpPost("categories")]
-        public async Task<IActionResult> CreateNewCategory([FromForm] CategoryDTO data)
-        {
-            return Ok(await _bookService.CreateCategory(data));
-        }
+        //[HttpPost("categories")]
+        //public async Task<IActionResult> CreateNewCategory([FromForm] CategoryDTO data)
+        //{
+        //    return Ok(await _bookService.CreateCategory(data));
+        //}
 
-        [HttpPut("categories/{id}")]
-        public async Task<IActionResult> UpdateCategory(int id, [FromForm] CategoryDTO data)
-        {
-            return Ok(await _bookService.UpdateCategory(id, data));
-        }
+        //[HttpPut("categories/{id}")]
+        //public async Task<IActionResult> UpdateCategory(int id, [FromForm] CategoryDTO data)
+        //{
+        //    return Ok(await _bookService.UpdateCategory(id, data));
+        //}
 
-        [HttpDelete("categories/{id}")]
-        public async Task<IActionResult> RemoveCategory(int id)
-        {
-            return Ok(await _bookService.DeleteCategory(id));
-        }
+        //[HttpDelete("categories/{id}")]
+        //public async Task<IActionResult> RemoveCategory(int id)
+        //{
+        //    return Ok(await _bookService.DeleteCategory(id));
+        //}
 
-        #endregion
+        //#endregion
     }
 }

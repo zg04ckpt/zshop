@@ -16,7 +16,7 @@ namespace Core.Entities.BookFeature
         public string Language { get; set; }
         public decimal Price { get; set; }
         public string Currency { get; set; }
-        public decimal AvgRate { get; set; }
+        //public decimal AvgRate { get; set; }
         public string Description { get; set; }
         public int SoldCount { get; set; }
         public int StockCount { get; set; }

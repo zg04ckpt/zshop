@@ -2,6 +2,7 @@
 using Core.Exceptions;
 using Core.Interfaces.Services;
 using Core.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Middlewares
 {
@@ -16,6 +17,13 @@ namespace API.Middlewares
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
+            if (context.GetEndpoint()?.Metadata?.GetMetadata<AuthorizeAttribute>() == null &&
+                context.Request.Path != "/api/v1/auth/login/info")
+            {
+                await next(context);
+                return;
+            }
+
             var accessToken = context.Request.Cookies["AccessToken"];
             if (!string.IsNullOrEmpty(accessToken))
             {

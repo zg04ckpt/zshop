@@ -13,7 +13,7 @@ namespace Core.Interfaces.Services
         Task<bool> Set(string type, string key, string value, TimeSpan ttl);
         Task<bool> UpdateAndKeepTTL(string type, string key, string value);
         Task<bool> Delete(string type, string key);
-        Task<bool> IsExists(string type, string key);
+        Task<bool> ExistsAsync(string type, string key);
 
         // Object
         Task<T?> GetObject<T>(string type, string key);

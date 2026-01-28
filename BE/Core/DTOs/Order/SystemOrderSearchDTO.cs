@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Core.DTOs.Order
 {
-    public class SystemOrderSearchDTO : BasePaging
+    public class SystemOrderSearchDTO : PagingRequest
     {
         public OrderStatus? Status { get; set; }
         public DateTime StartDate { get; set; }

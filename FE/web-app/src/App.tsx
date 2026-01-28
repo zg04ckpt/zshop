@@ -3,21 +3,29 @@ import './App.css';
 import { createBrowserRouter, Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
+import { ChangePass, ConfirmEmail, HandleGoogleLoginCallback, Login, Register } from './pages/auth';
+import { About, Forbidden } from './pages/static';
+import MainLayout from './layout/MainLayout';
+import { CreateBook, Detail, Home, ManageBook, ManageCate, Search, UpdateBook } from './pages/book';
+import { Cart, ManageCancelOrderRequest, ManageOrder, Order } from './pages/payment';
+import { AccountLayout } from './layout/AccountLayout';
+import { AccountAddress, AccountInfo, AccountPurchaseHistory, ManageUser, OrderHistoryDetail, PaymentHistory, ReviewBook } from './pages/user';
+import AdminLayout from './layout/AdminLayout';
+import AdminOrderLayout from './layout/AdminOrderLayout';
+import { AppDispatch, setUser, useAppContext, startLoadingStatus, endLoadingStatus } from './stores';
+import { getLoginInfo } from './api';
+import { setupInterceptors } from './api/config/axios';
+import TopBar from './layout/TopBar';
+import { DynamicTitle } from './utils/DynamicTitle';
+import { Footer } from './layout/Footer';
+import ConfirmDialog from './components/ConfirmDialog';
+import ManageVoucher from './pages/voucher/ManageVoucher';
+import CreateVoucher from './pages/voucher/CreateVoucher';
+import { ChatWidget } from './components';
+import ChatSupport from './pages/chat/ChatSupport';
+import ManageBackup from './pages/backup/ManageBackup';
+import { getFromLocal } from './utils/localStore';
 
-import { About, AdminLayout, AppDispatch, ConfirmDialog, DynamicTitle, Footer, setupInterceptors, setUser, TopBar } from './modules/shared';
-import { ChangePass, ConfirmEmail, getLoginInfo, Login, Register } from './modules/auth';
-import { CateManagement, CreateBook, Detail, Home, ListBook, Search, UpdateBook } from './modules/book';
-import { Cart, Order } from './modules/payment';
-import { AccountAddress, AccountPurchaseHistory, AccountInfo, AccountLayout, ListUser, ReviewBook } from './modules/user';
-import { Overview } from './modules/analysis';
-import PaymentHistory from './modules/user/pages/user-account/payment-history/PaymentHistory';
-import OrderHistoryDetail from './modules/user/pages/user-account/order-history-detail/OrderHistoryDetail';
-import MainLayout from './modules/shared/layout/main-layout/MainLayout';
-import AdminOrderLayout from './modules/shared/layout/admin-order-layout/AdminOrderLayout';
-import ListSystemOrder from './modules/payment/pages/management/list-system-order/ListSystemOrder';
-import ListRequestCancelOrder from './modules/payment/pages/management/list-request-cancel-order/ListRequestCancelOrder';
-import HandleGoogleLoginCallback from './modules/auth/pages/HandleGoogleLoginCallback';
-import Forbidden from './modules/shared/static-pages/Forbidden';
 
 export const router = createBrowserRouter([{ 
   path: '/',
@@ -49,20 +57,25 @@ export const router = createBrowserRouter([{
     ]},
     
     { path: 'admin', element: <AdminLayout/>, children: [
-      { path: 'product', index: true, element: <ListBook/> },
+      { path: 'product', index: true, element: <ManageBook/> },
       { path: 'product/create', element: <CreateBook/> },
       { path: 'product/update', element: <UpdateBook/> },
-      { path: 'user', element: <ListUser/> },
-      { path: 'cate', element: <CateManagement/> },
+      { path: 'user', element: <ManageUser/> },
+      { path: 'cate', element: <ManageCate/> },
+      { path: 'voucher', element: <ManageVoucher/> },
+      { path: 'voucher/create', element: <CreateVoucher/> },
+      { path: 'chat', element: <ChatSupport/> },
+      { path: 'backup', element: <ManageBackup/> },
       { path: 'order', element: <AdminOrderLayout/>, children: [
-        { index: true, element: <ListSystemOrder/> },
-        { path: 'request-cancel', element: <ListRequestCancelOrder/> },
+        { index: true, element: <ManageOrder/> },
+        { path: 'request-cancel', element: <ManageCancelOrderRequest/> },
       ] },
     ]},
   ] 
 }]);
 
 function App() {
+  const context = useAppContext();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -70,34 +83,34 @@ function App() {
   const [isApiReady, setIsApiReady] = useState<boolean>(false);
 
   const reinitUserSession = async () => {
+    
+    const isLoggedIn = getFromLocal("isLoggedIn") as boolean;
+    if (!isLoggedIn) return;
+
+    dispatch(startLoadingStatus());
     const res = await getLoginInfo();
     if (res.isSuccess) dispatch(setUser(res.data!));
+    dispatch(endLoadingStatus());
   }
   
   useEffect(() => {
-      setupInterceptors(navigate, location, dispatch);
+      setupInterceptors(navigate, location, dispatch, context);
       reinitUserSession();
       setIsApiReady(true);
   }, []);
 
   return (
       <>
-          {/* Content */}
-          <TopBar/>
-          <DynamicTitle/>
-          <div style={{minHeight: '100vh'}}>
-              <div className="col-12">
-                  <Outlet context={{ isApiReady }}/>
-              </div>
-          </div>        
-          <Footer/>
-          <ScrollRestoration/>
-          
-          {/* Toast */}
-          <Toaster />
-
-          {/* Confirm dialog */}
-          <ConfirmDialog/>
+        <TopBar/>
+        <DynamicTitle/>
+        <div style={{minHeight: '100vh'}}>
+            <div className="col-12">
+                <Outlet context={{ isApiReady }}/>
+            </div>
+        </div>        
+        <ScrollRestoration/>
+        <Toaster />
+        <ConfirmDialog/>
       </>
   );
 }

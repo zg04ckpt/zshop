@@ -1,0 +1,114 @@
+/* Manage Voucher Page Styles */
+.manage-voucher {
+    padding: 20px;
+}
+
+.search-section {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.search-section h6 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.pointer-hover {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.pointer-hover:hover {
+    color: #007bff;
+}
+
+/* Voucher Modal */
+.voucher-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+}
+
+.voucher-modal {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.voucher-modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.voucher-modal-header h5 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.voucher-modal-body {
+    padding: 20px;
+}
+
+.voucher-modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+/* DataGrid custom styles */
+.manage-voucher .MuiDataGrid-root {
+    border: 1px solid #dee2e6;
+}
+
+.manage-voucher .MuiDataGrid-cell {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.manage-voucher .MuiDataGrid-columnHeaders {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Fix dropdown overflow in DataGrid */
+.manage-voucher .MuiDataGrid-cell {
+    overflow: visible !important;
+}
+
+.manage-voucher .dropdown-menu {
+    position: fixed !important;
+    z-index: 9999 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .voucher-modal {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .manage-voucher {
+        padding: 10px;
+    }
+}
