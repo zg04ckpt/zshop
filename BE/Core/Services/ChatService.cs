@@ -53,7 +53,7 @@ namespace Core.Services
                     Id = e.Id,
                     UserId = e.UserId,
                     CustomerName = e.CustomerName,
-                    IsAdminOnline = false,
+                    IsAdminOnline = _store.IsAdminOnline(),
                     IsCustomerOnline = false,
                     Messages = e.Messages.Select(m => new MessageListItemDTO
                     {

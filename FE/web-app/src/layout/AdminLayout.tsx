@@ -48,6 +48,18 @@ const AdminLayout = () => {
                             onClick={() => navigate('/admin/order')}>
                                 Đơn hàng
                         </div>
+
+                        <div 
+                            className={`option ${location.pathname.startsWith('/admin/chat')? 'selected': ''}`} 
+                            onClick={() => navigate('/admin/chat')}>
+                                Chat Support
+                        </div>
+
+                        <div 
+                            className={`option ${location.pathname.startsWith('/admin/backup')? 'selected': ''}`} 
+                            onClick={() => navigate('/admin/backup')}>
+                                Backup
+                        </div>
                     </div>
                 </div>
 

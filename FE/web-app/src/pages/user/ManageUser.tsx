@@ -3,12 +3,17 @@ import '../../styles/pages/ManageUser.css';
 import { useOutletContext } from "react-router-dom";
 import { OutletContextProp } from "../../types/base";
 import { RoleSelectItemDTO, UserItemDTO } from "../../types/user";
-import { getRoles, getUsers } from "../../api";
+import { changeUserActive, deleteUser, getRoles, getUsers } from "../../api";
 import Button from "../../components/Button";
 import { convertDateToTimeSpan } from "../../utils/helper";
 import Pagination from "../../components/Pagination";
+import { showErrorToast, showInfoToast, showSuccessToast } from "../../utils";
+import { AppDispatch, endLoadingStatus, startLoadingStatus, useAppContext } from "../../stores";
+import { useDispatch } from "react-redux";
 
 export const ManageUser = () => {
+    const context = useAppContext();
+    const dispatch = useDispatch<AppDispatch>();
     const { isApiReady } = useOutletContext<OutletContextProp>();
 
     const [totalRecord, setTotalRecord] = useState<number>(0);
@@ -19,14 +24,15 @@ export const ManageUser = () => {
     const [userName, setUserName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [roleId, setRoleId] = useState<number>(-1);
-    const [isActivated, setIsActivated] = useState<boolean>(true);
+    // const [isActivated, setIsActivated] = useState<boolean>(true);
     const [users, setUsers] = useState<UserItemDTO[]>([]);
     const [roles, setRoles] = useState<RoleSelectItemDTO[]>([]);
 
 
     const load = async () => {
+        dispatch(startLoadingStatus());
         const res = await getUsers({
-            pageIndex: page,pageSize: size,name,userName,email,roleId,isActivated,
+            pageIndex: page,pageSize: size,name,userName,email,roleId,
         });
         if (res.isSuccess) {
             setUsers(res.data!.items!);
@@ -35,6 +41,7 @@ export const ManageUser = () => {
         }
 
         setRoles((await getRoles()).data!);
+        dispatch(endLoadingStatus());
     }
 
     const filter = () => {
@@ -46,7 +53,7 @@ export const ManageUser = () => {
         setName('');
         setUserName('');
         setEmail('');
-        setIsActivated(true);
+        // setIsActivated(true);
         setRoleId(-1);
         setPage(1);
     }
@@ -54,6 +61,43 @@ export const ManageUser = () => {
     useEffect(() => {
         if(isApiReady) load();
     }, [page, isApiReady]);
+
+    const handleOnChangeActive = async (e: UserItemDTO) => {
+        dispatch(startLoadingStatus());
+        console.log(e);
+        const res = await changeUserActive(e.id, !e.isActivated);
+        if (res.isSuccess) {
+            showSuccessToast("Cập nhật trạng thái thành công!");
+            setUsers(prev => prev.map(u => {
+                if (u.id != e.id) return u;
+                return {
+                    ... u,
+                    isActivated: !u.isActivated
+                }
+            }));
+        } else {
+            showErrorToast(res.message || "Cập nhật trạng thái thất bại");
+        }
+        dispatch(endLoadingStatus());
+    }
+
+    const handleOnDeleteUser = (e: UserItemDTO) => {
+        context?.showConfirmDialog({
+            message: "Xác nhận xóa người dùng? Mọi thông tin liên quan đến người dùng này sẽ biến mất",
+            onConfirm: async () => {
+                dispatch(startLoadingStatus());
+                const res = await deleteUser(e.id);
+                if (res.isSuccess) {
+                    showSuccessToast("Xóa người dùng thành công");
+                    setUsers(prev => ([... prev.filter(u => u.id != e.id)]));
+                } else {
+                    showErrorToast(res.message || "Xóa người dùng thất bại");
+                }
+                dispatch(endLoadingStatus());
+            },
+            onReject: () => {}
+        });
+    }
 
     return (
         <div className="user-management position-relative">
@@ -66,9 +110,9 @@ export const ManageUser = () => {
                 <input type="text" placeholder="Nhập email" className="me-2" value={email}
                     onChange={e => setEmail(e.target.value)}/>
                 {/* Is activated */}
-                <label htmlFor="">Đã kích hoạt</label>
+                {/* <label htmlFor="">Đã kích hoạt</label>
                 <input type="checkbox" checked={isActivated}
-                    onClick={e => setIsActivated(v => !v)} className="mx-2"/>
+                    onClick={e => setIsActivated(v => !v)} className="mx-2"/> */}
                 {/* Roles */}
                 <select className="me-2" value={roleId}
                     onChange={e => setRoleId(Number(e.target.value))}>
@@ -107,7 +151,7 @@ export const ManageUser = () => {
                             <th style={{width: '120px'}}>Trạng thái</th>
                             <th>Quyền</th>
                             <th>Đăng nhập</th>
-                            <th>Tùy chọn</th>
+                            <th>#</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -119,15 +163,17 @@ export const ManageUser = () => {
                                 <td>{e.email}</td>
                                 <td className="align-content-center">
                                     { e.isActivated && <div className="tag tag-activated">Đã kích hoạt</div> }
-                                    { !e.isActivated && <div className="tag tag-not-activated">Chưa kích hoạt</div> }
+                                    { !e.isActivated && <div className="tag tag-not-activated">Đã khóa</div> }
                                 </td>
                                 <td>{e.roles.join(',')}</td>
                                 <td>{convertDateToTimeSpan(e.lastLogin)}</td>
                                 <td>
-                                    <div className="d-flex action align-items-center">
-                                        <i className='bx bx-message-rounded-dots'></i>
-                                        <i className='bx bx-lock-alt'></i>
-                                        <i className='bx bx-info-circle'></i>
+                                    <div className="d-flex action align-items-center dropdown">
+                                        <i className='bx bx-info-circle' data-bs-toggle="dropdown"></i>
+                                        <ul className="dropdown-menu">
+                                            <li onClick={() => handleOnChangeActive(e)}><a className="dropdown-item" href="#">{e.isActivated? "Khóa tài khoản":"Mở tài khoản"}</a></li>
+                                            <li onClick={() => handleOnDeleteUser(e)}><a className="dropdown-item" href="#">Xóa tài khoản</a></li>
+                                        </ul>
                                     </div>
                                 </td>
                             </tr>

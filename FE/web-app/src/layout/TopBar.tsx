@@ -9,6 +9,7 @@ import { LocalUser } from "../types/auth";
 import { logout } from "../api/auth";
 import Button from "../components/Button";
 import { defaultImageUrl } from "../utils/helper";
+import { saveToLocal } from "../utils/localStore";
 
 const TopBar = () => {
     const appContext = useAppContext();
@@ -25,13 +26,13 @@ const TopBar = () => {
             onConfirm: async () => {
                 dispatch(startLoadingStatus());
                 await logout();
+                saveToLocal("isLoggedIn", false);
                 navigate('/');
                 dispatch(setUser(null));
                 dispatch(endLoadingStatus());
             },
             onReject: () => {}
         });
-
     }
     
     return (
@@ -83,7 +84,10 @@ const TopBar = () => {
 
                             {/* Option */}
                             <div className="dropdown-menu rounded-0 py-0">
-                                { user.userName == 'admin' && <div className="dropdown-item" onClick={() => navigate('/admin/product')}><i className='bx bx-sushi'></i> Quản trị</div> }
+                                {
+                                    (user.roles.includes('Admin') || user.roles.includes('Tester')) && <div className="dropdown-item" onClick={() => navigate('/admin/product')}>
+                                        <i className='bx bx-sushi'></i> Quản trị</div> 
+                                }
                                 <div className="dropdown-item" onClick={() => navigate('/account')}><i className='bx bx-cog'></i> Tài khoản</div>
                                 <div className="dropdown-item" onClick={handleLogout}><i className='bx bx-log-out'></i> Đăng xuất</div>
                             </div>

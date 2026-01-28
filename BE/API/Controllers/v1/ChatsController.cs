@@ -70,18 +70,21 @@ namespace API.Controllers.v1
         }
 
         [HttpGet("manage")]
+        [Authorize("AllowTest")]
         public async Task<IActionResult> GetAllConversations([FromQuery] int index)
         {
             return Ok(await _chatService.GetConversationsAsync(index));
         }
 
         [HttpGet("manage/{id}")]
+        [Authorize("AllowTest")]
         public async Task<IActionResult> GetConversation(Guid id)
         {
             return Ok(await _chatService.GetConversationByIdAsync(id));
         }
 
         [HttpPost("manage/delete")]
+        [Authorize("AllowTest")]
         public async Task<IActionResult> DeleteConversation(DeleteConversationsRequest request)
         {
             return Ok(await _chatService.DeleteConversationsAsync(request));

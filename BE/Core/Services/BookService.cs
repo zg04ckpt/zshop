@@ -10,6 +10,7 @@ using Core.Utilities;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace Core.Services
 {
@@ -43,6 +44,8 @@ namespace Core.Services
                 throw new BadRequestException("Vui lòng thêm ít nhất 1 danh mục thể loại.");
             if (data.Images.Count < 3)
                 throw new BadRequestException("Vui lòng thêm ít nhất 3 ảnh minh họa.");
+
+            data.Name = Regex.Replace(data.Name, @"\s+", " ");
 
             var book = new Book
             {

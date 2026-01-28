@@ -2,11 +2,8 @@
 using Core.Interfaces.Services;
 using Core.Services;
 using Core.Utilities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using System.Security.Claims;
-using System.Xml.Linq;
 
 namespace Core.Hubs
 {
@@ -49,7 +46,7 @@ namespace Core.Hubs
             var message = await _chatService.SendMessageAsync(
                 Guid.Parse(conversationId), content, MessageType.User);
 
-            await Clients.Groups(conversationId).SendAsync(
+            await Clients.Group(conversationId).SendAsync(
                 MethodNames.OnReceivedMessage, message, conversationId);
         }
 
@@ -66,7 +63,7 @@ namespace Core.Hubs
             var message = await _chatService.SendMessageAsync(
                 conversationId, content, MessageType.Admin);
 
-            await Clients.Groups(conversationId.ToString()).SendAsync(
+            await Clients.Group(conversationId.ToString()).SendAsync(
                 MethodNames.OnReceivedMessage, message, conversationId.ToString());
         }
 
@@ -134,7 +131,7 @@ namespace Core.Hubs
                 await Clients.AllExcept(Context.ConnectionId).SendAsync(MethodNames.OnAdminOnline, false);
             }
             else if (
-                Context.User.IsInRole("User") && 
+                //Context.User.IsInRole("User") && 
                 Context.GetHttpContext() is not null && 
                 Context.GetHttpContext()!.Request!.Cookies.TryGetValue("ConversationId", out var conversationId))
             {

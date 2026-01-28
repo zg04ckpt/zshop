@@ -24,10 +24,10 @@ export const endpoints = {
 		topCategories: "/books/categories/top-sell",
 	},
 	bookManagement: {
-		root: "/management/book",
-		detail: (id: string) => `/management/book/${id}`,
-		categories: "/management/book/categories",
-		category: (id: number) => `/management/book/categories/${id}`,
+		root: "/books/manage",
+		detail: (id: string) => `/books/manage/${id}`,
+		categories: "/books/manage/categories",
+		category: (id: number) => `/books/manage/categories/${id}`,
 	},
 	cart: {
 		root: "/cart",
@@ -46,11 +46,11 @@ export const endpoints = {
 		booksInOrder: (orderId: string) => `/payment/orders/${orderId}/books`,
 	},
 	orderManagement: {
-		root: "/management/payment/orders",
-		setStatus: (orderId: string) => `/management/payment/orders/${orderId}/status`,
-		cancelRequests: "/management/payment/cancel-order-requests",
+		root: "/payment/manage/orders",
+		setStatus: (orderId: string) => `/payment/manage/orders/${orderId}/status`,
+		cancelRequests: "/payment/manage/cancel-order-requests",
 		cancelRequest: (requestId: number, isAccepted: boolean) =>
-			`/management/payment/cancel-order-requests/${requestId}?isAccepted=${isAccepted}`,
+			`/payment/manage/cancel-order-requests/${requestId}?isAccepted=${isAccepted}`,
 	},
 	user: {
 		profile: "/user/profile",
@@ -60,16 +60,32 @@ export const endpoints = {
 		addressConfig: "/user/address/config",
 	},
 	userManagement: {
-		root: "/management/user",
-		roles: "/management/user/roles",
+		root: "/user/manage",
+		roles: "/user/manage/roles",
+		delete: (id: string) => `/user/manage/${id}`,
+		changeActive: `/user/manage/change-active`,
 	},
 	voucher: {
 		root: "/vouchers",
 		detail: (id: string) => `/vouchers/${id}`
 	},
 	voucherManagement: {
-		root: "/management/vouchers",
-		delete: (id: string) => "/management/vouchers/" + id,
-		changeActivation: (id: string) => `/management/vouchers/${id}/change-activation`
+		root: "/vouchers/manage",
+		delete: (id: string) => "/vouchers/manage/" + id,
+		changeActivation: (id: string) => `/vouchers/manage/${id}/change-activation`
 	},
+	chat: {
+		startConversation: "/chats",
+		existingConversation: "/chats/existing-conversation",
+		startAnonymousConversation: "/chats/start-anonymous",
+		listAllConversation: (index: Number) => `/chats/manage?index=${index}`,
+		getConversation: (id: string) => `/chats/manage/${id}`,
+		deleteConversations: `/chats/manage/delete`,
+	},
+	backup: {
+		getListSnapshots: "/backups",
+		createSnapshot: "/backups",
+		deleteSnapshot: "/backups/delete",
+		applySnapshot: "/backups/apply",
+	}
 };

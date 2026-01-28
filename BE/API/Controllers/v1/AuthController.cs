@@ -47,7 +47,7 @@ namespace API.Controllers.v1
             if (!Request.Headers.ContainsKey("Authorization") 
                 || string.IsNullOrEmpty(Request.Headers["Authorization"]))
             {
-                return BadRequest(new ApiErrorResult("Người dùng chưa đăng nhập"));
+                return Unauthorized(new ApiErrorResult("Người dùng chưa đăng nhập"));
             }
             return Ok(await authService.GetLoginInfo(User));
         }

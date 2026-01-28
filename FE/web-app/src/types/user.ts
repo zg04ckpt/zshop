@@ -59,7 +59,7 @@ export interface SearchUserDTO extends PagingRequest
     userName: string;
     email: string;
     roleId: number;
-    isActivated: boolean;
+    // isActivated: boolean;
 }
 
 export interface UserItemDTO

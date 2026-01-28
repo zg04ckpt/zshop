@@ -49,3 +49,11 @@ export const getUsers = async (data: SearchUserDTO) => {
 export const getRoles = async () => {
     return await get<RoleSelectItemDTO[]>(endpoints.userManagement.roles);
 };
+
+export const changeUserActive = async (id: string, isActived: boolean) => {
+    return await put(endpoints.userManagement.changeActive, { userId: id, isActived });
+}
+
+export const deleteUser = async (id: string) => {
+    return await del(endpoints.userManagement.delete(id));
+}

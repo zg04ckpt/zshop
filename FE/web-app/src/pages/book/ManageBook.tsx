@@ -4,7 +4,7 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import { BookDTO, BookListItemDTO, CategorySelectItemDTO } from "../../types/book";
 import { AppDispatch, endLoadingStatus, startLoadingStatus, useAppContext } from "../../stores";
 import { OutletContextProp } from "../../types/base";
-import { deleteBook, getBooksForManagement, getCategories, updateBook } from "../../api";
+import { deleteBook, getBooks, getBooksForManagement, getCategories, updateBook } from "../../api";
 import { useDispatch } from "react-redux";
 import { showErrorToast, showInfoToast } from "../../utils";
 import Button from "../../components/Button";
@@ -45,7 +45,7 @@ export const ManageBook = () => {
     }
 
     const load = async () => {
-        const res = await getBooksForManagement({
+        const res = await getBooks({
             name, maxPrice, minPrice, pageIndex: page, pageSize: size, sortBy, order,
             categoryIds: categories
                 .filter(e => e.isChecked)
