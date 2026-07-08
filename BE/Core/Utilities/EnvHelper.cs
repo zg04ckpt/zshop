@@ -1,74 +1,106 @@
-﻿namespace Core.Utilities
+namespace Core.Utilities
 {
     public class EnvHelper
     {
-        public static string GetMySQLConnectionString()
+        private static string GetRequiredVar(string variableName)
         {
-            return Environment.GetEnvironmentVariable("ZShopMySQLConnectionString")!;
+            var value = Environment.GetEnvironmentVariable(variableName);
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new InvalidOperationException($"Environment variable '{variableName}' is not set.");
+            }
+            return value;
         }
 
-        public static string GetRedisPassword()
+        public static string GetMySQLConnectionString()
         {
-            return Environment.GetEnvironmentVariable("REDIS_CONNECTION_PASSWORD")!;
+            return GetRequiredVar("ZShopMySQLConnectionString");
+        }
+
+        public static string GetRedisConnectionString()
+        {
+            return GetRequiredVar("ZShopRedisConnectionString");
         }
 
         public static string GetGoogleClientId()
         {
-            return Environment.GetEnvironmentVariable("GoogleClientId")!;
+            return GetRequiredVar("GoogleClientId");
         }
 
         public static string GetGoogleClientSecret()
         {
-            return Environment.GetEnvironmentVariable("GoogleClientSecret")!;
+            return GetRequiredVar("GoogleClientSecret");
         }
 
         public static string GetVNpayHashSecret() 
         {
-            return Environment.GetEnvironmentVariable("ZShopVNPayHashSecret")!;
+            return GetRequiredVar("ZShopVNPayHashSecret");
         }
+
         public static string GetCloudinaryCloundName()
         {
-            return Environment.GetEnvironmentVariable("ZShopCloudinaryCloundName")!;
+            return GetRequiredVar("ZShopCloudinaryCloundName");
         }
 
         public static string GetCloudinaryApiKey()
         {
-            return Environment.GetEnvironmentVariable("ZShopCloudinaryApiKey")!;
+            return GetRequiredVar("ZShopCloudinaryApiKey");
         }
 
         public static string GetCloudinaryApiSecret()
         {
-            return Environment.GetEnvironmentVariable("ZShopCloudinaryApiSecret")!;
+            return GetRequiredVar("ZShopCloudinaryApiSecret");
         }
 
         public static string GetSystemEmail()
         {
-            return Environment.GetEnvironmentVariable("SystemEmailAddress")!;
+            return GetRequiredVar("SystemEmailAddress");
         }
 
         public static string GetSystemEmailPassword()
         {
-            return Environment.GetEnvironmentVariable("SystemEmailPassword")!;
+            return GetRequiredVar("SystemEmailPassword");
         }
 
         public static string GetSecretKey()
         {
-            return Environment.GetEnvironmentVariable("SecretKey")!;
+            return GetRequiredVar("SecretKey");
         }
 
         public static string GetAdminUserName()
         {
-            return Environment.GetEnvironmentVariable("AdminUserName")!;
+            return GetRequiredVar("AdminUserName");
         }
         
         public static string GetAdminEmail()
         {
-            return Environment.GetEnvironmentVariable("AdminEmail")!;
+            return GetRequiredVar("AdminEmail");
         }
 
         public static string GetAdminPassword()
         {
-            return Environment.GetEnvironmentVariable("AdminPassword")!;
+            return GetRequiredVar("AdminPassword");
+        }
+
+        // --- RAG AI & Qdrant Configs ---
+        public static string GetRagApiKey()
+        {
+            return GetRequiredVar("RagApiKey");
+        }
+
+        public static string GetRagEndpoint()
+        {
+            return GetRequiredVar("RagEndpoint");
+        }
+
+        public static string GetQdrantHost()
+        {
+            return GetRequiredVar("QdrantHost");
+        }
+
+        public static int GetQdrantPort()
+        {
+            return int.Parse(GetRequiredVar("QdrantPort"));
         }
     }
 }
