@@ -1,4 +1,4 @@
-﻿using API.Converters;
+using API.Converters;
 using API.Filters;
 using API.Middlewares;
 using Core.Configurations;
@@ -79,16 +79,8 @@ builder.Logging.AddSerilog();
 // Add redis
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
-    var configs = builder.Configuration.GetSection("Redis").Get<RedisConfig>();
-    var redisConfig = new ConfigurationOptions
-    {
-        EndPoints = { configs.EndPoints.Default },
-        Password = EnvHelper.GetRedisPassword(),
-        Ssl = configs.Ssl,
-        ConnectTimeout = configs.ConnectTimeout,
-        SyncTimeout = configs.SyncTimeout,
-        ConnectRetry = configs.ConnectRetry
-    };
+    var connectionString = EnvHelper.GetRedisConnectionString();
+    var redisConfig = ConfigurationOptions.Parse(connectionString);
     return ConnectionMultiplexer.Connect(redisConfig);
 });
 
@@ -122,7 +114,7 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero,
 
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("SecretKey")!))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(EnvHelper.GetSecretKey()!))
     };
 
     option.Events = new JwtBearerEvents
@@ -219,6 +211,12 @@ builder.Services.AddTransient<ICartService, CartService>();
 builder.Services.AddTransient<IVoucherService, VoucherService>();
 builder.Services.AddTransient<IChatService, ChatService>();
 
+// RAG Services
+// builder.Services.AddSingleton<IRagSyncQueue, RagSyncQueue>();
+builder.Services.AddHostedService<RagBackgroundWorker>();
+builder.Services.AddScoped<IRagAiService, RagAiService>();
+builder.Services.AddScoped<IVectorDbService, QdrantService>();
+builder.Services.AddScoped<IRagOrchestratorService, RagOrchestratorService>();
 //builder.Services.AddTransient<IBackupRepository, SQLServerBackupRepository>();
 
 builder.Services.AddSingleton<IJwtService, JwtService>();

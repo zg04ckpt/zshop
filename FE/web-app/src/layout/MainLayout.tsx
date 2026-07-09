@@ -2,7 +2,7 @@ import React from "react";
 import { Outlet, useLocation, useOutletContext } from "react-router-dom";
 import Breadcrumb from "../components/Breadcrumb";
 import { Footer } from "./Footer";
-import { ChatWidget } from "../components";
+import { ChatWidget, RagChatWidget } from "../components";
 
 const MainLayout = () => {
     const outletContext = useOutletContext();
@@ -16,6 +16,7 @@ const MainLayout = () => {
                 </> }
                 <Outlet context={outletContext}/>
             </div>
+            <RagChatWidget/>
             <ChatWidget/>
             <Footer/>
         </>

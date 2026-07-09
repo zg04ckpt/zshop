@@ -31,9 +31,12 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-echo 4. upload tar
+echo 4. upload files
 scp "%TAR%" %SERVER_USER%@%SERVER_HOST%:%SERVER_PATH%/ || (
     echo SCP of tar failed & pause & exit /b 1
+)
+scp "%COMPOSE_FILE%" %SERVER_USER%@%SERVER_HOST%:%SERVER_PATH%/ || (
+    echo SCP of docker-compose.yaml failed & pause & exit /b 1
 )
 
 echo 5. ssh and run
