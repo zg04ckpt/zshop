@@ -1,6 +1,8 @@
-﻿using Core;
+using Core;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using Core.Entities.BookFeature;
+
 namespace Data
 {
     public class AppDbContext : DbContext
@@ -8,6 +10,8 @@ namespace Data
         public AppDbContext(DbContextOptions options) : base(options)
         {
         }
+
+        public DbSet<BookVectorSync> BookVectorSyncs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

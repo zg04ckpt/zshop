@@ -7,3 +7,4 @@ export * from "./Pagination";
 export * from "./ValidatableInput";
 export * from "./ValidatableInput2";
 export { default as ChatWidget } from "./ChatWidget";
+export { default as RagChatWidget } from "./RagChatWidget/RagChatWidget";
