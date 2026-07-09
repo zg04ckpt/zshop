@@ -1,4 +1,4 @@
-﻿using Core.Configurations;
+using Core.Configurations;
 using Core.DTOs.Backup;
 using Core.DTOs.Common;
 using Core.Exceptions;
@@ -18,11 +18,12 @@ namespace Core.Services
             IBackupRepository backupRepository,
             IOptions<BackupConfig> config)
         {
+            _backupRepository = backupRepository;
             _config = config.Value;
             _backupPath = Path.Combine(AppContext.BaseDirectory, _config.BackupPath);  
-            if (!File.Exists(_backupPath))
+            if (!Directory.Exists(_backupPath))
             {
-                File.Create(_backupPath);
+                Directory.CreateDirectory(_backupPath);
             }
         }
 
