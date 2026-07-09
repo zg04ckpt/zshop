@@ -315,3 +315,5 @@ var seeder = scope.ServiceProvider.GetRequiredService<SeedData>();
 await seeder.InitAsync();
 
 app.Run();
+
+public partial class Program { }
