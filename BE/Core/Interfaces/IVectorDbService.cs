@@ -8,7 +8,7 @@ namespace Core.Interfaces
     {
         Task EnsureCollectionExistsAsync();
         Task UpsertVectorAsync(Guid bookId, ReadOnlyMemory<float> vector, string textContent);
-        Task<List<Guid>> SearchSimilarAsync(ReadOnlyMemory<float> queryVector, int topK = 3);
+        Task<List<Guid>> SearchSimilarAsync(ReadOnlyMemory<float> queryVector, int topK = 3, float? scoreThreshold = null);
         Task DeleteVectorsAsync(List<Guid> bookIds);
     }
 }

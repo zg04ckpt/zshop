@@ -88,39 +88,36 @@ namespace Core.Services
             // 2. Sinh vector cho từ khóa
             var queryVector = await _aiService.GetEmbeddingAsync(keywords);
 
-            // 3. Tìm sách tương đồng
-            var bookIds = await _vectorDbService.SearchSimilarAsync(queryVector, 3);
+            // 3. Tìm sách tương đồng (chỉ lấy những sách có điểm cao, ví dụ > 0.5)
+            var bookIds = await _vectorDbService.SearchSimilarAsync(queryVector, 3, 0.5f);
 
-            if (!bookIds.Any())
-            {
-                result.AiMessage = "Dạ hiện tại em chưa tìm thấy thông tin sách phù hợp với yêu cầu của anh/chị, anh/chị có thể nói rõ hơn được không ạ?";
-                return result;
-            }
-
-            // 4. Lấy thông tin thật từ SQL
-            var books = await _uow.Repository<Book>().GetAllAsync(
-                b => bookIds.Contains(b.Id)
-            );
-            
             var contextSb = new StringBuilder();
-            foreach (var book in books)
+            if (bookIds.Any())
             {
-                contextSb.AppendLine($"TÊN SÁCH: {book.Name}");
-                contextSb.AppendLine($"TÁC GIẢ: {book.Author}");
-                contextSb.AppendLine($"GIÁ: {book.Price} {book.Currency}");
-                contextSb.AppendLine($"MÔ TẢ: {book.Description}");
-                contextSb.AppendLine("---");
-
-                result.SuggestedBooks.Add(new SuggestedBookDto
+                // 4. Lấy thông tin thật từ SQL
+                var books = await _uow.Repository<Book>().GetAllAsync(
+                    b => bookIds.Contains(b.Id)
+                );
+                
+                foreach (var book in books)
                 {
-                    Id = book.Id,
-                    Name = book.Name,
-                    ImageUrl = book.Cover,
-                    Price = book.Price
-                });
+                    contextSb.AppendLine($"TÊN SÁCH: {book.Name}");
+                    contextSb.AppendLine($"TÁC GIẢ: {book.Author}");
+                    contextSb.AppendLine($"GIÁ: {book.Price} {book.Currency}");
+                    contextSb.AppendLine($"MÔ TẢ: {book.Description}");
+                    contextSb.AppendLine("---");
+
+                    result.SuggestedBooks.Add(new SuggestedBookDto
+                    {
+                        Id = book.Id,
+                        Name = book.Name,
+                        ImageUrl = book.Cover,
+                        Price = book.Price
+                    });
+                }
             }
 
-            // 5. Sinh câu trả lời
+            // 5. Sinh câu trả lời. Nếu không có sách, contextSb sẽ rỗng.
             var answer = await _aiService.GenerateAnswerAsync(userMessage, contextSb.ToString());
             result.AiMessage = answer;
 

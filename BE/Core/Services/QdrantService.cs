@@ -45,12 +45,13 @@ namespace Core.Services
             await _client.UpsertAsync(_collectionName, new[] { point });
         }
 
-        public async Task<List<Guid>> SearchSimilarAsync(ReadOnlyMemory<float> queryVector, int topK = 3)
+        public async Task<List<Guid>> SearchSimilarAsync(ReadOnlyMemory<float> queryVector, int topK = 3, float? scoreThreshold = null)
         {
             var searchResult = await _client.SearchAsync(
                 collectionName: _collectionName,
                 vector: queryVector.ToArray(),
-                limit: (ulong)topK
+                limit: (ulong)topK,
+                scoreThreshold: scoreThreshold
             );
 
             var results = new List<Guid>();
