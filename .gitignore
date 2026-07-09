@@ -16,11 +16,12 @@ build
 
 # Common
 **/Web
-.github
+# .github (Đã bỏ comment để cho phép commit thư mục CI/CD)
 **/*.sql
 zshop.conf
 
 **/*.pem
 **/logs
 **/docker-compose.yaml
+!/docker-compose.yaml
 **/*.tar
