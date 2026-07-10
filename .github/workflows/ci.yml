@@ -2,13 +2,9 @@ name: .NET CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main" ]
-  push:
-    branches: [ "develop" ]
-  pull_request:
-    branches: [ "develop" ]
+    branches: [ "main", "develop" ]
 
 jobs:
   build-and-test:
@@ -30,4 +26,23 @@ jobs:
       run: dotnet build BE/zshop.sln --no-restore --configuration Release
 
     - name: Test (Unit & Integration)
+      env:
+        ZShopMySQLConnectionString: "Server=localhost;Port=3306;Database=zshop_test;Uid=root;Pwd=test;"
+        ZShopRedisConnectionString: "localhost:6379"
+        GoogleClientId: "dummy_client_id"
+        GoogleClientSecret: "dummy_client_secret"
+        ZShopVNPayHashSecret: "dummy_vnpay_secret"
+        ZShopCloudinaryCloundName: "dummy_cloud"
+        ZShopCloudinaryApiKey: "dummy_key"
+        ZShopCloudinaryApiSecret: "dummy_secret"
+        SystemEmailAddress: "test@example.com"
+        SystemEmailPassword: "test_password"
+        SecretKey: "super_secret_key_for_testing_purposes_1234567890"
+        AdminUserName: "admin"
+        AdminEmail: "admin@example.com"
+        AdminPassword: "admin"
+        RagApiKey: "dummy"
+        RagEndpoint: "http://dummy.com"
+        QdrantHost: "localhost"
+        QdrantPort: "6334"
       run: dotnet test BE/zshop.sln --no-build --verbosity normal --configuration Release
