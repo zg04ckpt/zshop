@@ -42,7 +42,7 @@ jobs:
         AdminEmail: "admin@example.com"
         AdminPassword: "admin"
         RagApiKey: "dummy"
-        RagEndpoint: "dummy"
+        RagEndpoint: "http://dummy.com"
         QdrantHost: "localhost"
         QdrantPort: "6334"
       run: dotnet test BE/zshop.sln --no-build --verbosity normal --configuration Release
