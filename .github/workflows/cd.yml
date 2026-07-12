@@ -32,7 +32,7 @@ jobs:
           context: ./BE
           file: ./BE/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.BACKEND_IMAGE_NAME }}:latest
 
       - name: Build and push Frontend Docker image
         uses: docker/build-push-action@v4
@@ -40,7 +40,7 @@ jobs:
           context: ./FE/web-app
           file: ./FE/web-app/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.FRONTEND_IMAGE_NAME }}:latest
 
   deploy:
     needs: build-and-push
