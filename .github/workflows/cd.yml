@@ -5,8 +5,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  BACKEND_IMAGE_NAME: ${{ github.repository_owner }}/zshop_api
-  FRONTEND_IMAGE_NAME: ${{ github.repository_owner }}/zshop_web
+  BACKEND_IMAGE_NAME: zshop_api
+  FRONTEND_IMAGE_NAME: zshop_web
 
 jobs:
   build-and-push:
@@ -48,26 +48,21 @@ jobs:
     steps:
       - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@v0.1.10
-        env:
-          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          envs: GITHUB_REPOSITORY_OWNER
           script: |
-            export GITHUB_REPOSITORY_OWNER=$GITHUB_REPOSITORY_OWNER
-            # Di chuyển tới thư mục chứa docker-compose trên server
             cd /hoangcn/zshop
             
             # Login lại vào GHCR trên server (cần truyền token qua biến môi trường hoặc cấu hình sẵn)
             echo ${{ secrets.GHCR_PAT }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
             # Kéo (pull) image mới nhất về máy chủ
-            docker-compose pull
+            docker compose pull
             
             # Khởi động lại các container mới (những container cũ/không thay đổi sẽ giữ nguyên)
-            docker-compose up -d --remove-orphans
+            docker compose up -d --remove-orphans
             
             # Xóa các image rác cũ để giải phóng dung lượng ổ cứng
             docker image prune -f
