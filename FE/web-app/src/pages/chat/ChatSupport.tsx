@@ -115,11 +115,20 @@ const ChatSupport: React.FC = () => {
         }
     };
 
-    const handleSendMessage = (e: React.FormEvent) => {
+    const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
         if (inputValue.trim() && selectedConversation) {
-            connectionRef.current?.invoke('OnAdminSendMessage', inputValue.trim(), selectedConversation.id);
-            setInputValue('');
+            if (connectionRef.current?.state === signalR.HubConnectionState.Connected) {
+                try {
+                    await connectionRef.current.invoke('OnAdminSendMessage', inputValue.trim(), selectedConversation.id);
+                    setInputValue('');
+                } catch (err) {
+                    console.error("Lỗi gửi tin nhắn:", err);
+                    showErrorToast("Lỗi khi gửi tin nhắn");
+                }
+            } else {
+                showErrorToast("Kết nối chat chưa sẵn sàng, vui lòng thử lại sau");
+            }
         }
     };
 
@@ -256,7 +265,10 @@ const ChatSupport: React.FC = () => {
             console.log("SignalR reconnected:", id);
         });
 
-        await connectionRef.current.start().then(() => showSuccessToast("Đã kết nối"));
+        await connectionRef.current.start().then(() => showSuccessToast("Đã kết nối")).catch(err => {
+            console.error("SignalR Connection Error: ", err);
+            showErrorToast("Không thể kết nối đến máy chủ chat");
+        });
         console.log("SignalR connected");
     }
 

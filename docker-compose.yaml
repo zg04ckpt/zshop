@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   zshop_api:
-    container_name: zshop_api
+    container_name: zshop_api_2
     image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/zshop_api:latest
     ports:
       - "5004:8080"
@@ -15,7 +15,7 @@ services:
       - default_net
 
   zshop_web:
-    container_name: zshop_web
+    container_name: zshop_web_2
     image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/zshop_web:latest
     ports:
       - "5005:80"

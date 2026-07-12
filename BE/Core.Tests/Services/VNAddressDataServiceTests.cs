@@ -57,7 +57,7 @@ namespace Core.Tests.Services.External
             // Arrange
             var service = new VNAddressDataService();
             // Wait for it to finish initialization
-            await Task.Delay(100);
+            await Task.Delay(1000);
 
             // Act
             var config = service.GetConfigData();
@@ -73,7 +73,7 @@ namespace Core.Tests.Services.External
         {
             // Arrange
             var service = new VNAddressDataService();
-            await Task.Delay(100);
+            await Task.Delay(1000);
 
             // Act
             var result = service.IsValidCity("City", 1);
@@ -89,7 +89,7 @@ namespace Core.Tests.Services.External
         {
             // Arrange
             var service = new VNAddressDataService();
-            await Task.Delay(100);
+            await Task.Delay(1000);
 
             // Act
             var result = service.IsValidDistrict("District", 1);
@@ -105,7 +105,7 @@ namespace Core.Tests.Services.External
         {
             // Arrange
             var service = new VNAddressDataService();
-            await Task.Delay(100);
+            await Task.Delay(1000);
 
             // Act
             var result = service.IsValidWard("Ward", 1);
